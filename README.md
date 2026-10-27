@@ -32,7 +32,18 @@ npm run build
 npm start
 ```
 
-Deploy to Vercel, Netlify, or any Node host. Point `joytogetherhomecare.com` DNS to your deployment when ready to replace the current GoDaddy site.
+## Deployment
+
+- **GitHub:** https://github.com/mrmfedd/joytogether-homecare
+- **Vercel (production):** https://joytogether-homecare.vercel.app
+
+Pushes to `main` auto-deploy on Vercel (GitHub repo is connected).
+
+### Custom domain (`joytogetherhomecare.com`)
+
+1. In [Vercel → Project → Settings → Domains](https://vercel.com/michael-fedds-projects/joytogether-homecare/settings/domains), add `joytogetherhomecare.com` and `www.joytogetherhomecare.com`.
+2. At your domain registrar (GoDaddy), set DNS per Vercel’s instructions (usually `A` record to Vercel IP or `CNAME` to `cname.vercel-dns.com`).
+3. Remove or repoint the old GoDaddy site hosting when DNS has propagated.
 
 ## Customization
 

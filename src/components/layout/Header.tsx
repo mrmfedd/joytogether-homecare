@@ -57,7 +57,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full max-w-[100vw] overflow-x-hidden border-b border-line/80 bg-white/92 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-line/80 bg-white/95 backdrop-blur-md">
       <div className="site-container flex h-14 items-center gap-2 sm:h-[72px] lg:h-[76px]">
         <div className="min-w-0 flex-1 lg:flex-none">
           <Logo />
@@ -72,7 +72,10 @@ export function Header() {
         >
           <ul className="flex w-full flex-col gap-1 lg:flex-row lg:items-center lg:gap-0.5">
             {headerNav.map((item) => (
-              <li key={item.type === "link" ? item.href : item.label} className="relative">
+              <li
+                key={item.type === "link" ? item.href : item.label}
+                className={item.type === "group" ? "relative lg:static" : "relative"}
+              >
                 {item.type === "link" ? (
                   <Link
                     href={item.href}
@@ -150,7 +153,7 @@ function NavGroup({
   const active = groupActive(pathname, item);
 
   return (
-    <div>
+    <div className="relative">
       <button
         type="button"
         id={`${id}-trigger`}
@@ -174,11 +177,11 @@ function NavGroup({
         id={`${id}-panel`}
         role="region"
         aria-labelledby={`${id}-trigger`}
-        className={`lg:absolute lg:left-0 lg:top-[calc(100%+6px)] lg:min-w-[220px] ${
+        className={`z-[100] lg:absolute lg:left-0 lg:top-[calc(100%+8px)] lg:min-w-[240px] ${
           expanded ? "block" : "hidden"
         }`}
       >
-        <ul className="mt-1 space-y-0.5 rounded-xl border border-line bg-white py-2 pl-2 pr-2 shadow-lg lg:mt-0 lg:py-2">
+        <ul className="mt-1 space-y-0.5 rounded-xl border border-line bg-white py-2 pl-2 pr-2 shadow-xl lg:mt-0 lg:py-2">
           {item.children.map((child) => (
             <li key={child.href}>
               <Link

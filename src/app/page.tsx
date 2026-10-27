@@ -14,7 +14,7 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="relative min-h-[520px] overflow-hidden sm:min-h-[560px]">
+      <section className="relative z-0 min-h-[520px] overflow-hidden sm:min-h-[560px]">
         <Image
           src={site.images.hero}
           alt="Caregiver with client at home"

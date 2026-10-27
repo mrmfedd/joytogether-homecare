@@ -5,14 +5,18 @@ export function Logo({ light = false }: { light?: boolean }) {
   const sub = light ? "text-purple-100" : "text-purple-600";
 
   return (
-    <Link href="/" className="flex items-center gap-3" aria-label="Joy Together Home Care home">
+    <Link
+      href="/"
+      className="flex min-w-0 max-w-[calc(100vw-5rem)] items-center gap-2 sm:max-w-none sm:gap-3"
+      aria-label="Joy Together Home Care home"
+    >
       <span
-        className={`grid h-11 w-11 place-items-center rounded-2xl ${
+        className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl lg:h-11 lg:w-11 lg:rounded-2xl ${
           light ? "bg-white/15" : "bg-purple-100"
         }`}
         aria-hidden
       >
-        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <svg className="h-[22px] w-[22px] lg:h-[26px] lg:w-[26px]" viewBox="0 0 26 26" fill="none">
           <path
             d="M13 3L4 10v11h7v-6h4v6h7V10L13 3z"
             fill={light ? "#fff" : "#5c4d7a"}
@@ -23,9 +27,11 @@ export function Logo({ light = false }: { light?: boolean }) {
           />
         </svg>
       </span>
-      <span className={`leading-tight font-bold ${text}`}>
-        Joy Together
-        <small className={`mt-1 block text-[9px] font-bold tracking-[0.28em] ${sub}`}>
+      <span className={`min-w-0 leading-tight font-bold ${text}`}>
+        <span className="block truncate text-[15px] lg:text-[20px]">Joy Together</span>
+        <small
+          className={`mt-0.5 hidden text-[9px] font-bold tracking-[0.28em] sm:block ${sub}`}
+        >
           HOME CARE
         </small>
       </span>

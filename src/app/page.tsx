@@ -14,7 +14,7 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="relative min-h-[560px] overflow-hidden">
+      <section className="relative min-h-[520px] overflow-hidden sm:min-h-[560px]">
         <Image
           src={site.images.hero}
           alt="Caregiver with client at home"
@@ -27,26 +27,30 @@ export default function HomePage() {
           className="absolute inset-0 bg-gradient-to-l from-purple-900/88 via-purple-800/45 to-purple-900/15"
           aria-hidden
         />
-        <div className="site-container relative z-[1] flex min-h-[560px] items-center justify-end py-16 md:py-20">
+        <div className="site-container relative z-[1] flex min-h-[520px] items-center py-12 sm:min-h-[560px] sm:py-16 md:justify-end md:py-20">
           <div className="w-full max-w-xl text-left md:max-w-[520px] md:text-right">
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-purple-100">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-purple-100 sm:text-[11px] sm:tracking-[0.24em]">
               {h.hero.eyebrow}
             </p>
-            <h1 className="font-display m-0 text-[clamp(36px,5vw,58px)] text-white">
+            <h1 className="font-display m-0 text-[clamp(32px,8vw,58px)] text-white">
               {h.hero.title}
             </h1>
-            <p className="mt-5 text-[17px] leading-relaxed text-purple-50 md:ml-auto md:max-w-[480px]">
+            <p className="mt-4 text-base leading-relaxed text-purple-50 sm:mt-5 sm:text-[17px] md:ml-auto md:max-w-[480px]">
               {h.hero.subtitle}
             </p>
-            <div className="mt-8 flex flex-wrap gap-3 md:justify-end">
+            <div className="mt-6 flex w-full max-w-full flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap md:justify-end">
               <ButtonLink
                 href={h.hero.primaryCta.href}
                 variant="white"
-                className="shadow-lg shadow-purple-900/30"
+                className="w-full px-4 text-center text-[13px] shadow-lg shadow-purple-900/30 sm:w-auto sm:text-sm"
               >
                 {h.hero.primaryCta.label}
               </ButtonLink>
-              <ButtonLink href={h.hero.secondaryCta.href} variant="outlineLight">
+              <ButtonLink
+                href={h.hero.secondaryCta.href}
+                variant="outlineLight"
+                className="w-full sm:w-auto"
+              >
                 {h.hero.secondaryCta.label}
               </ButtonLink>
             </div>

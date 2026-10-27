@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -30,6 +30,13 @@ export function Header() {
   }, [pathname]);
 
   useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
     if (!mobileOpen && !openGroup) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -50,18 +57,20 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line/80 bg-white/92 backdrop-blur-md">
-      <div className="site-container flex h-[72px] items-center justify-between gap-3 lg:h-[76px]">
-        <Logo />
+    <header className="sticky top-0 z-30 w-full max-w-[100vw] overflow-x-hidden border-b border-line/80 bg-white/92 backdrop-blur-md">
+      <div className="site-container flex h-14 items-center gap-2 sm:h-[72px] lg:h-[76px]">
+        <div className="min-w-0 flex-1 lg:flex-none">
+          <Logo />
+        </div>
 
         <nav
           ref={navRef}
-          className={`absolute left-0 right-0 top-[72px] max-h-[min(70vh,520px)] overflow-y-auto border-b border-line bg-white p-4 shadow-lg lg:static lg:top-auto lg:flex lg:max-h-none lg:items-center lg:gap-1 lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none ${
+          className={`absolute left-0 right-0 top-14 z-40 max-h-[min(70vh,520px)] overflow-y-auto border-b border-line bg-white p-4 shadow-lg sm:top-[72px] lg:static lg:top-auto lg:flex lg:max-h-none lg:flex-1 lg:items-center lg:justify-center lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none ${
             mobileOpen ? "block" : "hidden lg:flex"
           }`}
           aria-label="Primary navigation"
         >
-          <ul className="flex flex-col gap-1 lg:flex-row lg:items-center lg:gap-0.5">
+          <ul className="flex w-full flex-col gap-1 lg:flex-row lg:items-center lg:gap-0.5">
             {headerNav.map((item) => (
               <li key={item.type === "link" ? item.href : item.label} className="relative">
                 {item.type === "link" ? (
@@ -86,25 +95,30 @@ export function Header() {
                 )}
               </li>
             ))}
+            <li className="mt-2 border-t border-line pt-3 lg:hidden">
+              <ButtonLink href="/contact" variant="purple" className="w-full">
+                Free Consultation
+              </ButtonLink>
+            </li>
           </ul>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center">
           <ButtonLink
             href="/contact"
             variant="purple"
-            className="hidden whitespace-nowrap px-4 py-2.5 text-xs font-bold md:inline-flex lg:px-5 lg:text-[13px]"
+            className="mr-1 hidden whitespace-nowrap px-4 py-2.5 text-xs font-bold lg:inline-flex lg:px-5 lg:text-[13px]"
           >
             Free Consultation
           </ButtonLink>
           <button
             type="button"
-            className="rounded-lg px-2 py-1 text-2xl text-purple-800 lg:hidden"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-purple-800 hover:bg-purple-50 lg:hidden"
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             onClick={() => setMobileOpen((v) => !v)}
           >
-            {mobileOpen ? "×" : "☰"}
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </div>
@@ -164,9 +178,7 @@ function NavGroup({
           expanded ? "block" : "hidden"
         }`}
       >
-        <ul
-          className="mt-1 space-y-0.5 rounded-xl border border-line bg-white py-2 pl-2 pr-2 shadow-lg lg:mt-0 lg:py-2"
-        >
+        <ul className="mt-1 space-y-0.5 rounded-xl border border-line bg-white py-2 pl-2 pr-2 shadow-lg lg:mt-0 lg:py-2">
           {item.children.map((child) => (
             <li key={child.href}>
               <Link

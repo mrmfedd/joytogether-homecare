@@ -1,69 +1,228 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Heart, Home, Sparkles, Users } from "lucide-react";
+import { TestimonialsCarousel } from "@/components/home/TestimonialsCarousel";
+import { WaveDivider } from "@/components/layout/WaveDivider";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { home } from "@/content/mockup";
+import { site } from "@/content/site";
 
-export default function Home() {
+const featureIcons = [Heart, Home, Users, Sparkles];
+
+export default function HomePage() {
+  const h = home;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <>
+      <section className="relative min-h-[560px] overflow-hidden">
         <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src={site.images.hero}
+          alt="Caregiver with client at home"
+          fill
           priority
+          className="object-cover object-center"
+          sizes="100vw"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <div
+          className="absolute inset-0 bg-gradient-to-l from-purple-900/88 via-purple-800/45 to-purple-900/15"
+          aria-hidden
+        />
+        <div className="site-container relative z-[1] flex min-h-[560px] items-center justify-end py-16 md:py-20">
+          <div className="w-full max-w-xl text-left md:max-w-[520px] md:text-right">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-purple-100">
+              {h.hero.eyebrow}
+            </p>
+            <h1 className="font-display m-0 text-[clamp(36px,5vw,58px)] text-white">
+              {h.hero.title}
+            </h1>
+            <p className="mt-5 text-[17px] leading-relaxed text-purple-50 md:ml-auto md:max-w-[480px]">
+              {h.hero.subtitle}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3 md:justify-end">
+              <ButtonLink
+                href={h.hero.primaryCta.href}
+                variant="white"
+                className="shadow-lg shadow-purple-900/30"
+              >
+                {h.hero.primaryCta.label}
+              </ButtonLink>
+              <ButtonLink href={h.hero.secondaryCta.href} variant="outlineLight">
+                {h.hero.secondaryCta.label}
+              </ButtonLink>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <WaveDivider fill="#faf7fc" className="absolute bottom-0 left-0" />
+      </section>
+
+      <section className="bg-purple-50 pb-4 pt-2">
+        <div className="site-container grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
+          {h.features.map((item, i) => {
+            const Icon = featureIcons[i];
+            return (
+              <div key={item.title} className="text-center">
+                <div className="mx-auto mb-4 grid h-[62px] w-[62px] place-items-center rounded-full bg-white text-purple-600 shadow-sm">
+                  <Icon className="h-7 w-7" aria-hidden />
+                </div>
+                <h3 className="m-0 text-[15px] font-bold text-purple-900">{item.title}</h3>
+                <p className="mt-2 text-sm text-muted">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="section-pad bg-cream">
+        <div className="site-container grid items-center gap-12 lg:grid-cols-2">
+          <div className="relative">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src={site.images.about}
+              alt="Caregiver and client smiling"
+              width={560}
+              height={420}
+              className="w-full rounded-[22px] object-cover shadow-lg"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <p
+              className="absolute -bottom-4 -right-2 max-w-[180px] rotate-[-6deg] font-display text-lg text-purple-600/90"
+              aria-hidden
+            >
+              {h.aboutTeaser.scribble} ♥
+            </p>
+          </div>
+          <div>
+            <p className="eyebrow-purple">{h.aboutTeaser.eyebrow}</p>
+            <h2 className="font-display m-0 text-[clamp(32px,4vw,44px)] text-purple-900">
+              {h.aboutTeaser.title}
+            </h2>
+            <p className="body-muted mt-4">{h.aboutTeaser.body}</p>
+            <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+              {h.aboutTeaser.bullets.map((b) => (
+                <li key={b} className="text-sm font-semibold text-purple-800">
+                  <span className="text-sage">✓</span> {b}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7">
+              <ButtonLink href={h.aboutTeaser.cta.href} variant="sage">
+                {h.aboutTeaser.cta.label}
+              </ButtonLink>
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="section-pad bg-purple-50">
+        <div className="site-container">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow-purple">{h.servicesTeaser.eyebrow}</p>
+            <h2 className="font-display m-0 text-[clamp(32px,4vw,44px)]">
+              {h.servicesTeaser.title}
+            </h2>
+            <p className="body-muted mt-3">{h.servicesTeaser.intro}</p>
+          </div>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {h.servicesTeaser.cards.map((card) => (
+              <article key={card.id} className="card-soft overflow-hidden">
+                <div className="relative h-44">
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 280px"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="font-display m-0 text-xl text-purple-900">{card.title}</h3>
+                  <p className="mt-2 text-sm text-muted">{card.description}</p>
+                  <Link
+                    href={`/services#${card.id}`}
+                    className="mt-4 inline-block text-sm font-bold text-purple-700 hover:text-purple-900"
+                  >
+                    Learn More →
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <ButtonLink href={h.servicesTeaser.viewAll.href} variant="outlinePurple">
+              {h.servicesTeaser.viewAll.label}
+            </ButtonLink>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-pad bg-cream">
+        <div className="site-container grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <p className="eyebrow-purple">{h.whyTeaser.eyebrow}</p>
+            <h2 className="font-display m-0 text-[clamp(32px,4vw,44px)]">{h.whyTeaser.title}</h2>
+            <ul className="mt-8 space-y-5">
+              {h.whyTeaser.items.map((item) => (
+                <li key={item.title} className="flex gap-4">
+                  <span className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-purple-100 text-sm text-purple-700">
+                    ✓
+                  </span>
+                  <div>
+                    <strong className="text-purple-900">{item.title}</strong>
+                    <p className="m-0 mt-1 text-sm text-muted">{item.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <ButtonLink href={h.whyTeaser.cta.href} variant="purple">
+                {h.whyTeaser.cta.label}
+              </ButtonLink>
+            </div>
+          </div>
+          <div className="relative mx-auto w-full max-w-md">
+            <div className="aspect-square overflow-hidden rounded-full border-8 border-white shadow-xl">
+              <Image
+                src={site.images.about}
+                alt="Hands held in care"
+                width={480}
+                height={480}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <p className="absolute -bottom-2 left-4 max-w-[220px] font-display text-2xl italic text-purple-700">
+              &ldquo;{h.whyTeaser.quote}&rdquo;
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-pad bg-purple-50">
+        <div className="site-container">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="eyebrow-purple">{h.testimonials.eyebrow}</p>
+            <h2 className="font-display m-0 text-[clamp(30px,4vw,40px)]">{h.testimonials.title}</h2>
+          </div>
+          <TestimonialsCarousel items={[...h.testimonials.items]} />
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden py-24">
+        <Image
+          src={site.images.hero}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-purple-900/72" />
+        <div className="site-container relative z-[1] text-center text-white">
+          <h2 className="font-display m-0 text-[clamp(32px,4vw,44px)]">{h.cta.title}</h2>
+          <p className="mx-auto mt-4 max-w-xl text-purple-100">{h.cta.subtitle}</p>
+          <div className="mt-8">
+            <ButtonLink href={h.cta.button.href} variant="white">
+              {h.cta.button.label}
+            </ButtonLink>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

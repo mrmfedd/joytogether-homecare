@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Joy Together Home Care — Website
 
-## Getting Started
+Marketing site for [Joy Together Home Care](https://joytogetherhomecare.com/), built with Next.js and styled from the project’s `index.html` template and `assets/` images.
 
-First, run the development server:
+- **Design reference:** `index.html` (navy/green palette, Playfair + DM Sans, single-page sections)
+- **Template copy:** `src/content/marketing.ts`
+- **Live-site data:** `src/content/site.ts` (contact, extended services, about, training, fingerprinting)
+- **Images:** `public/assets/hero-care.jpg`, `public/assets/about-care.jpg`
+
+## Pages
+
+- **Home** — vision, promise, pillars, service preview, CTA
+- **About** — mission, why choose us, reputation & values
+- **Services** — housekeeping, meals, companionship, care plans, hospice, and more
+- **Training** — CPR, AED, BLS, group/on-site courses
+- **Fingerprinting** — Live Scan electronic submissions
+- **Contact** — phone, email, Apollo Beach office, map link
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+Deploy to Vercel, Netlify, or any Node host. Point `joytogetherhomecare.com` DNS to your deployment when ready to replace the current GoDaddy site.
 
-To learn more about Next.js, take a look at the following resources:
+## Customization
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Content:** Edit `src/content/site.ts` only — pages read from there.
+- **Brand:** Colors and fonts live in `src/app/globals.css` and `src/app/layout.tsx`.

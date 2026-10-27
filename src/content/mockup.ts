@@ -1,21 +1,5 @@
 import { site } from "@/content/site";
 
-export const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "About Us", href: "/about" },
-  { label: "Our Mission", href: "/our-mission" },
-  { label: "Services", href: "/services" },
-  { label: "Home Care", href: "/home-care-and-companion-care" },
-  { label: "Palmetto, FL", href: "/palmetto-fl" },
-  { label: "Training", href: "/training" },
-  { label: "Fingerprinting", href: "/fingerprinting" },
-  { label: "Apply", href: "/apply" },
-  { label: "Payment Info", href: "/payment-information" },
-  { label: "Contact", href: "/contact" },
-] as const;
-
-export const footerNavLinks = navLinks;
-
 export const home = {
   hero: {
     eyebrow: "Compassionate Care. Brighter Days.",

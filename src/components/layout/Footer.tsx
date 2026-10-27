@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { footer, footerNavLinks } from "@/content/mockup";
+import { footer } from "@/content/mockup";
+import { footerNavLinks } from "@/content/navigation";
 import { site } from "@/content/site";
 
 export function Footer() {

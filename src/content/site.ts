@@ -33,6 +33,7 @@ export const site = {
     { label: "Contact", href: "/#contact" },
   ],
   images: {
+    logo: "/assets/logo.png",
     hero: "/assets/hero-care.jpg",
     about: "/assets/about-care.jpg",
     services: {

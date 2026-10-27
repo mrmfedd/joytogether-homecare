@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { PageHero } from "@/components/layout/PageHero";
 import { ContentSection } from "@/components/layout/ContentSection";
 import { liveMission } from "@/content/liveSite";
@@ -14,13 +15,26 @@ export default function OurMissionPage() {
   return (
     <>
       <PageHero eyebrow="Our Mission" title={m.title} />
-      <ContentSection title="Our vision">
-        <p>{m.vision}</p>
-      </ContentSection>
-      <ContentSection title="Our mission" className="bg-purple-50">
-        <p>{m.mission}</p>
-        {m.missionParagraphs.map((p) => <p key={p.slice(0, 40)}>{p}</p>)}
-      </ContentSection>
+      <section className="section-pad">
+        <div className="site-container grid items-start gap-10 lg:grid-cols-2">
+          <div>
+            <h2 className="font-display m-0 mb-4 text-2xl uppercase text-purple-900">Our vision</h2>
+            <p className="body-muted">{m.vision}</p>
+            <h2 className="font-display mt-8 mb-4 text-2xl uppercase text-purple-900">Our mission</h2>
+            <p className="body-muted">{m.mission}</p>
+            {m.missionParagraphs.map((p) => (
+              <p key={p.slice(0, 40)} className="body-muted mt-4">{p}</p>
+            ))}
+          </div>
+          <Image
+            src="/assets/services/vision-mission.png"
+            alt="Caregiver with patient"
+            width={500}
+            height={600}
+            className="w-full rounded-xl object-cover shadow-md"
+          />
+        </div>
+      </section>
       <ContentSection title={m.goalsTitle}>
         {m.goals.map((p) => <p key={p.slice(0, 40)}>{p}</p>)}
       </ContentSection>

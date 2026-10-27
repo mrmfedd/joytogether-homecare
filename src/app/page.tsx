@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Home, Sparkles, Users } from "lucide-react";
 import { LiveHomeSections } from "@/components/home/LiveHomeSections";
+import { TampaReviewsSection } from "@/components/home/TampaReviewsSection";
 import { WaveDivider } from "@/components/layout/WaveDivider";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { home } from "@/content/mockup";
@@ -199,6 +200,8 @@ export default function HomePage() {
       </section>
 
       <LiveHomeSections />
+
+      <TampaReviewsSection />
 
       <section className="relative overflow-hidden py-24">
         <Image

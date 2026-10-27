@@ -1,98 +1,136 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { ServiceListSection } from "@/components/services/ServiceListSection";
 import { PageHero } from "@/components/layout/PageHero";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import {
+  caretakerRequirements,
+  companionSupport,
+  errandsAndPersonal,
+  homeCareDuties,
+  homeCareNursing,
+  otherActivities,
+  serviceCategories,
+  servicesHeadline,
+  skilledNursingServices,
+} from "@/content/servicesCatalog";
 import { servicesContent } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Our Services",
-  description: servicesContent.intro,
+  description: servicesHeadline,
 };
 
-const additionalIds = new Set([
-  "meals",
-  "regardless",
-  "lifestyle",
-  "family",
-  "care-plans",
-  "hospice",
-]);
-
 export default function ServicesPage() {
-  const additional = servicesContent.offerings.filter((o) => additionalIds.has(o.id));
-
   return (
     <>
       <PageHero
         eyebrow="Our Services"
-        title="Flexible Care for Life's Changing Needs"
+        title={servicesHeadline}
         description={servicesContent.intro}
         cta={{ label: "Request a Free Consultation →", href: "/contact" }}
       />
 
       <section className="section-pad bg-purple-50">
         <div className="site-container">
-          <h2 className="font-display m-0 mb-8 text-3xl">Core services</h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {[
-              {
-                id: "companionship",
-                title: "Companion Care",
-                description: servicesContent.offerings.find((o) => o.id === "companionship")?.description,
-              },
-              {
-                id: "personal-care",
-                title: "Personal Care",
-                description:
-                  "Respectful assistance with bathing, dressing, grooming, medication reminders, and daily routines.",
-              },
-              {
-                id: "housekeeping",
-                title: "Light Household Help",
-                description: servicesContent.offerings.find((o) => o.id === "housekeeping")?.description,
-              },
-              {
-                id: "respite",
-                title: "Respite Care",
-                description:
-                  "Temporary support that gives family caregivers time to rest while your loved one receives attentive care.",
-              },
-            ].map((service) => (
-              <article key={service.id} id={service.id} className="card-soft scroll-mt-28 p-8">
-                <h3 className="font-display m-0 text-2xl">{service.title}</h3>
-                <p className="body-muted mt-3 text-sm">{service.description}</p>
-                <Link
-                  href="/contact"
-                  className="mt-5 inline-block text-sm font-bold text-purple-700 hover:text-purple-900"
-                >
-                  Request this service →
-                </Link>
+          <h2 className="font-display m-0 mb-10 text-center text-3xl uppercase">Our Services</h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {serviceCategories.map((cat) => (
+              <article key={cat.id} id={cat.id} className="card-soft scroll-mt-28 overflow-hidden">
+                <div className="relative h-44">
+                  <Image src={cat.image} alt={cat.title} fill className="object-cover" sizes="360px" />
+                </div>
+                <div className="p-5">
+                  <h3 className="font-display m-0 text-xl text-purple-900">{cat.title}</h3>
+                  <Link
+                    href="/contact"
+                    className="mt-3 inline-block text-sm font-bold text-purple-700 hover:underline"
+                  >
+                    Learn more →
+                  </Link>
+                </div>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section-pad">
+      <ServiceListSection
+        variant="brand"
+        title={caretakerRequirements.title}
+        intro={caretakerRequirements.intro}
+        items={caretakerRequirements.items}
+        image={caretakerRequirements.image}
+        id="caretaker-requirements"
+      />
+
+      <ServiceListSection
+        title={homeCareDuties.title}
+        columns={homeCareDuties.columns}
+        image={homeCareDuties.image}
+        id="home-care-duties"
+      />
+
+      <ServiceListSection
+        variant="brand"
+        title={skilledNursingServices.title}
+        columns={skilledNursingServices.columns}
+        image={skilledNursingServices.image}
+        id="skilled-nursing"
+      />
+
+      <ServiceListSection
+        title={otherActivities.title}
+        items={otherActivities.items}
+        image={otherActivities.image}
+        id="other-activities"
+      />
+
+      <ServiceListSection
+        title={companionSupport.title}
+        items={companionSupport.items}
+        image={companionSupport.image}
+        id="companion-support"
+      />
+
+      <section className="section-pad bg-purple-50" id="errands-personal">
         <div className="site-container">
-          <h2 className="font-display m-0 mb-8 text-3xl">Additional support</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {additional.map((service) => (
-              <article key={service.id} id={service.id} className="card-soft scroll-mt-28 p-6">
-                <h3 className="font-display m-0 text-xl">{service.title}</h3>
-                <p className="body-muted mt-2 text-sm">{service.description}</p>
-                <Link
-                  href="/contact"
-                  className="mt-4 inline-block text-sm font-bold text-purple-700"
-                >
-                  Learn More →
-                </Link>
+          <Image
+            src={errandsAndPersonal.image}
+            alt="Errands and personal care"
+            width={900}
+            height={400}
+            className="mx-auto mb-10 w-full max-w-3xl rounded-xl object-cover"
+          />
+          <div className="grid gap-10 md:grid-cols-2">
+            {errandsAndPersonal.sections.map((section) => (
+              <article key={section.title} className="card-soft p-8">
+                <h3 className="font-display m-0 text-xl text-purple-900">{section.title}</h3>
+                <ul className="mt-4 space-y-2">
+                  {section.items.map((item) => (
+                    <li key={item} className="text-sm font-medium text-purple-900">
+                      • {item}
+                    </li>
+                  ))}
+                </ul>
               </article>
             ))}
           </div>
-          <div className="mt-12 text-center">
-            <ButtonLink href="/contact" variant="purple">Start Your Care Plan →</ButtonLink>
-          </div>
+        </div>
+      </section>
+
+      <ServiceListSection
+        title={homeCareNursing.title}
+        intro={homeCareNursing.intro}
+        items={homeCareNursing.bullets}
+        image={homeCareNursing.image}
+        id="home-care-nursing"
+      />
+
+      <section className="section-pad text-center">
+        <div className="site-container">
+          <ButtonLink href="/contact" variant="purple">Start Your Care Plan →</ButtonLink>
         </div>
       </section>
     </>

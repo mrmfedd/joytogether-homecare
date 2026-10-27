@@ -4,7 +4,8 @@ export const site = {
   tagline: "Trusted in-home care in Tampa Bay",
   description:
     "Compassionate, affordable home care and hospice support throughout the Greater Tampa Bay area. We treat every client like family.",
-  url: "https://joytogetherhomecare.com",
+  url: "https://joytogether-homecare.vercel.app",
+  legacyUrl: "https://joytogetherhomecare.com",
   heroImage:
     "https://img1.wsimg.com/isteam/getty/2249342508/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:1240,h:620,cg:true",
   contact: {

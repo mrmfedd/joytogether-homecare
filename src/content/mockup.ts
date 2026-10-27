@@ -3,18 +3,25 @@ import { site } from "@/content/site";
 export const navLinks = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
-  { label: "Our Services", href: "/services" },
-  { label: "Why Choose Us", href: "/why-choose-us" },
-  { label: "Resources", href: "/resources" },
+  { label: "Our Mission", href: "/our-mission" },
+  { label: "Services", href: "/services" },
+  { label: "Home Care", href: "/home-care-and-companion-care" },
+  { label: "Palmetto, FL", href: "/palmetto-fl" },
+  { label: "Training", href: "/training" },
+  { label: "Fingerprinting", href: "/fingerprinting" },
+  { label: "Apply", href: "/apply" },
+  { label: "Payment Info", href: "/payment-information" },
   { label: "Contact", href: "/contact" },
 ] as const;
+
+export const footerNavLinks = navLinks;
 
 export const home = {
   hero: {
     eyebrow: "Compassionate Care. Brighter Days.",
     title: "Joy Together Home Care",
     subtitle:
-      "More comfort. More smiles. More joy together — compassionate in-home care for the Greater Tampa Bay area.",
+      "Trusted in-home care in Tampa, FL — compassionate hospice and home care throughout the Greater Tampa Bay area.",
     primaryCta: { label: "Request a Free Consultation →", href: "/contact" },
     secondaryCta: { label: "Learn More", href: "/about" },
   },
@@ -110,7 +117,7 @@ export const home = {
       },
     ],
     quote: "Together we make every day a little brighter.",
-    cta: { label: "Why Choose Us →", href: "/why-choose-us" },
+    cta: { label: "About Us →", href: "/about" },
   },
   testimonials: {
     eyebrow: "Real Stories. Brighter Days.",

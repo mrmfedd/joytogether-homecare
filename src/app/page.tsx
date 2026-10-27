@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Home, Sparkles, Users } from "lucide-react";
-import { TestimonialsCarousel } from "@/components/home/TestimonialsCarousel";
+import { LiveHomeSections } from "@/components/home/LiveHomeSections";
 import { WaveDivider } from "@/components/layout/WaveDivider";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { home } from "@/content/mockup";
@@ -194,15 +194,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="section-pad bg-purple-50">
-        <div className="site-container">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <p className="eyebrow-purple">{h.testimonials.eyebrow}</p>
-            <h2 className="font-display m-0 text-[clamp(30px,4vw,40px)]">{h.testimonials.title}</h2>
-          </div>
-          <TestimonialsCarousel items={[...h.testimonials.items]} />
-        </div>
-      </section>
+      <LiveHomeSections />
 
       <section className="relative overflow-hidden py-24">
         <Image

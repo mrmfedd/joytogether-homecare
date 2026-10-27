@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { footer, navLinks } from "@/content/mockup";
+import { footer, footerNavLinks } from "@/content/mockup";
 import { site } from "@/content/site";
 
 export function Footer() {
@@ -20,7 +20,7 @@ export function Footer() {
           <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
             Quick Links
           </h4>
-          {navLinks.map((item) => (
+          {footerNavLinks.map((item) => (
             <Link
               key={item.href}
               href={item.href}

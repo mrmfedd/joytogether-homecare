@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { PageHero } from "@/components/layout/PageHero";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { aboutContent } from "@/content/site";
-import { site } from "@/content/site";
+import { liveOurWork } from "@/content/liveSite";
+import { aboutContent, site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -38,7 +38,21 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="section-pad bg-purple-50">
+      <section className="section-pad bg-purple-50" id="why-choose-us">
+        <div className="site-container max-w-4xl">
+          <h2 className="font-display m-0 text-3xl">{aboutContent.whyChoose.title}</h2>
+          <p className="body-muted mt-4">{aboutContent.whyChoose.intro}</p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+            {aboutContent.whyChoose.bullets.map((item) => (
+              <li key={item} className="card-soft px-4 py-3 text-sm font-semibold text-purple-900">
+                ✓ {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="section-pad">
         <div className="site-container grid gap-6 md:grid-cols-2">
           <article className="card-soft p-8">
             <h2 className="font-display m-0 text-2xl">{aboutContent.partOfFamily.title}</h2>
@@ -50,6 +64,20 @@ export default function AboutPage() {
               <p className="body-muted mt-3 text-sm">{item.body}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="section-pad bg-purple-50">
+        <div className="site-container">
+          <h2 className="font-display m-0 mb-8 text-3xl">Our work</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {liveOurWork.map((item) => (
+              <article key={item.title} className="card-soft p-6">
+                <h3 className="font-display m-0 text-lg">{item.title}</h3>
+                <p className="body-muted mt-2 text-sm">{item.body}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -26,7 +26,7 @@ export function Header() {
         <Logo />
 
         <nav
-          className={`absolute left-0 right-0 top-[82px] flex flex-col gap-1 border-b border-line bg-white p-5 shadow-lg lg:static lg:flex lg:flex-row lg:items-center lg:gap-7 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none ${
+          className={`absolute left-0 right-0 top-[82px] flex flex-col gap-1 border-b border-line bg-white p-5 shadow-lg lg:static lg:max-w-[58%] lg:flex lg:flex-row lg:flex-wrap lg:items-center lg:justify-center lg:gap-x-4 lg:gap-y-1 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none xl:max-w-none xl:flex-nowrap xl:gap-5 ${
             open ? "flex" : "hidden lg:flex"
           }`}
           aria-label="Primary navigation"

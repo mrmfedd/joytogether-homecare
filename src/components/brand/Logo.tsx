@@ -7,16 +7,16 @@ export function Logo({ light = false }: { light?: boolean }) {
     <Link
       href="/"
       className={`inline-flex shrink-0 items-center ${
-        light ? "rounded-lg bg-white/95 p-1.5 shadow-sm" : ""
+        light ? "rounded-lg bg-white/95 p-2 shadow-sm" : ""
       }`}
       aria-label="Joy Together Home Care home"
     >
       <Image
         src={site.images.logo}
         alt="Joy Together Home Care"
-        width={220}
-        height={72}
-        className="h-10 w-auto max-w-[min(200px,calc(100vw-5.5rem))] object-contain object-left sm:h-11 lg:h-12"
+        width={404}
+        height={236}
+        className="h-12 w-auto max-w-[min(260px,calc(100vw-4.25rem))] object-contain object-left sm:h-14 sm:max-w-[300px] lg:h-16 lg:max-w-[340px]"
         priority
       />
     </Link>

@@ -5,31 +5,38 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { contactReviews } from "@/content/contactReviews";
 import { servicesHeadline } from "@/content/servicesCatalog";
+import { site } from "@/content/site";
 
-const AUTO_SCROLL_MS = 6000;
+const AUTO_SCROLL_MS = 5500;
+const REVIEW_COUNT = contactReviews.length;
 
-function reviewAt(index: number, offset: number) {
-  const reviews = contactReviews;
-  return reviews[(index + offset + reviews.length) % reviews.length];
+function reviewAt(centerIndex: number, offset: number) {
+  return contactReviews[(centerIndex + offset + REVIEW_COUNT) % REVIEW_COUNT];
 }
 
 export function TampaReviewsSection() {
-  const reviews = contactReviews;
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  const [slideKey, setSlideKey] = useState(0);
 
-  const go = useCallback(
-    (delta: number) => {
-      setIndex((i) => (i + delta + reviews.length) % reviews.length);
-    },
-    [reviews.length],
-  );
+  const go = useCallback((delta: number) => {
+    setIndex((i) => (i + delta + REVIEW_COUNT) % REVIEW_COUNT);
+    setSlideKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
-    if (paused) return;
-    const id = window.setInterval(() => go(1), AUTO_SCROLL_MS);
+    if (hoverPaused) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+
+    const id = window.setInterval(() => {
+      setIndex((i) => (i + 1) % REVIEW_COUNT);
+      setSlideKey((k) => k + 1);
+    }, AUTO_SCROLL_MS);
+
     return () => window.clearInterval(id);
-  }, [go, paused]);
+  }, [hoverPaused]);
 
   const visible = [reviewAt(index, -1), reviewAt(index, 0), reviewAt(index, 1)];
 
@@ -37,23 +44,19 @@ export function TampaReviewsSection() {
     <section
       className="relative overflow-hidden py-16 md:py-20"
       aria-labelledby="home-reviews-heading"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-          setPaused(false);
-        }
-      }}
+      aria-roledescription="carousel"
+      onMouseEnter={() => setHoverPaused(true)}
+      onMouseLeave={() => setHoverPaused(false)}
     >
       <Image
-        src="/assets/services/testimonials-hero.jpg"
+        src={site.images.hero}
         alt=""
         fill
-        className="object-cover"
+        className="object-cover object-center scale-105 blur-[2px]"
         sizes="100vw"
       />
-      <div className="absolute inset-0 bg-purple-900/55" />
+      <div className="absolute inset-0 bg-purple-900/70" aria-hidden />
+
       <div className="site-container relative z-[1]">
         <h2
           id="home-reviews-heading"
@@ -62,11 +65,11 @@ export function TampaReviewsSection() {
           {servicesHeadline}
         </h2>
 
-        <div className="relative mt-10">
+        <div className="relative mt-10 px-8 md:px-10">
           <button
             type="button"
             aria-label="Previous review"
-            className="absolute -left-1 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow md:-left-4"
+            className="absolute left-0 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow transition hover:bg-white md:-left-2"
             onClick={() => go(-1)}
           >
             <ChevronLeft className="h-5 w-5" />
@@ -74,24 +77,27 @@ export function TampaReviewsSection() {
           <button
             type="button"
             aria-label="Next review"
-            className="absolute -right-1 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow md:-right-4"
+            className="absolute right-0 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow transition hover:bg-white md:-right-2"
             onClick={() => go(1)}
           >
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          <div key={`review-set-${index}`} className="grid items-stretch gap-4 md:grid-cols-3">
+          <div
+            key={slideKey}
+            className="reviews-slide-in grid items-stretch gap-4 md:grid-cols-3"
+            aria-live="polite"
+          >
             {visible.map((review, i) => {
               const center = i === 1;
               return (
                 <article
-                  key={`${review.name}-${review.date}-${i}`}
-                  className={`review-card-enter flex flex-col rounded-lg p-6 shadow-lg transition-transform ${
+                  key={`${review.name}-${review.date}-${center ? "center" : "side"}`}
+                  className={`flex flex-col rounded-lg p-6 shadow-lg ${
                     center
-                      ? "bg-[#0099e5] text-white md:scale-105"
+                      ? "relative z-[1] bg-[#0099e5] text-white md:scale-105"
                       : "bg-white text-purple-900"
                   }`}
-                  style={{ animationDelay: `${i * 0.08}s` }}
                 >
                   {!center && (
                     <div className="mb-3 flex gap-0.5 text-amber-400" aria-label="5 out of 5 stars">
@@ -114,17 +120,21 @@ export function TampaReviewsSection() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center gap-2">
-          {reviews.map((_, i) => (
+        <div className="mt-8 flex justify-center gap-2" role="tablist" aria-label="Review slides">
+          {contactReviews.map((_, i) => (
             <button
               key={i}
               type="button"
-              aria-label={`Show reviews starting at ${i + 1}`}
-              aria-current={i === index ? "true" : undefined}
-              className={`h-2.5 rounded-full transition-all ${
-                i === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
+              role="tab"
+              aria-selected={i === index}
+              aria-label={`Show review ${i + 1} of ${REVIEW_COUNT}`}
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                i === index ? "w-8 bg-white" : "w-2.5 bg-white/40 hover:bg-white/60"
               }`}
-              onClick={() => setIndex(i)}
+              onClick={() => {
+                setIndex(i);
+                setSlideKey((k) => k + 1);
+              }}
             />
           ))}
         </div>

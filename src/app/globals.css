@@ -559,6 +559,10 @@ a.btn-outline-purple:visited {
   }
 }
 
+.reviews-slide-in {
+  animation: review-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
@@ -580,7 +584,8 @@ a.btn-outline-purple:visited {
   .page-hero-glow,
   .site-chrome-in,
   .btn-shimmer::after,
-  .review-card-enter {
+  .review-card-enter,
+  .reviews-slide-in {
     animation: none !important;
   }
 

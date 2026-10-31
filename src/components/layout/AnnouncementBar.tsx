@@ -1,8 +1,10 @@
+"use client";
+
 function FloralIcon({ className = "" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 32 48"
-      className={`h-10 w-7 shrink-0 opacity-90 ${className}`}
+      className={`floral-sway h-10 w-7 shrink-0 opacity-90 ${className}`}
       aria-hidden
     >
       <path
@@ -20,14 +22,16 @@ function FloralIcon({ className = "" }: { className?: string }) {
 export function AnnouncementBar() {
   return (
     <div
-      className="border-b border-[#0088e8]/30 bg-[#0095ff] px-3 py-3 text-center text-purple-950 sm:px-4 sm:py-3.5"
+      className="announcement-bar site-chrome-in border-b border-[#0088e8]/30 px-3 py-3 text-center text-purple-950 sm:px-4 sm:py-3.5"
       role="region"
       aria-label="Service area announcement"
     >
       <p className="font-display mx-auto flex max-w-5xl items-center justify-center gap-3 text-[15px] leading-snug sm:gap-5 sm:text-lg md:text-xl">
         <FloralIcon className="hidden sm:block" />
-        <span>Delivering High-Quality Home Care Across the Tampa Bay Area</span>
-        <FloralIcon className="hidden rotate-12 sm:block" />
+        <span className="announcement-text">
+          Delivering High-Quality Home Care Across the Tampa Bay Area
+        </span>
+        <FloralIcon className="hidden sm:block [animation-delay:0.15s]" />
       </p>
     </div>
   );

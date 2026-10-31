@@ -62,7 +62,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-line/80 bg-white/95 backdrop-blur-md">
+    <header className="site-chrome-in site-chrome-in-delay sticky top-0 z-50 w-full border-b border-line/80 bg-white/95 backdrop-blur-md">
       <div className="site-container flex h-16 items-center gap-2 sm:h-[84px] lg:h-[92px]">
         <div className="min-w-0 flex-1 lg:flex-none">
           <Logo />

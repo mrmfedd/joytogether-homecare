@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { ContactGoogleMap } from "@/components/contact/ContactGoogleMap";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { PageHero } from "@/components/layout/PageHero";
 import { site } from "@/content/site";
@@ -56,6 +57,8 @@ export default function ContactPage() {
           <InquiryForm />
         </div>
       </section>
+
+      <ContactGoogleMap />
     </>
   );
 }

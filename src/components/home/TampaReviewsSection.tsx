@@ -2,27 +2,50 @@
 
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
-import { useState } from "react";
-import { liveTestimonials, servicesHeadline } from "@/content/servicesCatalog";
+import { useCallback, useEffect, useState } from "react";
+import { contactReviews } from "@/content/contactReviews";
+import { servicesHeadline } from "@/content/servicesCatalog";
 
-type Review = (typeof liveTestimonials)[number] & { featured?: boolean };
+const AUTO_SCROLL_MS = 6000;
+
+function reviewAt(index: number, offset: number) {
+  const reviews = contactReviews;
+  return reviews[(index + offset + reviews.length) % reviews.length];
+}
 
 export function TampaReviewsSection() {
-  const reviews = liveTestimonials as Review[];
-  const [index, setIndex] = useState(1);
+  const reviews = contactReviews;
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  function go(delta: number) {
-    setIndex((i) => (i + delta + reviews.length) % reviews.length);
-  }
+  const go = useCallback(
+    (delta: number) => {
+      setIndex((i) => (i + delta + reviews.length) % reviews.length);
+    },
+    [reviews.length],
+  );
 
-  const visible = [
-    reviews[(index - 1 + reviews.length) % reviews.length],
-    reviews[index],
-    reviews[(index + 1) % reviews.length],
-  ];
+  useEffect(() => {
+    if (paused) return;
+    const id = window.setInterval(() => go(1), AUTO_SCROLL_MS);
+    return () => window.clearInterval(id);
+  }, [go, paused]);
+
+  const visible = [reviewAt(index, -1), reviewAt(index, 0), reviewAt(index, 1)];
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-20">
+    <section
+      className="relative overflow-hidden py-16 md:py-20"
+      aria-labelledby="home-reviews-heading"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setPaused(false);
+        }
+      }}
+    >
       <Image
         src="/assets/services/testimonials-hero.jpg"
         alt=""
@@ -32,7 +55,10 @@ export function TampaReviewsSection() {
       />
       <div className="absolute inset-0 bg-purple-900/55" />
       <div className="site-container relative z-[1]">
-        <h2 className="font-display m-0 text-center text-lg font-semibold uppercase tracking-wide text-white md:text-2xl">
+        <h2
+          id="home-reviews-heading"
+          className="font-display m-0 text-center text-lg font-semibold uppercase tracking-wide text-white md:text-2xl"
+        >
           {servicesHeadline}
         </h2>
 
@@ -54,20 +80,21 @@ export function TampaReviewsSection() {
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          <div className="grid items-stretch gap-4 md:grid-cols-3">
+          <div key={`review-set-${index}`} className="grid items-stretch gap-4 md:grid-cols-3">
             {visible.map((review, i) => {
               const center = i === 1;
               return (
                 <article
-                  key={`${review.name}-${i}`}
-                  className={`flex flex-col rounded-lg p-6 shadow-lg ${
+                  key={`${review.name}-${review.date}-${i}`}
+                  className={`review-card-enter flex flex-col rounded-lg p-6 shadow-lg transition-transform ${
                     center
                       ? "bg-[#0099e5] text-white md:scale-105"
                       : "bg-white text-purple-900"
                   }`}
+                  style={{ animationDelay: `${i * 0.08}s` }}
                 >
                   {!center && (
-                    <div className="mb-3 flex gap-0.5 text-amber-400">
+                    <div className="mb-3 flex gap-0.5 text-amber-400" aria-label="5 out of 5 stars">
                       {Array.from({ length: 5 }).map((_, s) => (
                         <Star key={s} className="h-4 w-4 fill-current" />
                       ))}
@@ -76,13 +103,30 @@ export function TampaReviewsSection() {
                   <p className={`flex-1 text-sm leading-relaxed ${center ? "text-white" : ""}`}>
                     &ldquo;{review.quote}&rdquo;
                   </p>
-                  <p className={`mt-4 font-bold uppercase ${center ? "text-white/95" : "text-purple-800"}`}>
+                  <p
+                    className={`mt-4 font-bold uppercase ${center ? "text-white/95" : "text-purple-800"}`}
+                  >
                     {review.name}
                   </p>
                 </article>
               );
             })}
           </div>
+        </div>
+
+        <div className="mt-8 flex justify-center gap-2">
+          {reviews.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Show reviews starting at ${i + 1}`}
+              aria-current={i === index ? "true" : undefined}
+              className={`h-2.5 rounded-full transition-all ${
+                i === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
+              }`}
+              onClick={() => setIndex(i)}
+            />
+          ))}
         </div>
       </div>
     </section>

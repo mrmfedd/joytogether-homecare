@@ -1,5 +1,7 @@
 /** Service catalog from joytogetherhomecare.com marketing materials */
 
+import { site } from "@/content/site";
+
 export const servicesHeadline =
   "Joy Together Homecare: In-Home Care Services in Tampa, FL";
 
@@ -7,7 +9,7 @@ export const serviceCategories = [
   {
     id: "personal-care-services",
     title: "Personal Care Services",
-    image: "/assets/services/services-grid.jpg",
+    image: site.images.services.personalCare,
   },
   {
     id: "home-care",

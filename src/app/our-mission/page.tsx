@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { MarketingImage } from "@/components/services/MarketingImage";
 import { PageHero } from "@/components/layout/PageHero";
 import { ContentSection } from "@/components/layout/ContentSection";
 import { liveMission } from "@/content/liveSite";
@@ -16,23 +16,32 @@ export default function OurMissionPage() {
     <>
       <PageHero eyebrow="Our Mission" title={m.title} />
       <section className="section-pad">
-        <div className="site-container grid items-start gap-10 lg:grid-cols-2">
-          <div>
-            <h2 className="font-display m-0 mb-4 text-2xl uppercase text-purple-900">Our vision</h2>
-            <p className="body-muted">{m.vision}</p>
-            <h2 className="font-display mt-8 mb-4 text-2xl uppercase text-purple-900">Our mission</h2>
-            <p className="body-muted">{m.mission}</p>
-            {m.missionParagraphs.map((p) => (
-              <p key={p.slice(0, 40)} className="body-muted mt-4">{p}</p>
-            ))}
+        <div className="site-container min-w-0 space-y-10">
+          <div className="min-w-0 lg:hidden">
+            <MarketingImage
+              src="/assets/services/vision-mission.png"
+              alt="Joy Together caregivers supporting clients at home"
+            />
           </div>
-          <Image
-            src="/assets/services/vision-mission.png"
-            alt="Caregiver with patient"
-            width={500}
-            height={600}
-            className="w-full rounded-xl object-cover shadow-md"
-          />
+          <div className="grid min-w-0 items-start gap-10 lg:grid-cols-2">
+            <div className="min-w-0">
+              <h2 className="font-display m-0 mb-4 text-2xl uppercase text-purple-900">Our vision</h2>
+              <p className="body-muted">{m.vision}</p>
+              <h2 className="font-display mt-8 mb-4 text-2xl uppercase text-purple-900">Our mission</h2>
+              <p className="body-muted">{m.mission}</p>
+              {m.missionParagraphs.map((p) => (
+                <p key={p.slice(0, 40)} className="body-muted mt-4">
+                  {p}
+                </p>
+              ))}
+            </div>
+            <div className="hidden min-w-0 lg:block">
+              <MarketingImage
+                src="/assets/services/vision-mission.png"
+                alt="Caregiver with patient"
+              />
+            </div>
+          </div>
         </div>
       </section>
       <ContentSection title={m.goalsTitle}>

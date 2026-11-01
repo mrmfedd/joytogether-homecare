@@ -7,7 +7,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
     <>
       <AnnouncementBar />
       <Header />
-      <main className="relative z-0 flex-1">{children}</main>
+      <main className="relative z-0 flex min-w-0 flex-1 flex-col overflow-x-clip">{children}</main>
       <Footer />
     </>
   );

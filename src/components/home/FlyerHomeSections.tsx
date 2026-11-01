@@ -9,9 +9,9 @@ export function FlyerHomeSections() {
 
   return (
     <>
-      <section className="relative bg-sky py-14 sm:py-16">
+      <section className="relative overflow-hidden bg-sky py-14 sm:py-16">
         <p
-          className="font-script pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 text-[clamp(80px,18vw,160px)] leading-none text-purple-900/[0.04]"
+          className="font-script pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 select-none text-[clamp(80px,18vw,160px)] leading-none text-purple-900/[0.04]"
           aria-hidden
         >
           Home Care

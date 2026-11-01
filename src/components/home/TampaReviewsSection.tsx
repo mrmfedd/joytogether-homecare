@@ -52,7 +52,7 @@ export function TampaReviewsSection() {
         src={site.images.hero}
         alt=""
         fill
-        className="object-cover object-center scale-105 blur-[2px]"
+        className="object-cover object-center"
         sizes="100vw"
       />
       <div className="absolute inset-0 bg-purple-900/70" aria-hidden />

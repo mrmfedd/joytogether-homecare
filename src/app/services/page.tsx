@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { MarketingImage } from "@/components/services/MarketingImage";
 import { ServiceListSection } from "@/components/services/ServiceListSection";
 import { PageHero } from "@/components/layout/PageHero";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -33,13 +34,27 @@ export default function ServicesPage() {
       />
 
       <section className="section-pad bg-purple-50">
-        <div className="site-container">
-          <h2 className="font-display m-0 mb-10 text-center text-3xl uppercase">Our Services</h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="site-container min-w-0">
+          <h2 className="font-display m-0 mb-8 text-center text-2xl uppercase md:mb-10 md:text-3xl">
+            Our Services
+          </h2>
+          <div className="mb-10 min-w-0">
+            <MarketingImage
+              src="/assets/services/services-grid.jpg"
+              alt="Overview of Joy Together home care services"
+            />
+          </div>
+          <div className="grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {serviceCategories.map((cat) => (
-              <article key={cat.id} id={cat.id} className="card-soft scroll-mt-28 overflow-hidden">
-                <div className="relative h-44">
-                  <Image src={cat.image} alt={cat.title} fill className="object-cover" sizes="360px" />
+              <article key={cat.id} id={cat.id} className="card-soft min-w-0 scroll-mt-28 overflow-hidden">
+                <div className="relative h-44 min-w-0">
+                  <Image
+                    src={cat.image}
+                    alt={cat.title}
+                    fill
+                    className="object-cover object-center"
+                    sizes="360px"
+                  />
                 </div>
                 <div className="p-5">
                   <h3 className="font-display m-0 text-xl text-purple-900">{cat.title}</h3>
@@ -95,14 +110,10 @@ export default function ServicesPage() {
       />
 
       <section className="section-pad bg-purple-50" id="errands-personal">
-        <div className="site-container">
-          <Image
-            src={errandsAndPersonal.image}
-            alt="Errands and personal care"
-            width={900}
-            height={400}
-            className="mx-auto mb-10 w-full max-w-3xl rounded-xl object-cover"
-          />
+        <div className="site-container min-w-0">
+          <div className="mb-10 min-w-0">
+            <MarketingImage src={errandsAndPersonal.image} alt="Errands and personal care" />
+          </div>
           <div className="grid gap-10 md:grid-cols-2">
             {errandsAndPersonal.sections.map((section) => (
               <article key={section.title} className="card-soft p-8">

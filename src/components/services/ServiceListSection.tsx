@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { MarketingImage } from "@/components/services/MarketingImage";
 
 export function ServiceListSection({
   title,
@@ -28,42 +28,38 @@ export function ServiceListSection({
 
   return (
     <section id={id} className={`section-pad scroll-mt-28 ${bg}`}>
-      <div className="site-container">
+      <div className="site-container min-w-0">
         <h2 className="font-display m-0 mb-6 text-center text-2xl uppercase tracking-wide text-purple-900 md:text-3xl">
           {title}
         </h2>
         <div
-          className={`grid items-start gap-10 ${image ? "lg:grid-cols-2" : ""}`}
+          className={`grid min-w-0 items-start gap-8 md:gap-10 ${image ? "lg:grid-cols-2" : ""}`}
         >
           {image ? (
-            <Image
-              src={image}
-              alt={imageAlt ?? title}
-              width={640}
-              height={420}
-              className="w-full rounded-xl object-cover shadow-md"
-            />
+            <div className="min-w-0">
+              <MarketingImage src={image} alt={imageAlt ?? title} />
+            </div>
           ) : null}
-          <div>
+          <div className="min-w-0">
             {intro ? <p className="body-muted mb-5 leading-relaxed">{intro}</p> : null}
             {items ? (
               <ul className="grid gap-2 sm:grid-cols-2">
                 {items.map((item) => (
                   <li key={item} className="flex gap-2 text-sm font-medium text-purple-900">
-                    <span className="text-sage">•</span>
-                    <span>{item}</span>
+                    <span className="shrink-0 text-sage">•</span>
+                    <span className="min-w-0">{item}</span>
                   </li>
                 ))}
               </ul>
             ) : null}
             {columns ? (
-              <div className="grid gap-8 sm:grid-cols-2">
+              <div className="grid min-w-0 gap-8 sm:grid-cols-2">
                 {columns.map((col, i) => (
-                  <ul key={i} className="space-y-2">
+                  <ul key={i} className="min-w-0 space-y-2">
                     {col.map((item) => (
                       <li key={item} className="flex gap-2 text-sm font-medium text-purple-900">
-                        <span className="text-sage">•</span>
-                        <span>{item}</span>
+                        <span className="shrink-0 text-sage">•</span>
+                        <span className="min-w-0">{item}</span>
                       </li>
                     ))}
                   </ul>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { DM_Sans, Great_Vibes, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { PageShell } from "@/components/layout/PageShell";
 import { site } from "@/content/site";
@@ -18,6 +18,13 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const greatVibes = Great_Vibes({
+  variable: "--font-script",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: `${site.name} | Compassionate Care. Brighter Days.`,
@@ -32,7 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${playfair.variable} ${dmSans.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         <PageShell>{children}</PageShell>

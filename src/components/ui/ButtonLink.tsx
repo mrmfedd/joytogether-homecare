@@ -4,6 +4,7 @@ import type { ComponentPropsWithoutRef } from "react";
 const variants = {
   purple: "btn btn-purple",
   sage: "btn btn-sage",
+  gold: "btn btn-gold",
   white: "btn btn-white",
   outlineLight: "btn btn-outline-light",
   outlinePurple: "btn btn-outline-purple",

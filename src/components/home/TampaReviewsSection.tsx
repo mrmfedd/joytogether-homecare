@@ -95,7 +95,7 @@ export function TampaReviewsSection() {
                   key={`${review.name}-${review.date}-${center ? "center" : "side"}`}
                   className={`flex flex-col rounded-lg p-6 shadow-lg ${
                     center
-                      ? "relative z-[1] bg-[#0099e5] text-white md:scale-105"
+                      ? "relative z-[1] bg-[var(--gold)] text-purple-900 md:scale-105"
                       : "bg-white text-purple-900"
                   }`}
                 >
@@ -106,11 +106,11 @@ export function TampaReviewsSection() {
                       ))}
                     </div>
                   )}
-                  <p className={`flex-1 text-sm leading-relaxed ${center ? "text-white" : ""}`}>
+                  <p className={`flex-1 text-sm leading-relaxed ${center ? "text-purple-900" : ""}`}>
                     &ldquo;{review.quote}&rdquo;
                   </p>
                   <p
-                    className={`mt-4 font-bold uppercase ${center ? "text-white/95" : "text-purple-800"}`}
+                    className={`mt-4 font-bold uppercase ${center ? "text-purple-900" : "text-purple-800"}`}
                   >
                     {review.name}
                   </p>

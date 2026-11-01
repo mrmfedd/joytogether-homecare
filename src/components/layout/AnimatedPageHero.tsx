@@ -24,9 +24,9 @@ export function AnimatedPageHero({
           {description ? <p className="body-muted m-0">{description}</p> : null}
           {cta ? (
             <div className="mt-8">
-              <ButtonLink href={cta.href} variant="purple" className="btn-shimmer">
-                {cta.label}
-              </ButtonLink>
+            <ButtonLink href={cta.href} variant="gold" className="btn-shimmer uppercase tracking-wide">
+              {cta.label}
+            </ButtonLink>
             </div>
           ) : null}
         </Reveal>

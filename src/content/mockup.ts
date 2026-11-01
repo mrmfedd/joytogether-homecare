@@ -1,6 +1,26 @@
 import { site } from "@/content/site";
 
 export const home = {
+  flyer: {
+    scriptTitle: "Home Care",
+    headline: "Senior Care Services",
+    tagline: "Your trusted partner in home health",
+    intro:
+      "We prioritize your health and well-being. Our dedicated team is here to provide exceptional home care tailored to your needs throughout the Greater Tampa Bay area.",
+    serviceChecks: [
+      "Personal Care",
+      "Companionship",
+      "Light Housekeeping",
+      "Medication Management",
+      "Home Health & Companion Care",
+    ],
+    promo: "Schedule your free consultation — compassionate care starts with a conversation.",
+    circles: [
+      { title: "Companion Care", image: site.images.services.companionship },
+      { title: "Personal Care", image: site.images.services.personalCare },
+      { title: "Respite & Family Support", image: site.images.services.respite },
+    ],
+  },
   hero: {
     eyebrow: "Compassionate Care. Brighter Days.",
     title: "Joy Together Home Care",

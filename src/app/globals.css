@@ -1,19 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --purple-900: #2f2640;
-  --purple-800: #3d3354;
-  --purple-700: #4a3d66;
-  --purple-600: #5c4d7a;
-  --purple-500: #6b5a8e;
-  --purple-100: #f3eef8;
-  --purple-50: #faf7fc;
-  --sage: #8fa88a;
-  --sage-dark: #7a9680;
-  --sage-light: #e8f0e6;
-  --cream: #fcfbf9;
-  --muted: #6b6578;
-  --line: #e8e4ef;
+  /* Navy & gold flyer palette (purple-* tokens map to navy for compatibility) */
+  --purple-900: #152238;
+  --purple-800: #1b2a4a;
+  --purple-700: #243656;
+  --purple-600: #2f4568;
+  --purple-500: #3d5a80;
+  --purple-100: #dce8f0;
+  --purple-50: #eef4f8;
+  --sage: #c9a84c;
+  --sage-dark: #a88832;
+  --sage-light: #f5ecd4;
+  --gold: #c9a84c;
+  --gold-light: #e4c56a;
+  --gold-dark: #9a7728;
+  --teal: #2f7d8f;
+  --teal-dark: #256270;
+  --sky: #d8e6ee;
+  --cream: #f4f7fa;
+  --muted: #5a6578;
+  --line: #c8d4de;
 }
 
 @theme inline {
@@ -30,6 +37,10 @@
   --color-cream: var(--cream);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-teal: var(--teal);
+  --color-sky: var(--sky);
   --font-sans: var(--font-dm);
   --font-display: var(--font-playfair);
 }
@@ -53,6 +64,11 @@ body {
   line-height: 1.15;
 }
 
+.font-script {
+  font-family: var(--font-script), "Segoe Script", cursive;
+  font-weight: 400;
+}
+
 .site-container {
   width: min(1180px, 100% - 32px);
   margin-inline: auto;
@@ -69,7 +85,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--purple-600);
+  color: var(--teal);
   margin: 0 0 12px;
 }
 
@@ -181,6 +197,23 @@ a.btn-outline-purple:visited {
   border-color: var(--sage-dark);
 }
 
+.btn-gold {
+  background: var(--gold);
+  border-color: var(--gold-dark);
+  color: #fff;
+}
+
+a.btn-gold,
+a.btn-gold:visited {
+  color: #fff;
+  text-decoration: none;
+}
+
+.btn-gold:hover {
+  background: var(--gold-dark);
+  border-color: var(--gold-dark);
+}
+
 .btn-white {
   background: #fff;
   border-color: #fff;
@@ -198,6 +231,37 @@ a.btn-outline-purple:visited {
 
 .section-pad {
   padding: 88px 0;
+}
+
+.flyer-hero {
+  background: linear-gradient(180deg, var(--sky) 0%, var(--cream) 55%);
+}
+
+.flyer-navy-panel {
+  background: linear-gradient(135deg, var(--purple-900) 0%, var(--purple-800) 100%);
+  box-shadow: 0 28px 60px rgb(21 34 56 / 0.25);
+}
+
+.flyer-teal-blob {
+  animation: orb-drift-b 10s ease-in-out infinite;
+}
+
+.flyer-portrait-ring {
+  animation: portrait-glow 5s ease-in-out infinite;
+}
+
+.flyer-promo-band {
+  background: linear-gradient(90deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+  background-size: 200% 100%;
+  animation: banner-gradient 12s ease infinite;
+}
+
+.flyer-circle-card {
+  transition: transform 0.35s ease;
+}
+
+.flyer-circle-card:hover {
+  transform: translateY(-6px);
 }
 
 .card-soft {
@@ -329,6 +393,14 @@ a.btn-outline-purple:visited {
   transition-delay: 0.38s;
 }
 
+.hero-copy-visible .hero-copy-item:nth-child(5) {
+  transition-delay: 0.48s;
+}
+
+.hero-copy-visible .hero-copy-item:nth-child(6) {
+  transition-delay: 0.58s;
+}
+
 .hero-copy-visible .hero-copy-item {
   opacity: 1;
   transform: none;
@@ -346,13 +418,13 @@ a.btn-outline-purple:visited {
 .announcement-bar {
   background: linear-gradient(
     105deg,
-    #0095ff 0%,
-    #00b8ff 35%,
-    #0088e8 70%,
-    #0095ff 100%
+    var(--purple-900) 0%,
+    var(--purple-800) 45%,
+    var(--teal-dark) 100%
   );
   background-size: 200% 100%;
-  animation: banner-gradient 10s ease infinite;
+  animation: banner-gradient 12s ease infinite;
+  color: var(--gold-light);
 }
 
 @keyframes floral-sway {
@@ -602,7 +674,7 @@ a.btn-outline-purple:visited {
 
 .page-hero {
   padding: 72px 0 56px;
-  background: linear-gradient(180deg, var(--purple-50) 0%, var(--cream) 100%);
+  background: linear-gradient(180deg, var(--sky) 0%, var(--cream) 100%);
 }
 
 .page-hero h1 {

@@ -62,7 +62,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="site-chrome-in site-chrome-in-delay sticky top-0 z-50 w-full border-b border-line/80 bg-white/95 backdrop-blur-md">
+    <header className="site-chrome-in site-chrome-in-delay sticky top-0 z-50 w-full border-b border-line/80 bg-white/90 backdrop-blur-md">
       <div className="site-container flex h-16 items-center gap-2 sm:h-[84px] lg:h-[92px]">
         <div className="min-w-0 flex-1 lg:flex-none">
           <Logo />
@@ -104,7 +104,7 @@ export function Header() {
               </li>
             ))}
             <li className="mt-2 border-t border-line pt-3 lg:hidden">
-              <ButtonLink href="/contact" variant="purple" className="w-full">
+              <ButtonLink href="/contact" variant="gold" className="w-full uppercase tracking-wide">
                 Free Consultation
               </ButtonLink>
             </li>
@@ -114,8 +114,8 @@ export function Header() {
         <div className="flex shrink-0 items-center">
           <ButtonLink
             href="/contact"
-            variant="purple"
-            className="mr-1 hidden whitespace-nowrap px-4 py-2.5 text-xs font-bold lg:inline-flex lg:px-5 lg:text-[13px]"
+            variant="gold"
+            className="mr-1 hidden whitespace-nowrap px-4 py-2.5 text-xs font-bold uppercase tracking-wide lg:inline-flex lg:px-5 lg:text-[13px]"
           >
             Free Consultation
           </ButtonLink>

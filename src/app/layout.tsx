@@ -35,6 +35,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html

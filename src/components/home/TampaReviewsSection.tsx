@@ -65,11 +65,11 @@ export function TampaReviewsSection() {
           {servicesHeadline}
         </h2>
 
-        <div className="relative mt-10 px-8 md:px-10">
+        <div className="relative mt-10 md:px-4">
           <button
             type="button"
             aria-label="Previous review"
-            className="absolute left-0 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow transition hover:bg-white md:-left-2"
+            className="absolute left-0 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow transition hover:bg-white sm:left-1 md:-left-2"
             onClick={() => go(-1)}
           >
             <ChevronLeft className="h-5 w-5" />
@@ -77,7 +77,7 @@ export function TampaReviewsSection() {
           <button
             type="button"
             aria-label="Next review"
-            className="absolute right-0 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow transition hover:bg-white md:-right-2"
+            className="absolute right-0 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-purple-800 shadow transition hover:bg-white sm:right-1 md:-right-2"
             onClick={() => go(1)}
           >
             <ChevronRight className="h-5 w-5" />

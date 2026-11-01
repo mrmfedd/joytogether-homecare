@@ -21,6 +21,7 @@
   --cream: #f4f7fa;
   --muted: #5a6578;
   --line: #c8d4de;
+  --site-gutter: 1.375rem;
 }
 
 @theme inline {
@@ -69,15 +70,29 @@ body {
   font-weight: 400;
 }
 
-.site-container {
-  width: min(1180px, 100% - 32px);
-  margin-inline: auto;
+@media (min-width: 640px) {
+  :root {
+    --site-gutter: 1.5rem;
+  }
 }
 
-@media (min-width: 640px) {
-  .site-container {
-    width: min(1180px, 100% - 48px);
+@media (min-width: 1024px) {
+  :root {
+    --site-gutter: 2rem;
   }
+}
+
+.site-gutter-x {
+  padding-left: calc(var(--site-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--site-gutter) + env(safe-area-inset-right, 0px));
+}
+
+.site-container {
+  box-sizing: border-box;
+  width: min(1180px, 100%);
+  margin-inline: auto;
+  padding-left: calc(var(--site-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--site-gutter) + env(safe-area-inset-right, 0px));
 }
 
 .eyebrow-purple {

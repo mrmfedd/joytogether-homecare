@@ -63,14 +63,14 @@ export function Header() {
 
   return (
     <header className="site-chrome-in site-chrome-in-delay sticky top-0 z-50 w-full border-b border-line/80 bg-white/90 backdrop-blur-md">
-      <div className="site-container flex h-[4.25rem] items-center gap-2 sm:h-[5.25rem] lg:h-[6.25rem]">
+      <div className="site-container flex h-[4.25rem] items-center gap-3 sm:h-[5.25rem] lg:h-[6.25rem]">
         <div className="min-w-0 flex-1 lg:flex-none">
           <Logo />
         </div>
 
         <nav
           ref={navRef}
-          className={`absolute left-0 right-0 top-[4.25rem] z-40 max-h-[min(70vh,520px)] overflow-y-auto border-b border-line bg-white p-4 shadow-lg sm:top-[5.25rem] lg:static lg:top-auto lg:flex lg:max-h-none lg:flex-1 lg:items-center lg:justify-center lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none ${
+          className={`absolute left-0 right-0 top-[4.25rem] z-40 max-h-[min(70vh,520px)] overflow-y-auto border-b border-line bg-white py-4 shadow-lg site-gutter-x sm:top-[5.25rem] lg:static lg:top-auto lg:flex lg:max-h-none lg:flex-1 lg:items-center lg:justify-center lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none ${
             mobileOpen ? "block" : "hidden lg:flex"
           }`}
           aria-label="Primary navigation"

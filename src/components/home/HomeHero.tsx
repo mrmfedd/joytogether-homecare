@@ -37,7 +37,7 @@ export function HomeHero() {
         <div
           className={`flyer-hero-grid grid items-center gap-10 lg:grid-cols-[1fr_auto] lg:gap-6 ${entered ? "hero-copy-visible" : ""}`}
         >
-          <div className="flyer-navy-panel hero-copy relative overflow-hidden rounded-[28px] px-8 py-10 sm:px-10 sm:py-12 lg:max-w-xl lg:rounded-r-[120px] lg:py-14">
+          <div className="flyer-navy-panel hero-copy relative overflow-hidden rounded-[28px] px-6 py-10 sm:px-10 sm:py-12 lg:max-w-xl lg:rounded-r-[120px] lg:px-10 lg:py-14">
             <p className="hero-copy-item font-script m-0 text-[clamp(42px,10vw,72px)] leading-none text-[var(--gold-light)]">
               {f.scriptTitle}
             </p>

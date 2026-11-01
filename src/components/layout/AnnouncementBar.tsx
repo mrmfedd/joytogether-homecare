@@ -22,7 +22,7 @@ function FloralIcon({ className = "" }: { className?: string }) {
 export function AnnouncementBar() {
   return (
     <div
-      className="announcement-bar site-chrome-in border-b border-[var(--gold-dark)]/40 px-3 py-3 text-center sm:px-4 sm:py-3.5"
+      className="announcement-bar site-chrome-in site-gutter-x border-b border-[var(--gold-dark)]/40 py-3 text-center sm:py-3.5"
       role="region"
       aria-label="Service area announcement"
     >

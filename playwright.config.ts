@@ -6,6 +6,7 @@ const useLocalServer = !remoteBase || remoteBase.includes("127.0.0.1") || remote
 export default defineConfig({
   testDir: "tests/e2e",
   timeout: 60_000,
+  workers: remoteBase?.includes("vercel.app") ? 1 : undefined,
   use: {
     baseURL: remoteBase || "http://127.0.0.1:3000",
     trace: "on-first-retry",

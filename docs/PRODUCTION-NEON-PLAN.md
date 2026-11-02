@@ -39,10 +39,17 @@ npm run db:seed   # settings/services/FAQs — no fictional leads
 
 `scripts/vercel-build.mjs` already seeds **Preview only** (`VERCEL_ENV=production` skips seed). Keep that behavior.
 
-Committed migrations:
+Committed migrations (apply in order on **new** production Neon):
 
 - `20260330120000_init`
 - `20260330160000_security`
+- `20261102190000_workforce` — employee portal, scheduling, notices, time clock models
+
+Verify after deploy:
+
+```bash
+npx tsx scripts/verify-preview-migrations.ts   # Preview / staging only
+```
 
 ## 4. Backup strategy
 

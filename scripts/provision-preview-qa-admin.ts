@@ -6,14 +6,14 @@
  * Usage (preview DB only):
  *   PREVIEW_QA_PASSWORD='...' npx tsx scripts/provision-preview-qa-admin.ts
  */
-import "dotenv/config";
+import "./load-local-env";
 import bcrypt from "bcryptjs";
 import { generateSecret, generateSync } from "otplib";
 import { PrismaClient, UserRole } from "../src/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-const QA_EMAIL = "preview-qa@joytogether.local";
+const QA_EMAIL = "preview-qa-admin@example.com";
 
 function createClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -37,6 +37,11 @@ async function main() {
   const passwordHash = await bcrypt.hash(password, 12);
   const mfaSecret = generateSecret();
   const sampleCode = generateSync({ secret: mfaSecret });
+
+  await prisma.user.updateMany({
+    where: { email: "preview-qa@joytogether.local" },
+    data: { active: false },
+  });
 
   const user = await prisma.user.upsert({
     where: { email: QA_EMAIL },

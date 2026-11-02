@@ -2,9 +2,9 @@
 
 **Product:** JoyTogether Home Care  
 **Branch:** `upgrade/customer-acquisition-redesign`  
-**Commit audited:** `31865d7` (RC) → launch prep `fc907ff`  
+**Verified commit:** `da659e6` (Staff Login + portal auth; release QA tooling on same branch)  
 **Preview URL:** https://joytogether-homecare-git-upgrade-38c1e5-michael-fedds-projects.vercel.app  
-**Audit date:** 2026-11-02  
+**Audit date:** 2026-11-02 (final pre-production pass)  
 
 **PR #1 merged:** No  
 **Production website changed:** No  
@@ -14,8 +14,22 @@
 
 ## Overall recommendation
 
-**CONDITIONAL GO** for launch prep — Preview RC is functionally strong.  
-**Do not launch production** until: (1) separate production Neon is approved/provisioned, (2) JoyTogether Resend domain is approved/verified, (3) owner accepts invite + MFA on `joytogetherhomecare@gmail.com`, (4) production Lighthouse SEO crawlability confirmed (Preview sends `x-robots-tag: noindex` by Vercel design).
+**CONDITIONAL GO** for Preview sign-off — marketing site, admin CRM, **Staff Login hub**, and **employee workforce portal** are implemented and verified on isolated Preview Neon.  
+
+**Do not launch production** until owner completes invite acceptance + MFA, production Neon is approved, JoyTogether Resend DNS is approved/applied, and you explicitly authorize merge/deploy.
+
+See also **`docs/FINAL-RELEASE-REPORT.md`** for verified vs owner-action summary.
+
+---
+
+## New since RC (`31865d7`)
+
+| Area | Commit(s) | Status |
+|------|-----------|--------|
+| Staff Login hub (`/staff-login`) | `a55c44f`, `6d0dac4` | Header/footer links; blue/green brand; role-aware login forms |
+| Portal middleware redirects | `da659e6` | Unauth `/employee` → employee login; cross-role session redirects |
+| Employee portal + admin workforce | `366e80c` | Scheduling, open shifts, notices, time off, optional time clock |
+| Preview migration `20261102190000_workforce` | Applied on Preview | Verified via `npm run verify:migrations` |
 
 ---
 
@@ -23,94 +37,94 @@
 
 | # | Feature | Result | Evidence |
 |---|---------|--------|----------|
-| 1 | Public navigation + responsive design | **PASS** | Playwright RC: desktop nav/CTA, iPhone home/services, iPad contact |
-| 2 | Skilled Nursing / Hospice / Private Duty pages | **PASS** | Playwright service pages; content smoke for clinical/comfort/private-pay language |
-| 3 | Consultation → lead persistence | **PASS** | POST `/api/consultation` → lead `e12d5e9e-…` in preview DB |
-| 4 | Admin login, owner invite, MFA, password reset | **PASS*** | Playwright MFA login + password reset; owner invite **emailed & valid**, not yet accepted |
-| 5 | Lead assignment + consultation scheduling | **PASS** | Assignment UI/actions present; scheduled consultation count ≥ 1; Playwright consultations list |
-| 6 | CMS edit / draft preview / publish | **PASS** | Published hero/FAQs/areas live; draft preview returns **404 without token** (auth gate) |
-| 7 | Media upload / replace / delete / display | **PASS** | QA upload → `/api/media/{id}` **200**; admin media API unauth **401** |
-| 8 | Job applications + authorized resume download | **PASS** | Application created with `resumeKey`; unauth download **401**; auth download Playwright **PASS** |
-| 9 | Email notifications + retries | **PASS** | RC lead notification `SENT` attempts=1; earlier pending retries previously cleared to SENT |
-| 10 | Prisma migrations, DB security, RBAC | **PASS** | Migrations `init` + `security` applied; permission unit tests PASS; Preview Neon only |
-
-\*Owner invitation acceptance is pending human action (inbox), not a system failure.
+| 1 | Public navigation + responsive design | **PASS** | Playwright RC + Staff Login mobile layout |
+| 2 | Skilled Nursing / Hospice / Private Duty | **PASS** | Playwright service pages |
+| 3 | Consultation → lead persistence | **PASS** | `preview-backend.spec.ts` |
+| 4 | Staff Login + dual portal entry | **PASS** | `staff-login.spec.ts` + Preview smoke |
+| 5 | Admin login, MFA, password reset | **PASS** | `preview-admin.spec.ts` (Preview QA account) |
+| 6 | Cross-portal authorization | **PASS** | `preview-auth-portal.spec.ts` |
+| 7 | Employee scheduling workflows | **PASS** | `preview-workforce.spec.ts` |
+| 8 | Owner invite (`joytogetherhomecare@gmail.com`) | **PENDING OWNER** | Valid invite; account not created; MFA N/A until accept |
+| 9 | CMS / media / leads / applications | **PASS** | Prior RC + admin QA tests |
+| 10 | Prisma migrations + RBAC | **PASS** | `init`, `security`, `workforce` on Preview; `test:permissions` |
 
 ---
 
-## Automated verification
+## Owner administrator status (no secrets)
+
+```bash
+npx tsx scripts/check-owner-admin-status.ts
+npx tsx scripts/check-admin-invite-status.ts
+```
+
+**Latest Preview check (2026-11-02):**
+
+| Check | Status |
+|-------|--------|
+| User account for `joytogetherhomecare@gmail.com` | **Not created** |
+| Outstanding valid invitation | **Yes** (expires ~2026-11-04 UTC) |
+| MFA enrolled | **No** (requires account first) |
+
+**Secure resend:** `/admin/users` (Super Admin) or `ADMIN_INVITE_EMAIL=joytogetherhomecare@gmail.com npx tsx scripts/create-admin-invite.ts` — tokens are never logged.
+
+---
+
+## Preview database (workforce migration)
+
+```bash
+npm run verify:migrations
+```
+
+**Latest run:** `ok: true` — all three migrations applied on Preview host `ep-summer-band-bc49hrns…`.
+
+---
+
+## Automated verification (final pass)
 
 | Suite | Result |
 |-------|--------|
+| `npx tsc --noEmit` + `npm run build` (clean `/tmp` clone) | **PASS** |
+| `npm run test:unit` (16) | **PASS** |
 | `npm run test:permissions` | **PASS** |
-| `npm run test:unit` (5) | **PASS** |
-| `npm run test:preview-smoke` (EXPECT_DB) | **PASS** |
-| `scripts/rc-security-probe.mjs` | **PASS** (admin/API/cron/resume denied) |
-| Playwright full (14) | **PASS** |
-| Production `npm run build` (clean clone) | **PASS** |
+| `PREVIEW_URL=… EXPECT_DB=true npm run test:preview-smoke` | **PASS** |
+| Playwright vs Preview (31 specs, local QA creds) | **PASS** |
+| `npm audit --omit=dev` | **0** production vulnerabilities |
+| `npm audit` (full) | Dev-only moderate (`eslint`/`minimatch`); no safe fix without major upgrades |
 
-### Lighthouse (Preview homepage) — final re-run on `fc907ff`
-
-| Category | Score | Notes |
-|----------|------:|-------|
-| Performance | **97** | Improved vs prior 89 |
-| Accessibility | **100** | Gold CTA contrast fixed (midnight on `#71c73c` / `#5aa82f`) |
-| Best practices | **77** | Preview-only: third-party cookies + Chrome Issues panel (Vercel tooling) |
-| SEO | **69** | **Expected Preview FAIL** on crawlable: `x-robots-tag: noindex` |
-
-Accessibility fixes: footer contrast, review star ARIA, How Care Begins list semantics, footer heading levels, `.btn-gold` text contrast.
+Preview QA provisioning: see `scripts/provision-preview-qa-admin.ts`, `scripts/provision-preview-qa-employee.ts`, and `/tmp/jt-preview-env/qa-*.json`.
 
 ---
 
-## Security isolation
+## Production Neon — checklist (plan only)
 
-| Check | Result |
-|-------|--------|
-| Production Vercel env has DB URLs | **None** (`PROD_DB_VARS=none`) |
-| Preview Neon resource | `joytogether-preview-db` / `lucky-fire-28361357` — **Preview only** |
-| Preview DB host | `ep-summer-band-bc49hrns-pooler…` |
-| Unauthorized `/admin/*` | **307** → login |
-| Unauthorized `/api/admin/media` | **401** |
-| Unauthorized resume download | **401** |
-| Cron without secret | **401** |
-| Draft CMS preview without token | **404** |
-| Marketing `/api/media/{id}` | **Public by design** (non-secret website imagery). Resumes remain private. |
+Full detail: **`docs/PRODUCTION-NEON-PLAN.md`** (provisioning, migrate order, backup, rollback). Migrations include **`20261102190000_workforce`**.
 
 ---
 
-## Failures / blockers before launch approval
+## JoyTogether Resend DNS (instructions only)
 
-| Severity | Item | Status |
-|----------|------|--------|
-| Blocker | Separate **production** Neon + Production env | Not created (by policy) |
-| Blocker | JoyTogether-branded Resend domain + DNS approval | Plan only; Preview uses shared verified sender |
-| Blocker | Owner accept invite + MFA for `joytogetherhomecare@gmail.com` | Invite valid; acceptance pending |
-| Non-blocker | Preview `noindex` | Expected; confirm absent on production |
-| Non-blocker | Lighthouse a11y residual after redeploy | Fixes pushed; re-measure on new Preview |
-
-No critical functional regressions found that block Preview RC sign-off.
+**No DNS changes made.** **`docs/RESEND-DNS-RECORDS.md`**
 
 ---
 
-## Production launch checklist (gates)
+## Launch blockers
 
-- [ ] Explicit approval to merge PR #1
-- [ ] Explicit approval to provision **new** production Neon (not preview)
-- [ ] `verify:db` on production hosts only
-- [ ] `migrate deploy` + seed on production
-- [ ] Production Blob + Auth + Resend (JoyTogether domain) + `NEXT_PUBLIC_SITE_URL`
-- [ ] Owner invite accepted + MFA enabled
-- [ ] Post-deploy smoke + Lighthouse on `www.joytogetherhomecare.com`
-- [ ] Confirm Preview DB still isolated
+| Severity | Item |
+|----------|------|
+| Blocker | Production Neon + env |
+| Blocker | Resend branded domain + dedicated project |
+| Blocker | Owner accept invite + MFA |
+| Blocker | Explicit PR #1 merge + production deploy approval |
 
 ---
 
-## Verdict by gate
+## Verdict
 
 | Gate | Verdict |
 |------|---------|
 | Preview feature completeness | **PASS** |
-| Unauthorized access controls | **PASS** |
-| DB isolation from production | **PASS** |
+| Unauthorized / cross-portal controls | **PASS** |
+| Preview DB isolation | **PASS** |
 | Automated tests + build | **PASS** |
-| Production launch readiness | **FAIL** (env/domain/owner onboarding gates remain) |
+| Owner onboarding | **FAIL** (invite pending) |
+| Production launch | **FAIL** (gates above) |

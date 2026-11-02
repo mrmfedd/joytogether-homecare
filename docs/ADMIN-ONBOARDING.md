@@ -40,6 +40,7 @@ ADMIN_INVITE_EMAIL=joytogetherhomecare@gmail.com npx tsx scripts/create-admin-in
 **Status (no tokens):**
 
 ```bash
+npx tsx scripts/check-owner-admin-status.ts
 ADMIN_INVITE_EMAIL=joytogetherhomecare@gmail.com npx tsx scripts/check-admin-invite-status.ts
 ```
 

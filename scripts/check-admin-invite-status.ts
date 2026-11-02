@@ -2,7 +2,7 @@
  * Reports whether an admin invitation is still valid without printing tokens.
  * Usage: ADMIN_INVITE_EMAIL=joytogetherhomecare@gmail.com npx tsx scripts/check-admin-invite-status.ts
  */
-import "dotenv/config";
+import "./load-local-env";
 import { PrismaClient } from "../src/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";

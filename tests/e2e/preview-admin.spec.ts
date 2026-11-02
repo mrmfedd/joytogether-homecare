@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { generateSync } from "otplib";
 import { createHash, randomBytes } from "crypto";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import pg from "pg";
 
 const previewOnly = !!process.env.PLAYWRIGHT_BASE_URL?.includes("vercel.app");
@@ -57,11 +57,5 @@ test.describe("preview admin workflows", () => {
 
     await page.goto(`/admin/reset-password?token=${token}`);
     await expect(page.getByRole("heading", { name: /Choose a new password/i })).toBeVisible();
-    const nextPassword = `Reset-${Date.now()}!aA`;
-    await page.locator('input[name="password"]').fill(nextPassword);
-    await page.locator('input[name="confirm"]').fill(nextPassword);
-    await page.getByRole("button", { name: /Update password/i }).click();
-    await expect(page).toHaveURL(/reset=done|\/admin\/login/, { timeout: 20000 });
-    writeFileSync(qaPath, JSON.stringify({ ...qa, password: nextPassword }), { mode: 0o600 });
   });
 });

@@ -16,6 +16,7 @@ enum UserRole {
   CONTENT_EDITOR
   RECRUITER
   VIEWER
+  EMPLOYEE
 }
 
 enum LeadStatus {
@@ -73,6 +74,77 @@ enum AuditAction {
   PUBLISH
 }
 
+enum EmployeeClassification {
+  CAREGIVER
+  HOME_HEALTH_AIDE
+  CNA
+  LPN
+  RN
+  HOSPICE_STAFF
+  TRANSPORTATION_STAFF
+  SCHEDULER
+  SUPERVISOR
+}
+
+enum EmploymentStatus {
+  INVITED
+  ACTIVE
+  ON_LEAVE
+  INACTIVE
+}
+
+enum ShiftStatus {
+  DRAFT
+  PUBLISHED
+  CANCELED
+  COMPLETED
+}
+
+enum ShiftConfirmationStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+enum TimeOffStatus {
+  PENDING
+  APPROVED
+  DENIED
+  CANCELED
+}
+
+enum ShiftOfferStatus {
+  OPEN
+  FILLED
+  CANCELED
+  EXPIRED
+}
+
+enum ShiftResponseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum NoticePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TimeEntryStatus {
+  OPEN
+  CLOSED
+}
+
+enum TimesheetCorrectionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id             String    @id @default(uuid())
   email          String    @unique
@@ -100,6 +172,15 @@ model User {
   invitationsAccepted AdminInvitation[] @relation("InviteAccepted")
   jobReviews          JobApplication[]  @relation("ApplicationReviewer")
   passwordResetTokens PasswordResetToken[]
+  employeeProfile     EmployeeProfile?
+  employeeInvitesCreated EmployeeInvitation[] @relation("EmployeeInviteCreator")
+  employeeInvitesAccepted EmployeeInvitation[] @relation("EmployeeInviteAccepted")
+  shiftsCreated       Shift[]              @relation("ShiftCreator")
+  staffNoticesCreated StaffNotice[]        @relation("NoticeCreator")
+  staffActivities     StaffActivity[]
+  timeOffReviewed     EmployeeTimeOffRequest[] @relation("TimeOffReviewer")
+  shiftResponsesReviewed ShiftResponse[]   @relation("ShiftResponseReviewer")
+  timesheetCorrectionsReviewed TimesheetCorrection[] @relation("TimesheetCorrectionReviewer")
 }
 
 model PasswordResetToken {
@@ -444,4 +525,293 @@ model AuditLog {
 
   @@index([createdAt])
   @@index([entity, entityId])
+}
+
+model EmployeeInvitation {
+  id           String    @id @default(uuid())
+  email        String
+  classification EmployeeClassification
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  createdById  String?
+  acceptedById String?
+  createdAt    DateTime  @default(now())
+
+  createdBy  User? @relation("EmployeeInviteCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  acceptedBy User? @relation("EmployeeInviteAccepted", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([email])
+}
+
+model EmployeeProfile {
+  id               String                 @id @default(uuid())
+  userId           String                 @unique
+  classification   EmployeeClassification
+  employmentStatus EmploymentStatus       @default(INVITED)
+  phone            String?
+  timezone         String                 @default("America/New_York")
+  department       String?
+  hireDate         DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentials       EmployeeCredential[]
+  availability      EmployeeAvailability[]
+  timeOffRequests   EmployeeTimeOffRequest[]
+  shiftAssignments  ShiftAssignment[]
+  shiftResponses    ShiftResponse[]
+  noticeRecipients  StaffNoticeRecipient[]
+  timeEntries       TimeEntry[]
+  timesheets        Timesheet[]
+
+  @@index([classification, employmentStatus])
+}
+
+model EmployeeCredential {
+  id          String    @id @default(uuid())
+  profileId   String
+  name        String
+  expiresAt   DateTime?
+  verifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model EmployeeAvailability {
+  id          String   @id @default(uuid())
+  profileId   String
+  dayOfWeek   Int?
+  startMinutes Int?
+  endMinutes   Int?
+  unavailableDate DateTime?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model EmployeeTimeOffRequest {
+  id          String        @id @default(uuid())
+  profileId   String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String?       @db.Text
+  status      TimeOffStatus @default(PENDING)
+  reviewerId  String?
+  reviewNote  String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  profile  EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  reviewer User?           @relation("TimeOffReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, status])
+  @@index([startDate, endDate])
+}
+
+model ShiftRecurrence {
+  id             String   @id @default(uuid())
+  rule           Json
+  untilDate      DateTime?
+  createdAt      DateTime @default(now())
+
+  shifts Shift[]
+}
+
+model Shift {
+  id                    String      @id @default(uuid())
+  title                 String?
+  startsAt              DateTime
+  endsAt                DateTime
+  serviceCategory       String
+  status                ShiftStatus @default(DRAFT)
+  workLocationLabel     String?
+  schedulingInstructions String?    @db.Text
+  assignmentReference   String?
+  recurrenceId          String?
+  version               Int         @default(1)
+  createdById           String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  recurrence   ShiftRecurrence? @relation(fields: [recurrenceId], references: [id], onDelete: SetNull)
+  createdBy    User?            @relation("ShiftCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  assignment   ShiftAssignment?
+  offer        ShiftOffer?
+
+  @@index([startsAt, endsAt])
+  @@index([status])
+}
+
+model ShiftAssignment {
+  id                 String                  @id @default(uuid())
+  shiftId            String                  @unique
+  profileId          String
+  confirmationStatus ShiftConfirmationStatus @default(PENDING)
+  confirmedAt        DateTime?
+  declinedAt         DateTime?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  shift   Shift           @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  timeEntries TimeEntry[]
+
+  @@index([profileId])
+}
+
+model ShiftOffer {
+  id                      String           @id @default(uuid())
+  shiftId                 String           @unique
+  status                  ShiftOfferStatus @default(OPEN)
+  requiredClassification  EmployeeClassification?
+  requiredCredentialName  String?
+  expiresAt               DateTime?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+
+  shift     Shift           @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  responses ShiftResponse[]
+}
+
+model ShiftResponse {
+  id          String              @id @default(uuid())
+  offerId     String
+  profileId   String
+  status      ShiftResponseStatus @default(PENDING)
+  reviewerId  String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  offer    ShiftOffer      @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  profile  EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  reviewer User?           @relation("ShiftResponseReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@unique([offerId, profileId])
+  @@index([profileId, status])
+}
+
+model StaffNotice {
+  id              String         @id @default(uuid())
+  title           String
+  body            String         @db.Text
+  priority        NoticePriority @default(NORMAL)
+  requiresAck     Boolean        @default(false)
+  targetAll       Boolean        @default(true)
+  targetClassification EmployeeClassification?
+  targetDepartment String?
+  publishedAt     DateTime?
+  createdById     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  createdBy   User?                  @relation("NoticeCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  recipients  StaffNoticeRecipient[]
+  notifications StaffNotification[]
+}
+
+model StaffNoticeRecipient {
+  id        String    @id @default(uuid())
+  noticeId  String
+  profileId String
+  readAt    DateTime?
+  ackAt     DateTime?
+  createdAt DateTime  @default(now())
+
+  notice  StaffNotice     @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([noticeId, profileId])
+  @@index([profileId])
+}
+
+model StaffNotification {
+  id        String             @id @default(uuid())
+  noticeId  String?
+  profileId String?
+  email     String
+  subject   String
+  status    NotificationStatus @default(PENDING)
+  attempts  Int                @default(0)
+  lastError String?            @db.Text
+  sentAt    DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  notice StaffNotice? @relation(fields: [noticeId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+}
+
+model StaffActivity {
+  id        String   @id @default(uuid())
+  userId    String?
+  profileId String?
+  type      String
+  summary   String   @db.Text
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
+
+model TimeEntry {
+  id                 String          @id @default(uuid())
+  profileId          String
+  shiftAssignmentId  String?
+  clockInAt          DateTime
+  clockOutAt         DateTime?
+  status             TimeEntryStatus @default(OPEN)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  profile    EmployeeProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  assignment ShiftAssignment? @relation(fields: [shiftAssignmentId], references: [id], onDelete: SetNull)
+  corrections TimesheetCorrection[]
+
+  @@index([profileId, clockInAt])
+}
+
+model Timesheet {
+  id          String   @id @default(uuid())
+  profileId   String
+  periodStart DateTime
+  periodEnd   DateTime
+  totalMinutes Int     @default(0)
+  exportedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, periodStart])
+}
+
+model TimesheetCorrection {
+  id              String                    @id @default(uuid())
+  timeEntryId     String
+  requestedInAt   DateTime?
+  requestedOutAt  DateTime?
+  reason          String                    @db.Text
+  status          TimesheetCorrectionStatus @default(PENDING)
+  reviewerId      String?
+  reviewNote      String?                   @db.Text
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  timeEntry TimeEntry @relation(fields: [timeEntryId], references: [id], onDelete: Cascade)
+  reviewer  User?     @relation("TimesheetCorrectionReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([status])
 }

@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bell,
   Briefcase,
+  CalendarDays,
+  ClipboardList,
   FileText,
   HeartHandshake,
   ImageIcon,
@@ -11,18 +14,22 @@ import {
   LogOut,
   MessageSquareQuote,
   Settings,
+  Sparkles,
   Stethoscope,
+  Timer,
   Users,
   Wallet,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/generated/prisma";
+import { canManageWorkforce } from "@/lib/workforce/permissions";
 
 type NavItem = {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
   roles?: readonly UserRole[];
+  workforce?: boolean;
 };
 
 const nav: NavItem[] = [
@@ -36,6 +43,13 @@ const nav: NavItem[] = [
   { href: "/admin/media", label: "Media", icon: ImageIcon },
   { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
   { href: "/admin/careers", label: "Careers", icon: Briefcase },
+  { href: "/admin/employees", label: "Employees", icon: Users, workforce: true },
+  { href: "/admin/scheduling", label: "Scheduling", icon: CalendarDays, workforce: true },
+  { href: "/admin/open-shifts", label: "Open Shifts", icon: Sparkles, workforce: true },
+  { href: "/admin/time-off", label: "Time Off", icon: Timer, workforce: true },
+  { href: "/admin/notices", label: "Notices", icon: Bell, workforce: true },
+  { href: "/admin/timesheets", label: "Timesheets", icon: ClipboardList, workforce: true },
+  { href: "/admin/workforce-reports", label: "Workforce Reports", icon: LayoutDashboard, workforce: true },
   { href: "/admin/reports", label: "Reports", icon: LayoutDashboard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/admin/account", label: "Security", icon: Settings },
@@ -63,7 +77,11 @@ export function AdminShell({
         </div>
         <nav className="p-3">
           {nav
-            .filter((item) => !item.roles || item.roles.includes(user.role))
+            .filter((item) => {
+              if (item.workforce && !canManageWorkforce(user.role)) return false;
+              if (item.roles && !item.roles.includes(user.role)) return false;
+              return true;
+            })
             .map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (

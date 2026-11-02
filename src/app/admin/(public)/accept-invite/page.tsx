@@ -1,4 +1,4 @@
-import { acceptInviteAction } from "./actions";
+import { acceptInviteAction } from "@/app/admin/(app)/users/actions";
 import { validateAdminInviteToken } from "@/lib/admin/invitations";
 
 const errorCopy: Record<string, string> = {

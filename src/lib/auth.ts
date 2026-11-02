@@ -49,8 +49,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!valid) return null;
 
         const privileged =
-          user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled;
+          (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled) &&
+          user.role !== "EMPLOYEE";
         if (privileged && user.mfaSecret) {
+          if (!mfaCode || !verifyMfaCode(user.mfaSecret, mfaCode)) {
+            return null;
+          }
+        }
+
+        if (user.role === "EMPLOYEE" && user.mfaEnabled && user.mfaSecret) {
           if (!mfaCode || !verifyMfaCode(user.mfaSecret, mfaCode)) {
             return null;
           }
@@ -109,6 +116,17 @@ export type SessionUser = {
 export async function requireAdminSession() {
   const session = await auth();
   if (!session?.user?.id || !session.user.role) {
+    return null;
+  }
+  if (session.user.role === "EMPLOYEE") {
+    return null;
+  }
+  return session.user as SessionUser;
+}
+
+export async function requireEmployeeSession() {
+  const session = await auth();
+  if (!session?.user?.id || session.user.role !== "EMPLOYEE") {
     return null;
   }
   return session.user as SessionUser;

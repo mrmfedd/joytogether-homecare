@@ -1,4 +1,23 @@
 import type { NextAuthConfig } from "next-auth";
+import type { UserRole } from "@/generated/prisma";
+
+function isPublicAdminPath(path: string) {
+  return (
+    path.startsWith("/admin/login") ||
+    path.startsWith("/admin/accept-invite") ||
+    path.startsWith("/admin/forgot-password") ||
+    path.startsWith("/admin/reset-password")
+  );
+}
+
+function isPublicEmployeePath(path: string) {
+  return (
+    path.startsWith("/employee/login") ||
+    path.startsWith("/employee/accept-invite") ||
+    path.startsWith("/employee/forgot-password") ||
+    path.startsWith("/employee/reset-password")
+  );
+}
 
 export const authConfig = {
   trustHost: true,
@@ -10,14 +29,18 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request }) {
       const path = request.nextUrl.pathname;
-      const isPublicAdmin =
-        path.startsWith("/admin/login") ||
-        path.startsWith("/admin/accept-invite") ||
-        path.startsWith("/admin/forgot-password") ||
-        path.startsWith("/admin/reset-password");
-      if (path.startsWith("/admin") && !isPublicAdmin) {
-        return !!auth;
+      const role = auth?.user?.role as UserRole | undefined;
+
+      if (path.startsWith("/employee")) {
+        if (isPublicEmployeePath(path)) return true;
+        return !!auth && role === "EMPLOYEE";
       }
+
+      if (path.startsWith("/admin")) {
+        if (isPublicAdminPath(path)) return true;
+        return !!auth && role !== "EMPLOYEE";
+      }
+
       return true;
     },
     jwt({ token, user }) {

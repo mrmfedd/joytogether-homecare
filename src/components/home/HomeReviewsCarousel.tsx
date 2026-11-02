@@ -102,11 +102,12 @@ export function HomeReviewsCarousel({
                   }`}
                 >
                   {!center && (
-                    <div className="mb-3 flex gap-0.5 text-amber-400" aria-label="5 out of 5 stars">
+                    <p className="mb-3 flex gap-0.5 text-amber-400">
+                      <span className="sr-only">5 out of 5 stars</span>
                       {Array.from({ length: 5 }).map((_, s) => (
-                        <Star key={s} className="h-4 w-4 fill-current" />
+                        <Star key={s} className="h-4 w-4 fill-current" aria-hidden />
                       ))}
-                    </div>
+                    </p>
                   )}
                   <p className="flex-1 text-sm leading-relaxed">&ldquo;{review.quote}&rdquo;</p>
                   <p className="mt-4 font-bold uppercase">{review.name}</p>

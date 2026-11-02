@@ -37,14 +37,17 @@ export function HowCareBegins() {
             eligibility checks.
           </p>
         </Reveal>
-        <ol className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <ol className="mt-12 grid list-none gap-5 p-0 md:grid-cols-2 xl:grid-cols-4">
           {steps.map((step, i) => (
-            <Reveal key={step.n} delay={i * 90}>
-              <li className="relative h-full rounded-3xl border border-line bg-cream p-6">
-                <span className="font-display text-3xl text-[var(--royal)]">{step.n}</span>
-                <h3 className="font-display m-0 mt-3 text-xl text-purple-900">{step.title}</h3>
-                <p className="body-muted mt-2 text-sm leading-relaxed">{step.body}</p>
-              </li>
+            <Reveal
+              key={step.n}
+              as="li"
+              delay={i * 90}
+              className="relative h-full rounded-3xl border border-line bg-cream p-6"
+            >
+              <span className="font-display text-3xl text-[var(--royal)]">{step.n}</span>
+              <h3 className="font-display m-0 mt-3 text-xl text-purple-900">{step.title}</h3>
+              <p className="body-muted mt-2 text-sm leading-relaxed">{step.body}</p>
             </Reveal>
           ))}
         </ol>

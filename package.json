@@ -17,7 +17,8 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:preview-smoke": "node scripts/preview-remote-smoke.mjs",
-    "verify:db": "tsx scripts/verify-db-identity.ts"
+    "verify:db": "tsx scripts/verify-db-identity.ts",
+    "test:rc-security": "node scripts/rc-security-probe.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

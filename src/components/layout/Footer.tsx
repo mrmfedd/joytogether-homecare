@@ -36,9 +36,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-[var(--gold-light)]">
+            <p className="mb-4 text-sm font-bold uppercase tracking-wider text-[var(--gold-light)]">
               Quick Links
-            </h4>
+            </p>
             {footerNavLinks.map((item) => (
               <Link
                 key={item.href}
@@ -51,9 +51,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-[var(--gold-light)]">
+            <p className="mb-4 text-sm font-bold uppercase tracking-wider text-[var(--gold-light)]">
               Follow Us
-            </h4>
+            </p>
             <div className="flex gap-3">
               {footer.social.map((item) => (
                 <a
@@ -105,7 +105,7 @@ function ContactChip({
         <Icon className="h-5 w-5" aria-hidden />
       </span>
       <span>
-        <span className="block text-xs font-bold uppercase tracking-wider text-teal">{label}</span>
+        <span className="block text-xs font-bold uppercase tracking-wider text-purple-800">{label}</span>
         <span className="mt-0.5 block text-sm font-semibold text-purple-900">{children}</span>
       </span>
     </>

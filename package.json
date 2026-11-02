@@ -21,6 +21,9 @@
     "verify:env-isolation": "tsx scripts/verify-env-isolation.ts",
     "verify:migrations": "tsx scripts/verify-preview-migrations.ts",
     "validate:migration-plan": "tsx scripts/validate-migration-plan.ts",
+    "verify:production-connectivity": "tsx scripts/verify-production-connectivity.ts",
+    "compare:db-identities": "tsx scripts/compare-db-identities.ts",
+    "verify:production-wiring": "tsx scripts/verify-production-vercel-wiring.ts",
     "test:rc-security": "node scripts/rc-security-probe.mjs"
   },
   "prisma": {

@@ -1,6 +1,6 @@
 # Separate Neon production database — plan only
 
-**Status:** Planning document. **No production Neon resource has been created.**  
+**Status:** Production Neon resource **`joytogether-production`** created in Vercel Storage (2026-11-02). **Connect to `joytogether-homecare` Production-only** and run isolation checks before migrate — see `docs/PRODUCTION-INFRA-REPORT.md`.  
 **Hard rule:** Never reuse Preview project `lucky-fire-28361357` / `joytogether-preview-db`.
 
 ## 1. Environment isolation
@@ -8,7 +8,7 @@
 | Environment | Neon resource | Vercel env target | Notes |
 |-------------|---------------|-------------------|-------|
 | Preview | `joytogether-preview-db` (`lucky-fire-28361357`) | Preview only | Already live |
-| Production | `joytogether-production-db` (**to create**) | Production only | Requires owner approval |
+| Production | `joytogether-production` | Production only | Connect + migrate approval |
 | Development | Local / optional Neon branch | Development | Optional |
 
 ### Anti-interchange controls

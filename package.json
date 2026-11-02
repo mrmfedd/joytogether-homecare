@@ -20,6 +20,7 @@
     "verify:db": "tsx scripts/verify-db-identity.ts",
     "verify:env-isolation": "tsx scripts/verify-env-isolation.ts",
     "verify:migrations": "tsx scripts/verify-preview-migrations.ts",
+    "validate:migration-plan": "tsx scripts/validate-migration-plan.ts",
     "test:rc-security": "node scripts/rc-security-probe.mjs"
   },
   "prisma": {

@@ -19,6 +19,20 @@ function isPublicEmployeePath(path: string) {
   );
 }
 
+function employeeSignInRedirect(request: { nextUrl: URL }) {
+  const url = new URL(request.nextUrl.toString());
+  url.pathname = "/employee/login";
+  url.searchParams.set("callbackUrl", request.nextUrl.pathname + request.nextUrl.search);
+  return Response.redirect(url);
+}
+
+function adminSignInRedirect(request: { nextUrl: URL }) {
+  const url = new URL(request.nextUrl.toString());
+  url.pathname = "/admin/login";
+  url.searchParams.set("callbackUrl", request.nextUrl.href);
+  return Response.redirect(url);
+}
+
 export const authConfig = {
   trustHost: true,
   secret: process.env.AUTH_SECRET,
@@ -33,12 +47,24 @@ export const authConfig = {
 
       if (path.startsWith("/employee")) {
         if (isPublicEmployeePath(path)) return true;
-        return !!auth && role === "EMPLOYEE";
+        if (!auth) return employeeSignInRedirect(request);
+        if (role !== "EMPLOYEE") {
+          const url = new URL(request.nextUrl.toString());
+          url.pathname = "/admin";
+          return Response.redirect(url);
+        }
+        return true;
       }
 
       if (path.startsWith("/admin")) {
         if (isPublicAdminPath(path)) return true;
-        return !!auth && role !== "EMPLOYEE";
+        if (!auth) return adminSignInRedirect(request);
+        if (role === "EMPLOYEE") {
+          const url = new URL(request.nextUrl.toString());
+          url.pathname = "/employee";
+          return Response.redirect(url);
+        }
+        return true;
       }
 
       return true;

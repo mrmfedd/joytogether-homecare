@@ -8,8 +8,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
 const email = (process.env.ADMIN_INVITE_EMAIL || "joytogetherhomecare@gmail.com").toLowerCase();
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) throw new Error("DATABASE_URL required");
+const rawUrl = process.env.DATABASE_URL;
+if (!rawUrl) throw new Error("DATABASE_URL required");
+const connectionString: string = rawUrl;
 
 const pool = new pg.Pool({
   connectionString,

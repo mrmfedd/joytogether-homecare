@@ -2,6 +2,8 @@
  * Prints non-secret database host info to verify preview vs production targets.
  * Usage: DATABASE_URL=... npx tsx scripts/verify-db-identity.ts
  */
+export {};
+
 const url = process.env.DATABASE_URL?.trim();
 const direct = process.env.DIRECT_URL?.trim();
 

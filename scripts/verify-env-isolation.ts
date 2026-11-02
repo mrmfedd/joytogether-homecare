@@ -4,13 +4,15 @@
  *   VERCEL_ENV=production DATABASE_URL=... npx tsx scripts/verify-env-isolation.ts
  *   ALLOW_PREVIEW_IN_PRODUCTION_CHECK=true to skip (emergency only)
  */
+export {};
+
 const PREVIEW_HOST_MARKER = "ep-summer-band-bc49hrns";
 const PREVIEW_PROJECT = "lucky-fire-28361357";
 
 const vercelEnv = process.env.VERCEL_ENV?.trim() || "";
 const nodeEnv = process.env.NODE_ENV?.trim() || "";
-const db = process.env.DATABASE_URL?.trim() || "";
-const direct = process.env.DIRECT_URL?.trim() || "";
+const dbUrl = process.env.DATABASE_URL?.trim() || "";
+const directUrl = process.env.DIRECT_URL?.trim() || "";
 const neonProject = process.env.NEON_PROJECT_ID?.trim() || "";
 
 function hostOf(url: string) {
@@ -21,8 +23,8 @@ function hostOf(url: string) {
   }
 }
 
-const dbHost = hostOf(db);
-const directHost = hostOf(direct);
+const dbHost = hostOf(dbUrl);
+const directHost = hostOf(directUrl);
 const looksProduction = vercelEnv === "production" || process.env.FORCE_PRODUCTION_CHECK === "true";
 
 console.log(
@@ -56,7 +58,7 @@ if (looksProduction) {
   }
 }
 
-if (db && direct && hostOf(db) === hostOf(direct) && dbHost.includes("-pooler")) {
+if (dbUrl && directUrl && hostOf(dbUrl) === hostOf(directUrl) && dbHost.includes("-pooler")) {
   console.warn("WARN: DIRECT_URL host matches pooled DATABASE_URL host; prefer non-pooler for migrations");
 }
 

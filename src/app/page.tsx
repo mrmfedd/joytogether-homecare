@@ -9,11 +9,26 @@ import { PrivateDutyFeature } from "@/components/home/PrivateDutyFeature";
 import { ServiceAreas } from "@/components/home/ServiceAreas";
 import { TampaReviewsSection } from "@/components/home/TampaReviewsSection";
 import { WhyFamilies } from "@/components/home/WhyFamilies";
+import { getPublishedPageBody } from "@/lib/content/public";
 
-export default function HomePage() {
+const defaultHero = {
+  headline: "The Art of Caring.",
+  subheadline: "Compassion That Feels Like Family. Care That Feels Like Home.",
+  primaryCta: "Request a Free Consultation",
+  secondaryCta: "Explore Our Services",
+};
+
+export default async function HomePage() {
+  const hero = await getPublishedPageBody("homepage.hero", defaultHero);
+
   return (
     <>
-      <CinematicHero />
+      <CinematicHero
+        headline={hero.headline}
+        subheadline={hero.subheadline}
+        primaryCta={hero.primaryCta}
+        secondaryCta={hero.secondaryCta}
+      />
       <EmotionalConnection />
       <MajorCarePanels />
       <PrivateDutyFeature />

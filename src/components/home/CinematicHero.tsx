@@ -5,7 +5,17 @@ import { useEffect, useState } from "react";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { site } from "@/content/site";
 
-export function CinematicHero() {
+export function CinematicHero({
+  headline = "The Art of Caring.",
+  subheadline = "Compassion That Feels Like Family. Care That Feels Like Home.",
+  primaryCta = "Request a Free Consultation",
+  secondaryCta = "Explore Our Services",
+}: {
+  headline?: string;
+  subheadline?: string;
+  primaryCta?: string;
+  secondaryCta?: string;
+}) {
   const [entered, setEntered] = useState(false);
 
   useEffect(() => {
@@ -40,10 +50,10 @@ export function CinematicHero() {
             JoyTogether Home Care
           </p>
           <h1 className="hero-copy-item font-display mt-4 text-[clamp(42px,8vw,78px)] font-bold uppercase tracking-[0.04em] text-white">
-            The Art of Caring.
+            {headline}
           </h1>
           <p className="hero-copy-item mt-4 text-xl text-white/92 sm:text-2xl">
-            Compassion That Feels Like Family. Care That Feels Like Home.
+            {subheadline}
           </p>
           <p className="hero-copy-item mt-5 max-w-xl text-base leading-relaxed text-white/78 sm:text-lg">
             From skilled nursing and hospice care to personalized private duty services,
@@ -52,10 +62,10 @@ export function CinematicHero() {
           </p>
           <div className="hero-copy-item mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <ButtonLink href="/contact" variant="gold" className="btn-shimmer uppercase tracking-wide">
-              Request a Free Consultation
+              {primaryCta}
             </ButtonLink>
             <ButtonLink href="/services" variant="outlineLight" className="border-white/70">
-              Explore Our Services
+              {secondaryCta}
             </ButtonLink>
           </div>
         </div>

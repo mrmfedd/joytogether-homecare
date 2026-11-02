@@ -5,189 +5,149 @@ import { site } from "@/content/site";
 export const servicesHeadline =
   "Joy Together Homecare: In-Home Care Services in Tampa, FL";
 
-export const serviceCategories = [
+export type ServiceCategory = {
+  id: string;
+  title: string;
+  image: string;
+  summary: string;
+  highlights: string[];
+};
+
+export const serviceCategories: ServiceCategory[] = [
   {
     id: "personal-care-services",
     title: "Personal Care Services",
     image: site.images.services.personalCare,
+    summary:
+      "Respectful help with daily living so your loved one can stay comfortable, clean, and confident at home.",
+    highlights: [
+      "Bathing, dressing, and grooming assistance",
+      "Medication reminders",
+      "Toileting and incontinence support",
+      "Feeding and special diet assistance",
+      "Transferring, positioning, and ambulation help",
+      "Live-in assistance when needed",
+    ],
   },
   {
     id: "home-care",
     title: "Home Care",
     image: "/assets/services/home-care-nursing.jpg",
+    summary:
+      "Practical in-home support that keeps living spaces safe, routines steady, and families at ease.",
+    highlights: [
+      "Light housekeeping, laundry, and changing linens",
+      "Vacuuming, dusting, and kitchen tidy-up",
+      "Meal planning and preparation",
+      "Exercising, ROM, and ADL support",
+      "Personalized care plans for each client",
+      "Focused quality care in the place of residence",
+    ],
   },
   {
     id: "heartsaver-pediatric",
     title: "Heartsaver® Pediatric",
     image: "/assets/service-companion.jpg",
+    summary:
+      "Pediatric CPR and First Aid training for childcare workers, educators, parents, and community members.",
+    highlights: [
+      "Heartsaver® Pediatric CPR & First Aid courses",
+      "Hands-on emergency response skills",
+      "AHA or ASHI approved certification",
+      "Group and on-site training available",
+      "Recertification options for renewals",
+      "See our Training page for course details",
+    ],
   },
   {
     id: "errands-transportation",
     title: "Errands & Transportation",
     image: "/assets/services/errands-personal-care.jpg",
+    summary:
+      "Reliable local help with the trips and tasks that keep everyday life running smoothly.",
+    highlights: [
+      "Grocery and clothes shopping",
+      "Picking up prescriptions",
+      "Accompanying to physician or personal appointments",
+      "Local transportation with insured drivers",
+      "Taking out garbage and answering the door",
+      "Reading mail and light daily errands",
+    ],
   },
   {
     id: "rn-lpn",
     title: "RN / LPN",
     image: "/assets/services/skilled-nursing-care.jpg",
+    summary:
+      "Skilled nursing support from RNs and LPNs for clinical needs that require trained professionals.",
+    highlights: [
+      "Wound care and post-surgical care",
+      "Medication management and diabetic teaching",
+      "Cardiovascular, pulmonary, and oncology care",
+      "Alzheimer's / Dementia and stroke care",
+      "Pain management and neurology support",
+      "Critical thinking with compassionate bedside manner",
+    ],
   },
   {
     id: "other-work",
     title: "Other Work",
     image: "/assets/services/home-care-duties.jpg",
+    summary:
+      "Companionship, activities, and monitoring that brighten the day and support independence.",
+    highlights: [
+      "Companionship, conversation, and board games",
+      "Reading, puzzles, arts and crafts",
+      "Cooking together and watching TV",
+      "Respite care for family caregivers",
+      "Medication reminders and grooming assistance",
+      "Monitoring client activity and live-in services",
+    ],
   },
-] as const;
+];
 
-export const caretakerRequirements = {
-  title: "Caretaker requirements & daily support",
-  intro:
-    "Our caretakers are able to perform work that requires standing, bending, reaching, squatting, kneeling, moving, lifting of patients, and/or equipment up to 50 lbs.",
-  items: [
-    "Personal vehicle and current car insurance",
-    "Meal preparation",
-    "Perform light housekeeping",
-    "Run errands",
-    "Grocery shopping",
-    "Laundry and iron",
-    "Answer door",
-    "Take out garbage",
-    "Local transportation",
-    "Make the bed",
-  ],
-  image: "/assets/services/caretaker-requirements.png",
+export type PartnerLogo = {
+  id: string;
+  name: string;
+  description: string;
+  href: string;
+  logo: string;
+  logoWidth: number;
+  logoHeight: number;
 };
 
-export const homeCareDuties = {
-  title: "Home care duties",
-  image: "/assets/services/home-care-duties.jpg",
-  columns: [
-    [
-      "Light housekeeping",
-      "Laundry",
-      "Changing the linens",
-      "Vacuuming",
-      "Dusting",
-      "Cleaning the refrigerator",
-    ],
-    [
-      "Transferring and positioning",
-      "Toileting",
-      "Incontinence",
-      "Feeding and special diet",
-      "Exercising, ROM, ADL",
-      "Ambulation assistance",
-    ],
-  ],
+export type PartnerPlace = {
+  id: string;
+  name: string;
+  description: string;
+  href: string;
+  image: string;
 };
 
-export const skilledNursingServices = {
-  title: "Skilled nursing & clinical support",
-  image: "/assets/services/skilled-nursing-care.jpg",
-  columns: [
-    [
-      "Wound care",
-      "Diabetic teaching",
-      "Cardiovascular care",
-      "Colostomy care",
-      "Oncology care",
-      "Post-surgical care",
-      "Pulmonary care",
-    ],
-    [
-      "Neurology care",
-      "Pain management",
-      "Medication management",
-      "Alzheimer's / Dementia care",
-      "Stroke care",
-      "Parkinson's care",
-      "Personal care",
-    ],
-  ],
-};
-
-export const otherActivities = {
-  title: "Other activities",
-  image: "/assets/services/other-activities.png",
-  items: [
-    "Companionship",
-    "Conversation",
-    "Playing board games",
-    "Reading",
-    "Crossword puzzles",
-    "Arts and crafts",
-    "Cooking together",
-    "Watching TV",
-    "Mending clothes",
-  ],
-};
-
-export const companionSupport = {
-  title: "Companion & monitoring services",
-  image: "/assets/services/companion-support.png",
-  items: [
-    "Answering the phone",
-    "Reading mail",
-    "General companion care",
-    "Medication reminder",
-    "Grooming assistance",
-    "Live-in services",
-    "Respite care",
-    "Monitor client activity",
-  ],
-};
-
-export const errandsAndPersonal = {
-  image: "/assets/services/errands-personal-care.jpg",
-  sections: [
-    {
-      title: "Errands & transportation",
-      items: [
-        "Grocery and clothes shopping",
-        "Picking up prescriptions",
-        "Accompanying to physician or personal appointment",
-      ],
-    },
-    {
-      title: "Personal care service",
-      items: [
-        "Medication reminders",
-        "Live-in assistance",
-        "Companionship",
-      ],
-    },
-  ],
-};
-
-export const homeCareNursing = {
-  title: "Home care",
-  image: "/assets/services/home-care-nursing.jpg",
-  intro:
-    "JoyTogether Home Care's objectives are to deliver great care by addressing individual patient needs and providing focused, quality care in their place of residence. The nurse position requires an individual with exceptional work standards and ethics. Job responsibilities, skills, and experience include:",
-  bullets: [
-    "Providing skilled nursing care in the patient's place of residence; previous home care experience preferred.",
-    "Critical thinking skills, decisive judgment, and the ability to work independently.",
-    "Customer care experience including effective listening and problem-solving skills.",
-  ],
-};
-
-export const liveTestimonials = [
+export const partners: Array<PartnerLogo | PartnerPlace> = [
   {
-    quote:
-      "In the last few months Stocker have been taking care of my husband. They have been wonderful and very attentive.",
-    name: "Kathy",
-    role: "Client family",
+    id: "apd-cares",
+    name: "APDCares",
+    description: "Agency for Persons with Disabilities — connecting you to the community",
+    href: "https://apd.myflorida.com/",
+    logo: "/assets/partners/apd-cares.png",
+    logoWidth: 331,
+    logoHeight: 201,
   },
   {
-    quote:
-      "It has truly been a blessing to have Martin take such excellent care of my Mom. Thanks",
-    name: "Family member",
-    role: "Daughter of client",
-    featured: true,
+    id: "tampa",
+    name: "Tampa",
+    description: "Proudly serving families across the Greater Tampa Bay area",
+    href: "/contact",
+    image: site.images.about,
   },
   {
-    quote:
-      "Services have been outstanding — very knowledgeable, kind, and reliable.",
-    name: "Rob",
-    role: "Client family",
+    id: "florida-health",
+    name: "Florida Department of Health",
+    description: "Aligned with Florida public health standards for community care",
+    href: "https://www.floridahealth.gov/",
+    logo: "/assets/partners/florida-health.png",
+    logoWidth: 171,
+    logoHeight: 193,
   },
 ];

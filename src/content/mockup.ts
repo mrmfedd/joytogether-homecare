@@ -15,11 +15,6 @@ export const home = {
       "Home Health & Companion Care",
     ],
     promo: "Schedule your free consultation — compassionate care starts with a conversation.",
-    circles: [
-      { title: "Companion Care", image: site.images.services.companionship },
-      { title: "Personal Care", image: site.images.services.personalCare },
-      { title: "Respite & Family Support", image: site.images.services.respite },
-    ],
   },
   hero: {
     eyebrow: "Compassionate Care. Brighter Days.",

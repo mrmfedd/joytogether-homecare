@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { Check } from "lucide-react";
+import { PartnersSection } from "@/components/home/PartnersSection";
 import { Reveal } from "@/components/motion/Reveal";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { home } from "@/content/mockup";
@@ -36,32 +36,15 @@ export function FlyerHomeSections() {
               </ul>
             </Reveal>
             <Reveal delay={160} className="flex justify-center lg:justify-end">
-              <ButtonLink href="/contact" variant="gold" className="btn-shimmer px-10 uppercase tracking-wider">
-                Contact Us Now
+              <ButtonLink href="/services" variant="gold" className="btn-shimmer px-10 uppercase tracking-wider">
+                Explore Services
               </ButtonLink>
             </Reveal>
           </div>
-
-          <div className="mt-14 grid gap-10 sm:grid-cols-3">
-            {f.circles.map((item, i) => (
-              <Reveal key={item.title} delay={i * 100} className="text-center">
-                <div className="flyer-circle-card group mx-auto">
-                  <div className="relative mx-auto h-40 w-40 overflow-hidden rounded-full border-4 border-[var(--gold)] shadow-lg sm:h-44 sm:w-44">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      sizes="176px"
-                    />
-                  </div>
-                  <p className="font-display mt-4 text-lg text-purple-900">{item.title}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
+
+      <PartnersSection />
 
       <section className="flyer-promo-band py-8 sm:py-10">
         <div className="site-container flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:text-left">

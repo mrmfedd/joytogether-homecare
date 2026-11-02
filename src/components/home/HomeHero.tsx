@@ -33,24 +33,24 @@ export function HomeHero() {
         sizes="100vw"
         aria-hidden
       />
-      <div className="site-container relative z-[1] py-10 sm:py-14 lg:py-16">
+      <div className="site-container relative z-[1] py-8 sm:py-14 lg:py-16">
         <div
-          className={`flyer-hero-grid grid items-center gap-10 lg:grid-cols-[1fr_auto] lg:gap-6 ${entered ? "hero-copy-visible" : ""}`}
+          className={`flyer-hero-grid grid items-center gap-8 sm:gap-10 lg:grid-cols-[1fr_auto] lg:gap-6 ${entered ? "hero-copy-visible" : ""}`}
         >
-          <div className="flyer-navy-panel hero-copy relative overflow-hidden rounded-[28px] px-6 py-10 sm:px-10 sm:py-12 lg:max-w-xl lg:rounded-r-[120px] lg:px-10 lg:py-14">
-            <p className="hero-copy-item font-script m-0 text-[clamp(42px,10vw,72px)] leading-none text-[var(--gold-light)]">
+          <div className="flyer-navy-panel hero-copy relative overflow-hidden rounded-[22px] px-5 py-8 sm:rounded-[28px] sm:px-10 sm:py-12 lg:max-w-xl lg:rounded-r-[120px] lg:px-10 lg:py-14">
+            <p className="hero-copy-item font-script m-0 text-[clamp(34px,9vw,72px)] leading-none text-[var(--gold-light)]">
               {f.scriptTitle}
             </p>
-            <h1 className="hero-copy-item font-display m-0 mt-1 text-[clamp(28px,5vw,42px)] font-bold uppercase tracking-[0.06em] text-white">
+            <h1 className="hero-copy-item font-display m-0 mt-1 text-[clamp(24px,6.2vw,42px)] font-bold uppercase tracking-[0.04em] text-white sm:tracking-[0.06em]">
               {f.headline}
             </h1>
-            <p className="hero-copy-item mt-4 text-base text-white/90 sm:text-lg">{f.tagline}</p>
-            <p className="hero-copy-item mt-3 text-sm leading-relaxed text-white/75">{h.subtitle}</p>
-            <div className="hero-copy-item mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <ButtonLink href={h.primaryCta.href} variant="gold" className="btn-shimmer uppercase tracking-wide">
+            <p className="hero-copy-item mt-3 text-[15px] text-white/90 sm:mt-4 sm:text-lg">{f.tagline}</p>
+            <p className="hero-copy-item mt-2 text-sm leading-relaxed text-white/75 sm:mt-3">{h.subtitle}</p>
+            <div className="hero-copy-item mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
+              <ButtonLink href={h.primaryCta.href} variant="gold" className="btn-shimmer w-full uppercase tracking-wide sm:w-auto">
                 Contact Us Now
               </ButtonLink>
-              <ButtonLink href={h.secondaryCta.href} variant="outlineLight" className="border-white/70">
+              <ButtonLink href={h.secondaryCta.href} variant="outlineLight" className="w-full border-white/70 sm:w-auto">
                 {h.secondaryCta.label}
               </ButtonLink>
             </div>
@@ -61,7 +61,7 @@ export function HomeHero() {
               className="flyer-teal-blob absolute -right-4 top-1/2 h-[88%] w-[88%] -translate-y-1/2 rounded-[40%] bg-teal/90"
               aria-hidden
             />
-            <div className="flyer-portrait-ring relative z-[1] h-[240px] w-[240px] overflow-hidden rounded-full border-[5px] border-[var(--gold)] shadow-2xl sm:h-[280px] sm:w-[280px] lg:h-[320px] lg:w-[320px]">
+            <div className="flyer-portrait-ring relative z-[1] h-[200px] w-[200px] overflow-hidden rounded-full border-[5px] border-[var(--gold)] shadow-2xl sm:h-[280px] sm:w-[280px] lg:h-[320px] lg:w-[320px]">
               <Image
                 src={site.images.about}
                 alt="Caregiver with client at home"

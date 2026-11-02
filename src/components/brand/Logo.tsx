@@ -20,7 +20,7 @@ export function Logo({ light = false }: { light?: boolean }) {
         alt="Joy Together Home Care — Caring People. A Brighter Tomorrow."
         width={LOGO_WIDTH}
         height={LOGO_HEIGHT}
-        className="h-[3.25rem] w-auto max-w-[min(280px,calc(100vw-5.5rem))] object-contain object-left sm:h-[3.75rem] sm:max-w-[340px] lg:h-[5.25rem] lg:max-w-[420px]"
+        className="h-[2.85rem] w-auto max-w-[min(220px,calc(100vw-6rem))] object-contain object-left sm:h-[3.75rem] sm:max-w-[340px] lg:h-[5.25rem] lg:max-w-[420px]"
         priority
       />
     </Link>

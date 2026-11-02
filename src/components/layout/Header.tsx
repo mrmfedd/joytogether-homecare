@@ -111,17 +111,19 @@ export function Header() {
           </ul>
         </nav>
 
-        <div className="flex shrink-0 items-center">
-          <ButtonLink
-            href="/contact"
-            variant="gold"
-            className="mr-1 hidden whitespace-nowrap px-4 py-2.5 text-xs font-bold uppercase tracking-wide lg:inline-flex lg:px-5 lg:text-[13px]"
-          >
-            Free Consultation
-          </ButtonLink>
+        <div className="flex shrink-0 items-center gap-1">
+          <div className="hidden lg:block">
+            <ButtonLink
+              href="/contact"
+              variant="gold"
+              className="whitespace-nowrap px-4 py-2.5 text-xs font-bold uppercase tracking-wide lg:px-5 lg:text-[13px]"
+            >
+              Free Consultation
+            </ButtonLink>
+          </div>
           <button
             type="button"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-purple-800 hover:bg-purple-50 lg:hidden"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-purple-800 hover:bg-purple-50 lg:hidden"
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             onClick={() => setMobileOpen((v) => !v)}

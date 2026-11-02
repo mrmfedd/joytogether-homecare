@@ -22,13 +22,13 @@ function FloralIcon({ className = "" }: { className?: string }) {
 export function AnnouncementBar() {
   return (
     <div
-      className="announcement-bar site-chrome-in site-gutter-x border-b border-[var(--gold-dark)]/40 py-3 text-center sm:py-3.5"
+      className="announcement-bar site-chrome-in site-gutter-x border-b border-[var(--gold-dark)]/40 py-2.5 text-center sm:py-3.5"
       role="region"
       aria-label="Service area announcement"
     >
-      <p className="font-display mx-auto flex max-w-5xl items-center justify-center gap-3 text-[15px] leading-snug text-[var(--gold-light)] sm:gap-5 sm:text-lg md:text-xl">
+      <p className="font-display mx-auto flex max-w-5xl items-center justify-center gap-3 text-[13px] leading-snug text-[var(--gold-light)] sm:gap-5 sm:text-lg md:text-xl">
         <FloralIcon className="hidden sm:block" />
-        <span className="announcement-text">
+        <span className="announcement-text px-1">
           Delivering High-Quality Home Care Across the Tampa Bay Area
         </span>
         <FloralIcon className="hidden sm:block [animation-delay:0.15s]" />

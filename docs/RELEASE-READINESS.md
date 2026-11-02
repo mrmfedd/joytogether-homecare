@@ -2,7 +2,7 @@
 
 **Product:** JoyTogether Home Care  
 **Branch:** `upgrade/customer-acquisition-redesign`  
-**Commit audited:** `5d17994` (+ a11y/RC follow-ups in this report’s push)  
+**Commit audited:** `31865d7` (RC) → launch prep `fc907ff`  
 **Preview URL:** https://joytogether-homecare-git-upgrade-38c1e5-michael-fedds-projects.vercel.app  
 **Audit date:** 2026-11-02  
 
@@ -49,16 +49,16 @@
 | Playwright full (14) | **PASS** |
 | Production `npm run build` (clean clone) | **PASS** |
 
-### Lighthouse (Preview homepage)
+### Lighthouse (Preview homepage) — final re-run on `fc907ff`
 
 | Category | Score | Notes |
 |----------|------:|-------|
-| Performance | **89** | LCP ~3.6s on Preview |
-| Accessibility | **82** → fixes shipped for contrast/ARIA/list/heading | Re-run after deploy |
-| Best practices | **100** | |
+| Performance | **97** | Improved vs prior 89 |
+| Accessibility | **100** | Gold CTA contrast fixed (midnight on `#71c73c` / `#5aa82f`) |
+| Best practices | **77** | Preview-only: third-party cookies + Chrome Issues panel (Vercel tooling) |
 | SEO | **69** | **Expected Preview FAIL** on crawlable: `x-robots-tag: noindex` |
 
-Accessibility code fixes applied in this RC push: footer contrast labels, review star ARIA, How Care Begins list semantics, footer heading levels.
+Accessibility fixes: footer contrast, review star ARIA, How Care Begins list semantics, footer heading levels, `.btn-gold` text contrast.
 
 ---
 

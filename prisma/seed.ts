@@ -105,11 +105,48 @@ async function main() {
     update: {},
   });
 
+  const defaultFaqs = [
+    {
+      question: "What areas do you serve?",
+      answer:
+        "JoyTogether Home Care is based in Apollo Beach and supports families across the Greater Tampa Bay area. Coverage for a specific address is confirmed during consultation.",
+    },
+    {
+      question: "How do I request a free consultation?",
+      answer:
+        "Use the contact form on our website or call us. A care coordinator will follow up to discuss needs — this is a nonclinical marketing inquiry, not medical advice.",
+    },
+    {
+      question: "Do you offer skilled nursing and hospice support?",
+      answer:
+        "We provide pathways for skilled nursing, hospice care, and private duty options. Clinical services are delivered by appropriately licensed professionals after assessment.",
+    },
+  ];
+
+  for (const [index, faq] of defaultFaqs.entries()) {
+    const existing = await prisma.fAQ.findFirst({ where: { question: faq.question } });
+    if (existing) {
+      await prisma.fAQ.update({
+        where: { id: existing.id },
+        data: { answer: faq.answer, displayOrder: index, status: PublicationStatus.PUBLISHED },
+      });
+    } else {
+      await prisma.fAQ.create({
+        data: {
+          question: faq.question,
+          answer: faq.answer,
+          displayOrder: index,
+          status: PublicationStatus.PUBLISHED,
+        },
+      });
+    }
+  }
+
   if (process.env.SEED_DEV_EXAMPLES === "true") {
     console.log("SEED_DEV_EXAMPLES enabled — skipping fictional leads/testimonials by policy.");
   }
 
-  console.log("Seed complete (settings, services, service areas, homepage content).");
+  console.log("Seed complete (settings, services, service areas, homepage, FAQs).");
 }
 
 main()

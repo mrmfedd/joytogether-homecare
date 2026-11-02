@@ -3,10 +3,23 @@
  * Create a one-time admin invitation (run locally against preview/dev DB only).
  * Usage: ADMIN_INVITE_EMAIL=you@example.com npx tsx scripts/create-admin-invite.ts
  */
+import "dotenv/config";
+import { createHash, randomBytes } from "crypto";
 import { PrismaClient, UserRole } from "../src/generated/prisma";
-import { generateInviteToken, hashInviteToken } from "../src/lib/auth";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 
-const prisma = new PrismaClient();
+function createClient() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL required");
+  const pool = new pg.Pool({
+    connectionString,
+    ssl: connectionString.includes("localhost") ? undefined : { rejectUnauthorized: false },
+  });
+  return new PrismaClient({ adapter: new PrismaPg(pool) });
+}
+
+const prisma = createClient();
 
 async function main() {
   const email = process.env.ADMIN_INVITE_EMAIL?.trim().toLowerCase();
@@ -15,8 +28,8 @@ async function main() {
     throw new Error("Set ADMIN_INVITE_EMAIL");
   }
 
-  const token = generateInviteToken();
-  const tokenHash = hashInviteToken(token);
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 48);
 
   await prisma.adminInvitation.create({
@@ -35,5 +48,10 @@ async function main() {
 }
 
 main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

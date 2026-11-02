@@ -67,6 +67,18 @@ export async function listPublishedTestimonials() {
   }
 }
 
+export async function listPublishedServiceAreas() {
+  if (!process.env.DATABASE_URL) return [];
+  try {
+    return await prisma.serviceArea.findMany({
+      where: { visible: true },
+      orderBy: { name: "asc" },
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function listPublishedServices() {
   if (!process.env.DATABASE_URL) {
     return serviceLandings.map((s) => ({

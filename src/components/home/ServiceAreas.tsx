@@ -1,8 +1,9 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { site } from "@/content/site";
+import { listPublishedServiceAreas } from "@/lib/content/public";
 
-const areas = [
+const fallbackAreas = [
   "Tampa",
   "Apollo Beach",
   "Brandon",
@@ -12,7 +13,10 @@ const areas = [
   "Greater Tampa Bay",
 ];
 
-export function ServiceAreas() {
+export async function ServiceAreas() {
+  const rows = await listPublishedServiceAreas();
+  const areas = rows.length > 0 ? rows.map((a) => a.name) : fallbackAreas;
+
   return (
     <section className="section-pad bg-sky">
       <div className="site-container grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">

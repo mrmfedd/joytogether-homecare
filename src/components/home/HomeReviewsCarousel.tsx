@@ -38,9 +38,11 @@ function useVisibleCardCount() {
 export function HomeReviewsCarousel({
   reviews,
   backdropSrc = site.images.hero,
+  googleBusinessProfileUrl = site.googleBusinessProfileUrl,
 }: {
   reviews: HomeReview[];
   backdropSrc?: string;
+  googleBusinessProfileUrl?: string;
 }) {
   const reviewCount = reviews.length;
   const visibleCount = useVisibleCardCount();
@@ -137,6 +139,17 @@ export function HomeReviewsCarousel({
         >
           {servicesHeadline}
         </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-purple-100">
+          Approved client testimonials and verified Google reviews.{" "}
+          <a
+            href={googleBusinessProfileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-white underline underline-offset-2 hover:text-purple-50"
+          >
+            View Joy Together on Google
+          </a>
+        </p>
         <div className="relative mt-10 px-12 sm:px-14 md:px-16">
           <button
             type="button"
@@ -167,31 +180,47 @@ export function HomeReviewsCarousel({
           >
             {visible.map((review, i) => {
               const center = i === centerIndex;
+              const showStars = !center && review.rating === 5;
               return (
                 <article
-                  key={`${review.name}-${review.date}-${review.quote.slice(0, 24)}-${i}`}
+                  key={`${review.id}-${i}`}
                   className={`flex min-w-0 flex-col rounded-lg p-6 shadow-lg ${
                     center
                       ? "relative z-[1] bg-[var(--gold)] text-purple-900 md:scale-[1.03]"
                       : "bg-white text-purple-900"
                   }`}
                   aria-roledescription="slide"
-                  aria-label={`Review by ${review.name}`}
+                  aria-label={`${review.sourceLabel} by ${review.name}`}
                 >
-                  {!center && (
+                  {showStars && (
                     <p className="mb-3 flex gap-0.5 text-amber-400">
                       <span className="sr-only">5 out of 5 stars</span>
-                      {Array.from({ length: 5 }).map((_, s) => (
+                      {Array.from({ length: review.rating! }).map((_, s) => (
                         <Star key={s} className="h-4 w-4 shrink-0 fill-current" aria-hidden />
                       ))}
                     </p>
                   )}
-                  <p className="flex-1 break-words text-sm leading-relaxed">
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-wide ${center ? "text-purple-800" : "text-purple-600"}`}
+                  >
+                    {review.sourceLabel}
+                  </p>
+                  <p className="mt-2 flex-1 break-words text-sm leading-relaxed">
                     &ldquo;{review.quote}&rdquo;
                   </p>
                   <p className="mt-4 font-bold uppercase">{review.name}</p>
                   {review.date ? (
                     <p className="mt-1 text-xs text-purple-700/80">{review.date}</p>
+                  ) : null}
+                  {review.source === "google" && review.sourceHref ? (
+                    <a
+                      href={review.sourceHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 text-xs font-semibold text-purple-700 underline underline-offset-2 hover:text-purple-900"
+                    >
+                      View on Google
+                    </a>
                   ) : null}
                 </article>
               );
@@ -202,7 +231,7 @@ export function HomeReviewsCarousel({
         <div className="mt-8 flex flex-wrap justify-center gap-2 px-4">
           {reviews.map((review, i) => (
             <button
-              key={`${review.name}-${i}`}
+              key={review.id}
               type="button"
               aria-label={`Show review ${i + 1} of ${reviewCount}, ${review.name}`}
               aria-current={i === index ? "true" : undefined}

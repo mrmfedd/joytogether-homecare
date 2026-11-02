@@ -8,11 +8,13 @@ export async function HomeReviewsSection() {
   const dbReviews = await listPublishedTestimonials();
   const reviews = resolveHomeReviews(
     dbReviews.map((t) => ({
+      id: t.id,
       quote: t.quote,
       authorName: t.authorName,
       mediaAssetId: t.mediaAssetId,
     })),
     mediaPublicPath,
+    site.googleBusinessProfileUrl,
   );
 
   const backdrop =
@@ -20,5 +22,11 @@ export async function HomeReviewsSection() {
       ? mediaPublicPath(dbReviews.find((t) => t.mediaAssetId)!.mediaAssetId!)
       : site.images.hero;
 
-  return <HomeReviewsCarousel reviews={reviews} backdropSrc={backdrop} />;
+  return (
+    <HomeReviewsCarousel
+      reviews={reviews}
+      backdropSrc={backdrop}
+      googleBusinessProfileUrl={site.googleBusinessProfileUrl}
+    />
+  );
 }

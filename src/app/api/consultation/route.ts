@@ -3,8 +3,6 @@ import { createLeadFromConsultation } from "@/lib/leads/create-lead";
 import { consultationSchema } from "@/lib/validation/consultation";
 import { dbHealthCheck } from "@/lib/prisma";
 
-export const runtime = "nodejs";
-
 const recent = new Map<string, number[]>();
 
 function clientIp(req: Request) {

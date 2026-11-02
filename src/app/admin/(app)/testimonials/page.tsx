@@ -1,7 +1,11 @@
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { StatusBadge } from "@/components/admin/StatusBadge";
+import { archiveTestimonialAction, saveTestimonialAction } from "@/app/admin/(app)/testimonials/actions";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageContent } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { PublicationStatus } from "@/generated/prisma";
 
 export default async function AdminTestimonialsPage() {
   const user = await requireAdminSession();
@@ -11,19 +15,61 @@ export default async function AdminTestimonialsPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl text-[var(--midnight)]">Testimonials</h1>
-      <p className="body-muted mt-1 text-sm">Publish only when permission is recorded.</p>
-      <ul className="mt-6 space-y-3">
+      <AdminPageHeader title="Testimonials" description="Publish only when permission is recorded." />
+      <form action={saveTestimonialAction} className="grid max-w-2xl gap-3 rounded-2xl border border-line bg-white p-5">
+        <textarea name="quote" required rows={3} placeholder="Quote" className="rounded-xl border border-line px-3 py-2 text-sm" />
+        <input name="authorName" required placeholder="Author name" className="rounded-xl border border-line px-3 py-2 text-sm" />
+        <input name="authorRole" placeholder="Author role" className="rounded-xl border border-line px-3 py-2 text-sm" />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="permissionRecorded" /> Permission recorded
+        </label>
+        <input name="permissionNote" placeholder="Permission notes" className="rounded-xl border border-line px-3 py-2 text-sm" />
+        <select name="status" defaultValue="DRAFT" className="rounded-xl border border-line px-3 py-2 text-sm">
+          {Object.values(PublicationStatus).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        <button type="submit" className="btn btn-purple w-fit px-4 py-2 text-sm">
+          Add testimonial
+        </button>
+      </form>
+      <ul className="mt-8 space-y-4">
         {testimonials.map((t) => (
           <li key={t.id} className="rounded-2xl border border-line bg-white p-5 text-sm">
-            <p className="font-semibold">{t.authorName}</p>
-            <p className="mt-2 italic">&ldquo;{t.quote}&rdquo;</p>
-            <p className="mt-2 text-xs text-muted">
-              {t.status} • Permission recorded: {t.permissionRecorded ? "yes" : "no"}
-            </p>
+            <form action={saveTestimonialAction} className="grid gap-2">
+              <input type="hidden" name="id" value={t.id} />
+              <textarea name="quote" rows={3} defaultValue={t.quote} className="rounded-lg border border-line px-2 py-1 italic" />
+              <input name="authorName" defaultValue={t.authorName} className="rounded-lg border border-line px-2 py-1 font-semibold" />
+              <input name="authorRole" defaultValue={t.authorRole || ""} className="rounded-lg border border-line px-2 py-1" />
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="permissionRecorded" defaultChecked={t.permissionRecorded} /> Permission recorded
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge status={t.status} />
+                <select name="status" defaultValue={t.status} className="rounded-lg border border-line px-2 py-1 text-xs">
+                  {Object.values(PublicationStatus).map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                <button type="submit" className="text-xs font-bold text-[var(--royal)]">
+                  Save
+                </button>
+              </div>
+            </form>
+            {t.status !== "ARCHIVED" ? (
+              <form action={archiveTestimonialAction} className="mt-2">
+                <input type="hidden" name="id" value={t.id} />
+                <button type="submit" className="text-xs font-bold text-amber-800">
+                  Archive
+                </button>
+              </form>
+            ) : null}
           </li>
         ))}
-        {testimonials.length === 0 ? <li className="text-sm text-muted">No testimonials yet.</li> : null}
       </ul>
     </div>
   );

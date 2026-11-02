@@ -1,15 +1,7 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 
-export default auth((req) => {
-  const path = req.nextUrl.pathname;
-  const isPublicAdmin =
-    path.startsWith("/admin/login") || path.startsWith("/admin/accept-invite");
-  if (path.startsWith("/admin") && !isPublicAdmin && !req.auth) {
-    const login = new URL("/admin/login", req.nextUrl.origin);
-    login.searchParams.set("callbackUrl", path);
-    return Response.redirect(login);
-  }
-});
+export default NextAuth(authConfig).auth;
 
 export const config = {
   matcher: ["/admin/:path*"],

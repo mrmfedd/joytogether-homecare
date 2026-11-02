@@ -1,13 +1,10 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { dbHealthCheck } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
-
-export const runtime = "nodejs";
+import { storeResume } from "@/lib/storage/resume";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = new Set([
@@ -53,29 +50,35 @@ export async function POST(req: Request) {
   }
 
   const file = form.get("resume");
-  let resumeKey: string | undefined;
-  if (file && file instanceof File && file.size > 0) {
-    if (file.size > MAX_BYTES || !ALLOWED.has(file.type)) {
-      return NextResponse.json({ ok: false, error: "Resume must be PDF or Word under 5MB." }, { status: 400 });
-    }
-    const ext = file.type.includes("pdf") ? "pdf" : file.type.includes("wordprocessingml") ? "docx" : "doc";
-    resumeKey = `${randomUUID()}.${ext}`;
-    const dir = path.join(process.cwd(), "storage", "resumes");
-    await mkdir(dir, { recursive: true });
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(dir, resumeKey), buffer, { mode: 0o600 });
-  }
+  const applicationId = randomUUID();
 
   const application = await prisma.jobApplication.create({
     data: {
+      id: applicationId,
       fullName: parsed.data.name,
       email: parsed.data.email.toLowerCase(),
       phone: parsed.data.phone,
       position: parsed.data.position,
       message: parsed.data.message,
-      resumeKey,
     },
   });
+
+  if (file && file instanceof File && file.size > 0) {
+    if (file.size > MAX_BYTES || !ALLOWED.has(file.type)) {
+      await prisma.jobApplication.delete({ where: { id: application.id } });
+      return NextResponse.json({ ok: false, error: "Resume must be PDF or Word under 5MB." }, { status: 400 });
+    }
+    try {
+      const resumeKey = await storeResume(file, application.id);
+      await prisma.jobApplication.update({
+        where: { id: application.id },
+        data: { resumeKey },
+      });
+    } catch {
+      await prisma.jobApplication.delete({ where: { id: application.id } });
+      return NextResponse.json({ ok: false, error: "Could not store resume. Please try again." }, { status: 500 });
+    }
+  }
 
   await writeAuditLog({
     action: "CREATE",

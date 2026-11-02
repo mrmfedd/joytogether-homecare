@@ -1,11 +1,8 @@
-import { readFile } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageCareers } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-
-export const runtime = "nodejs";
+import { getResumeStream } from "@/lib/storage/resume";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const user = await requireAdminSession();
@@ -19,23 +16,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const filePath = path.join(process.cwd(), "storage", "resumes", application.resumeKey);
   try {
-    const data = await readFile(filePath);
-    const ext = path.extname(application.resumeKey).slice(1);
-    const type =
-      ext === "pdf"
-        ? "application/pdf"
-        : ext === "docx"
-          ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          : "application/msword";
+    const { data, contentType } = await getResumeStream(application.resumeKey);
+    const ext = application.resumeKey.includes(".") ? application.resumeKey.split(".").pop() : "pdf";
     return new NextResponse(data, {
       headers: {
-        "Content-Type": type,
+        "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="${application.fullName.replace(/[^a-z0-9-_]+/gi, "_")}-resume.${ext}"`,
+        "Cache-Control": "private, no-store",
       },
     });
   } catch {
-    return NextResponse.json({ error: "File missing" }, { status: 404 });
+    return NextResponse.json({ error: "File unavailable" }, { status: 404 });
   }
 }

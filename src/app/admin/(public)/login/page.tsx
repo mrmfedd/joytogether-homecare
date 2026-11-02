@@ -9,6 +9,7 @@ export default function AdminLoginPage() {
   const callbackUrl = params.get("callbackUrl") || "/admin";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,6 +20,7 @@ export default function AdminLoginPage() {
     const res = await signIn("credentials", {
       email,
       password,
+      mfaCode,
       redirect: false,
       callbackUrl,
     });
@@ -57,6 +59,17 @@ export default function AdminLoginPage() {
             autoComplete="current-password"
           />
         </label>
+        <label className="block text-sm font-semibold">
+          Authenticator code (if MFA enabled)
+          <input
+            type="text"
+            inputMode="numeric"
+            value={mfaCode}
+            onChange={(e) => setMfaCode(e.target.value)}
+            className="mt-1 w-full rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-[var(--midnight)]"
+            autoComplete="one-time-code"
+          />
+        </label>
         {error ? <p className="text-sm font-semibold text-red-200">{error}</p> : null}
         <button
           type="submit"
@@ -66,6 +79,9 @@ export default function AdminLoginPage() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
+      <a href="/admin/forgot-password" className="mt-4 block text-center text-sm text-sky-200 hover:underline">
+        Forgot password?
+      </a>
       <p className="mt-6 text-xs text-white/70">
         No public registration. Administrators are invited by JoyTogether leadership.
       </p>

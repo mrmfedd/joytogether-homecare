@@ -3,8 +3,10 @@ import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { UserRole } from "@/generated/prisma";
+import { authConfig } from "@/lib/auth.config";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
+import { verifyMfaCode } from "@/lib/mfa";
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
@@ -21,22 +23,21 @@ function loginRateLimited(key: string) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true,
-  secret: process.env.AUTH_SECRET,
-  session: { strategy: "jwt", maxAge: 60 * 60 * 8 },
-  pages: { signIn: "/admin/login" },
+  ...authConfig,
   providers: [
     Credentials({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        mfaCode: { label: "MFA code", type: "text" },
       },
       async authorize(credentials) {
         const email = String(credentials?.email || "")
           .trim()
           .toLowerCase();
         const password = String(credentials?.password || "");
+        const mfaCode = String(credentials?.mfaCode || "").trim();
         if (!email || !password) return null;
 
         if (loginRateLimited(email)) return null;
@@ -46,6 +47,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
+
+        const privileged =
+          user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled;
+        if (privileged && user.mfaSecret) {
+          if (!mfaCode || !verifyMfaCode(user.mfaSecret, mfaCode)) {
+            return null;
+          }
+        }
 
         await prisma.user.update({
           where: { id: user.id },
@@ -68,33 +77,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: UserRole }).role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as UserRole;
-      }
-      return session;
-    },
-  },
 });
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 12);
 }
 
-export function hashInviteToken(token: string) {
+export function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+export function hashInviteToken(token: string) {
+  return hashToken(token);
+}
+
 export function generateInviteToken() {
+  return randomBytes(32).toString("hex");
+}
+
+export function generateSecureToken() {
   return randomBytes(32).toString("hex");
 }
 

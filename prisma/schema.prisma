@@ -82,6 +82,7 @@ model User {
   role           UserRole  @default(VIEWER)
   active         Boolean   @default(true)
   mfaEnabled     Boolean   @default(false)
+  mfaSecret      String?   @db.Text
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   lastLoginAt    DateTime?
@@ -98,6 +99,20 @@ model User {
   invitationsCreated  AdminInvitation[] @relation("InviteCreator")
   invitationsAccepted AdminInvitation[] @relation("InviteAccepted")
   jobReviews          JobApplication[]  @relation("ApplicationReviewer")
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Account {

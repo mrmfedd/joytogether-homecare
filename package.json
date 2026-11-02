@@ -13,7 +13,9 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "test:permissions": "tsx scripts/test-permissions.ts"
+    "test:permissions": "tsx scripts/test-permissions.ts",
+    "test:unit": "vitest run",
+    "verify:db": "tsx scripts/verify-db-identity.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -23,14 +25,17 @@
     "@hookform/resolvers": "^7.0.1",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "@vercel/blob": "^2.8.2",
     "bcryptjs": "^3.0.3",
     "dotenv": "^18.0.9",
     "lucide-react": "^1.61.0",
     "motion": "^14.9.0",
     "next": "16.4.3",
     "next-auth": "^5.0.0-beta.32",
+    "otplib": "^13.6.0",
     "pg": "^8.23.1",
     "prisma": "^7.10.1",
+    "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.91.0",
@@ -42,12 +47,14 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.12"
   }
 }

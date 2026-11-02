@@ -1,8 +1,18 @@
+import "dotenv/config";
 import { PrismaClient, PublicationStatus } from "../src/generated/prisma";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 import { serviceLandings } from "../src/content/careServices";
 import { site } from "../src/content/site";
 
-const prisma = new PrismaClient();
+function createClient() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL required for seed");
+  const pool = new pg.Pool({ connectionString, ssl: connectionString.includes("localhost") ? undefined : { rejectUnauthorized: false } });
+  return new PrismaClient({ adapter: new PrismaPg(pool) });
+}
+
+const prisma = createClient();
 
 const defaultSettings: Record<string, unknown> = {
   businessName: site.name,
@@ -12,6 +22,12 @@ const defaultSettings: Record<string, unknown> = {
   serviceArea: site.contact.serviceArea,
   legacyUrl: site.legacyUrl,
 };
+
+const serviceAreas = [
+  { name: "Apollo Beach", slug: "apollo-beach", description: "Primary service area for JoyTogether Home Care." },
+  { name: "Hillsborough County", slug: "hillsborough-county", description: "Greater Tampa Bay region." },
+  { name: "Manatee County", slug: "manatee-county", description: "Bradenton and surrounding communities." },
+];
 
 async function main() {
   for (const [key, value] of Object.entries(defaultSettings)) {
@@ -47,6 +63,14 @@ async function main() {
     });
   }
 
+  for (const area of serviceAreas) {
+    await prisma.serviceArea.upsert({
+      where: { slug: area.slug },
+      create: { ...area, visible: true },
+      update: { name: area.name, description: area.description },
+    });
+  }
+
   await prisma.pageContent.upsert({
     where: { key: "homepage.hero" },
     create: {
@@ -63,7 +87,11 @@ async function main() {
     update: {},
   });
 
-  console.log("Seed complete (services, settings, homepage content). No fictional leads/testimonials seeded.");
+  if (process.env.SEED_DEV_EXAMPLES === "true") {
+    console.log("SEED_DEV_EXAMPLES enabled — skipping fictional leads/testimonials by policy.");
+  }
+
+  console.log("Seed complete (settings, services, service areas, homepage content).");
 }
 
 main()

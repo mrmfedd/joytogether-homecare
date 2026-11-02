@@ -1,7 +1,12 @@
+import Link from "next/link";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { StatusBadge } from "@/components/admin/StatusBadge";
+import { saveJobPostingAction, updateApplicationStatusAction } from "@/app/admin/(app)/careers/actions";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageCareers } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { ApplicantStatus, PublicationStatus } from "@/generated/prisma";
 
 export default async function AdminCareersPage() {
   const user = await requireAdminSession();
@@ -9,24 +14,60 @@ export default async function AdminCareersPage() {
 
   const [jobs, applications] = await Promise.all([
     prisma.jobPosting.findMany({ orderBy: { updatedAt: "desc" } }),
-    prisma.jobApplication.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.jobApplication.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
   ]);
 
   return (
     <div>
-      <h1 className="font-display text-3xl text-[var(--midnight)]">Careers</h1>
-      <section className="mt-6">
-        <h2 className="font-semibold">Job postings</h2>
-        <ul className="mt-3 space-y-2">
+      <AdminPageHeader title="Careers" description="Job postings and applicant pipeline." />
+      <section>
+        <h2 className="font-semibold">Create job posting</h2>
+        <form action={saveJobPostingAction} className="mt-4 grid max-w-2xl gap-3 rounded-2xl border border-line bg-white p-5">
+          <input name="title" required placeholder="Job title" className="rounded-xl border border-line px-3 py-2 text-sm" />
+          <input name="slug" required placeholder="slug" pattern="[a-z0-9-]+" className="rounded-xl border border-line px-3 py-2 text-sm" />
+          <input name="location" placeholder="Location" className="rounded-xl border border-line px-3 py-2 text-sm" />
+          <textarea name="description" required rows={5} placeholder="Description" className="rounded-xl border border-line px-3 py-2 text-sm" />
+          <select name="status" defaultValue="DRAFT" className="rounded-xl border border-line px-3 py-2 text-sm">
+            {Object.values(PublicationStatus).map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="btn btn-purple w-fit px-4 py-2 text-sm">
+            Save posting
+          </button>
+        </form>
+        <ul className="mt-6 space-y-3">
           {jobs.map((j) => (
             <li key={j.id} className="rounded-xl border border-line bg-white p-4 text-sm">
-              {j.title} — {j.status}
+              <form action={saveJobPostingAction} className="grid gap-2">
+                <input type="hidden" name="id" value={j.id} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <input name="title" defaultValue={j.title} className="flex-1 rounded-lg border border-line px-2 py-1 font-semibold" />
+                  <StatusBadge status={j.status} />
+                </div>
+                <input name="slug" defaultValue={j.slug} className="rounded-lg border border-line px-2 py-1 text-xs" />
+                <textarea name="description" rows={3} defaultValue={j.description} className="rounded-lg border border-line px-2 py-1" />
+                <div className="flex gap-2">
+                  <select name="status" defaultValue={j.status} className="rounded-lg border border-line px-2 py-1 text-xs">
+                    {Object.values(PublicationStatus).map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" className="text-xs font-bold text-[var(--royal)]">
+                    Update
+                  </button>
+                </div>
+              </form>
             </li>
           ))}
-          {jobs.length === 0 ? <li className="text-sm text-muted">No postings yet.</li> : null}
         </ul>
       </section>
-      <section className="mt-8">
+
+      <section className="mt-10">
         <h2 className="font-semibold">Applications</h2>
         <div className="mt-3 overflow-x-auto rounded-2xl border border-line bg-white">
           <table className="min-w-full text-left text-sm">
@@ -41,16 +82,33 @@ export default async function AdminCareersPage() {
             </thead>
             <tbody>
               {applications.map((a) => (
-                <tr key={a.id} className="border-b border-line/70">
+                <tr key={a.id} className="border-b border-line/70 align-top">
                   <td className="px-4 py-3">{a.createdAt.toLocaleDateString()}</td>
-                  <td className="px-4 py-3">{a.fullName}</td>
+                  <td className="px-4 py-3">
+                    {a.fullName}
+                    <div className="text-xs text-muted">{a.email}</div>
+                  </td>
                   <td className="px-4 py-3">{a.position}</td>
-                  <td className="px-4 py-3">{a.status}</td>
+                  <td className="px-4 py-3">
+                    <form action={updateApplicationStatusAction} className="flex gap-2">
+                      <input type="hidden" name="id" value={a.id} />
+                      <select name="status" defaultValue={a.status} className="rounded-lg border border-line px-2 py-1 text-xs">
+                        {Object.values(ApplicantStatus).map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                      <button type="submit" className="text-xs font-bold text-[var(--royal)]">
+                        Save
+                      </button>
+                    </form>
+                  </td>
                   <td className="px-4 py-3">
                     {a.resumeKey ? (
-                      <a href={`/api/admin/applications/${a.id}/resume`} className="font-bold text-[var(--royal)]">
+                      <Link href={`/api/admin/applications/${a.id}/resume`} className="font-bold text-[var(--royal)]">
                         Download
-                      </a>
+                      </Link>
                     ) : (
                       "—"
                     )}

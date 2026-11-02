@@ -42,6 +42,12 @@ export default async function AdminLeadsPage({
             placeholder="Search name, email, phone"
             className="rounded-xl border border-line px-3 py-2 text-sm"
           />
+          <input
+            name="service"
+            defaultValue={params.service}
+            placeholder="Service filter"
+            className="rounded-xl border border-line px-3 py-2 text-sm"
+          />
           <select name="status" defaultValue={params.status || ""} className="rounded-xl border border-line px-3 py-2 text-sm">
             <option value="">All statuses</option>
             {statuses.map((s) => (

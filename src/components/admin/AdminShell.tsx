@@ -30,11 +30,13 @@ const nav: NavItem[] = [
   { href: "/admin/consultations", label: "Consultations", icon: HeartHandshake },
   { href: "/admin/private-duty", label: "Private Duty", icon: Wallet },
   { href: "/admin/services", label: "Services", icon: Stethoscope },
+  { href: "/admin/service-areas", label: "Service areas", icon: Stethoscope },
   { href: "/admin/content", label: "Content", icon: FileText },
   { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
   { href: "/admin/careers", label: "Careers", icon: Briefcase },
   { href: "/admin/reports", label: "Reports", icon: LayoutDashboard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/account", label: "Security", icon: Settings },
   { href: "/admin/users", label: "Admins", icon: Users, roles: ["SUPER_ADMIN"] },
 ];
 

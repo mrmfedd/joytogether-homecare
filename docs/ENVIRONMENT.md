@@ -16,6 +16,8 @@
 | `RESEND_API_KEY` | Optional — lead/application email notifications |
 | `RESEND_FROM` | Verified sender, e.g. `JoyTogether <notifications@yourdomain.com>` |
 | `NEXT_PUBLIC_SITE_URL` | Preview/production site URL for invite links |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob — private resume storage (preview/prod) |
+| `CRON_SECRET` | Protects `POST /api/cron/notifications` retry endpoint |
 
 Never commit `.env` files or paste credentials into GitHub.
 

@@ -19,7 +19,7 @@ function loginRateLimited(key: string) {
   }
   entry.count += 1;
   loginAttempts.set(key, entry);
-  return entry.count > 8;
+  return entry.count > 30;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

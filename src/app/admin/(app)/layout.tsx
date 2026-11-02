@@ -1,9 +1,11 @@
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminProviders } from "@/components/admin/AdminProviders";
 import { requireAdminSession } from "@/lib/auth";
 
 export default async function AdminAppLayout({ children }: { children: React.ReactNode }) {
+  await connection();
   const user = await requireAdminSession();
   if (!user) redirect("/admin/login");
   return (

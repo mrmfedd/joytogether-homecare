@@ -5,7 +5,8 @@ export function generateMfaSecret() {
 }
 
 export function verifyMfaCode(secret: string, code: string) {
-  return verifySync({ secret, token: code });
+  const result = verifySync({ secret, token: code });
+  return typeof result === "boolean" ? result : Boolean(result.valid);
 }
 
 export function mfaOtpAuthUrl(email: string, secret: string) {

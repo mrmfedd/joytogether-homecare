@@ -4,7 +4,7 @@ export type ContactReview = {
   date: string;
 };
 
-/** Google reviews and client feedback shown on the contact page. */
+/** Google reviews used when no published CMS testimonials exist. */
 export const contactReviews: ContactReview[] = [
   {
     name: "Frederick",

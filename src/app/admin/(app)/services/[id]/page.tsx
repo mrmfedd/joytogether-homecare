@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { saveServiceAction } from "@/app/admin/(app)/services/actions";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageServices } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -44,10 +45,7 @@ function ServiceForm({ service }: { service?: Awaited<ReturnType<typeof prisma.s
           </select>
         </label>
       </div>
-      <label className="block text-sm font-semibold">
-        Featured image path
-        <input name="featuredImage" defaultValue={service?.featuredImage || ""} className="mt-1 w-full rounded-xl border border-line px-3 py-2" />
-      </label>
+      <MediaPicker name="featuredImage" label="Featured image" defaultUrl={service?.featuredImage || ""} />
       <label className="flex items-center gap-2 text-sm font-semibold">
         <input type="checkbox" name="visible" defaultChecked={service?.visible ?? true} /> Visible on website
       </label>

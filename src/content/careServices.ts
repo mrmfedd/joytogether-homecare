@@ -12,7 +12,7 @@ export const majorCareExperiences = [
     tagline: "Professional Clinical Care in the Comfort of Home.",
     summary:
       "Licensed nursing support designed to help individuals manage clinical needs at home — with care plans coordinated around comfort, safety, and family communication.",
-    image: "/assets/services/rn-lpn-care.jpg",
+    image: "/assets/services/skilled-nursing-care.jpg",
     accent: "navy" as const,
   },
   {
@@ -23,7 +23,7 @@ export const majorCareExperiences = [
     tagline: "Comfort, Dignity, and Compassion Every Step of the Way.",
     summary:
       "Compassionate end-of-life support focused on quality of life, emotional comfort, family involvement, and respectful coordination with healthcare professionals.",
-    image: "/assets/services/home-care-private-duty.jpg",
+    image: "/assets/services/home-care-nursing.jpg",
     accent: "sky" as const,
   },
   {
@@ -34,7 +34,7 @@ export const majorCareExperiences = [
     tagline: "Personalized Care Options, Even Without Insurance.",
     summary:
       "Private-pay caregiving for individuals and families seeking personalized in-home support without relying on insurance coverage.",
-    image: "/assets/about-care.jpg",
+    image: "/assets/services/home-care-private-duty.jpg",
     accent: "green" as const,
     featured: true,
   },
@@ -68,7 +68,7 @@ export const serviceLandings: ServiceLanding[] = [
     headline: "Professional Clinical Care in the Comfort of Home",
     intro:
       "JoyTogether Home Care is licensed to provide skilled nursing services. Care is delivered by appropriately licensed healthcare professionals and tailored to individual needs after discussion and assessment.",
-    image: "/assets/services/rn-lpn-care.jpg",
+    image: "/assets/services/skilled-nursing-care.jpg",
     whoFor: [
       "Individuals recovering after surgery or hospitalization",
       "People managing chronic conditions at home",
@@ -122,7 +122,7 @@ export const serviceLandings: ServiceLanding[] = [
     headline: "Comfort, Dignity, and Compassion Every Step of the Way",
     intro:
       "JoyTogether Home Care is licensed to provide hospice care. Our approach emphasizes comfort, dignity, emotional support, family involvement, and quality of life — with respectful coordination alongside healthcare professionals.",
-    image: "/assets/services/home-care-private-duty.jpg",
+    image: "/assets/services/home-care-nursing.jpg",
     whoFor: [
       "Individuals seeking comfort-focused end-of-life support",
       "Families who want guidance, presence, and emotional support",
@@ -165,7 +165,7 @@ export const serviceLandings: ServiceLanding[] = [
     headline: "No Insurance? You Still Have Options.",
     intro:
       "JoyTogether Home Care offers private-pay care options for individuals and families seeking compassionate, personalized support without relying on insurance coverage. Insurance eligibility, private-pay pricing, and service availability depend on the selected services and individual circumstances.",
-    image: "/assets/about-care.jpg",
+    image: "/assets/services/home-care-private-duty.jpg",
     whoFor: [
       "Families without insurance coverage for home care",
       "Individuals who prefer private-pay arrangements",

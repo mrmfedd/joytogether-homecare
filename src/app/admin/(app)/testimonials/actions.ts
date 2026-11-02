@@ -15,8 +15,9 @@ const testimonialSchema = z.object({
   authorRole: z.string().max(120).optional(),
   permissionRecorded: z.enum(["on", "off"]).optional().transform((v) => v === "on"),
   permissionNote: z.string().max(500).optional(),
-  displayOrder: z.coerce.number().int().min(0),
+  displayOrder: z.coerce.number().int().min(0).optional().default(0),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
+  mediaUrlMediaId: z.string().optional(),
 });
 
 export async function saveTestimonialAction(formData: FormData) {
@@ -28,6 +29,8 @@ export async function saveTestimonialAction(formData: FormData) {
     return;
   }
 
+  const mediaCandidate = parsed.data.mediaUrlMediaId?.trim() || "";
+  const mediaAssetId = z.string().uuid().safeParse(mediaCandidate).success ? mediaCandidate : null;
   const data = {
     quote: parsed.data.quote,
     authorName: parsed.data.authorName,
@@ -36,6 +39,7 @@ export async function saveTestimonialAction(formData: FormData) {
     permissionNote: parsed.data.permissionNote || null,
     displayOrder: parsed.data.displayOrder,
     status: parsed.data.status as PublicationStatus,
+    mediaAssetId,
   };
 
   const testimonial = parsed.data.id

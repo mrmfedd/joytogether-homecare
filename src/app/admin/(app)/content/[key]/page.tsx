@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { savePageContentAction } from "@/app/admin/(app)/content/actions";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageContent } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -26,6 +27,9 @@ export default async function EditContentPage({ params }: { params: Promise<{ ke
     previewUrl = null;
   }
 
+  const body = (page.body || {}) as Record<string, unknown>;
+  const showMedia = key === "homepage.hero" || key === "services.hub" || key.startsWith("page.");
+
   return (
     <div className="max-w-3xl">
       <Link href="/admin/content" className="text-sm font-semibold text-[var(--royal)]">
@@ -40,6 +44,25 @@ export default async function EditContentPage({ params }: { params: Promise<{ ke
           Title
           <input name="title" required defaultValue={page.title} className="mt-1 w-full rounded-xl border border-line px-3 py-2" />
         </label>
+        {showMedia ? (
+          <>
+            <MediaPicker
+              name="imageUrl"
+              label="Featured / hero image"
+              defaultUrl={typeof body.imageUrl === "string" ? body.imageUrl : ""}
+              defaultMediaId={typeof body.imageMediaId === "string" ? body.imageMediaId : ""}
+            />
+            <label className="block text-sm font-semibold">
+              Image alt text
+              <input
+                name="imageAlt"
+                defaultValue={typeof body.imageAlt === "string" ? body.imageAlt : ""}
+                className="mt-1 w-full rounded-xl border border-line px-3 py-2"
+                placeholder="Describe the image for accessibility"
+              />
+            </label>
+          </>
+        ) : null}
         <label className="block text-sm font-semibold">
           Body (JSON)
           <textarea

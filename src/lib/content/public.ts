@@ -61,6 +61,7 @@ export async function listPublishedTestimonials() {
     return await prisma.testimonial.findMany({
       where: { status: "PUBLISHED", permissionRecorded: true },
       orderBy: { displayOrder: "asc" },
+      include: { mediaAsset: true },
     });
   } catch {
     return [];

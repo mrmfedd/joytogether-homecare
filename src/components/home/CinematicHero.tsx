@@ -10,11 +10,15 @@ export function CinematicHero({
   subheadline = "Compassion That Feels Like Family. Care That Feels Like Home.",
   primaryCta = "Request a Free Consultation",
   secondaryCta = "Explore Our Services",
+  imageSrc = site.images.hero,
+  imageAlt = "",
 }: {
   headline?: string;
   subheadline?: string;
   primaryCta?: string;
   secondaryCta?: string;
+  imageSrc?: string;
+  imageAlt?: string;
 }) {
   const [entered, setEntered] = useState(false);
 
@@ -33,12 +37,13 @@ export function CinematicHero({
       <div className="brand-ribbon absolute inset-x-0 top-0 h-1.5" aria-hidden />
       <div className="absolute inset-0">
         <Image
-          src={site.images.hero}
-          alt=""
+          src={imageSrc || site.images.hero}
+          alt={imageAlt}
           fill
           priority
           className={`object-cover transition-transform duration-[1800ms] ease-out ${entered ? "scale-100" : "scale-110"}`}
           sizes="100vw"
+          unoptimized={Boolean(imageSrc?.startsWith("/api/"))}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--midnight)] via-[rgb(6_29_69_/0.82)] to-[rgb(6_29_69_/0.35)]" />
         <div className="brand-curve" aria-hidden />

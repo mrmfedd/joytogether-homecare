@@ -6,11 +6,17 @@ import { useCallback, useEffect, useState } from "react";
 import { servicesHeadline } from "@/content/servicesCatalog";
 import { site } from "@/content/site";
 
-export type HomeReview = { name: string; quote: string; date?: string };
+export type HomeReview = { name: string; quote: string; date?: string; imageUrl?: string };
 
 const AUTO_SCROLL_MS = 5500;
 
-export function HomeReviewsCarousel({ reviews }: { reviews: HomeReview[] }) {
+export function HomeReviewsCarousel({
+  reviews,
+  backdropSrc = site.images.hero,
+}: {
+  reviews: HomeReview[];
+  backdropSrc?: string;
+}) {
   const reviewCount = reviews.length;
   const [index, setIndex] = useState(0);
   const [hoverPaused, setHoverPaused] = useState(false);
@@ -52,7 +58,14 @@ export function HomeReviewsCarousel({ reviews }: { reviews: HomeReview[] }) {
       onMouseEnter={() => setHoverPaused(true)}
       onMouseLeave={() => setHoverPaused(false)}
     >
-      <Image src={site.images.hero} alt="" fill className="object-cover object-center" sizes="100vw" />
+      <Image
+        src={backdropSrc}
+        alt=""
+        fill
+        className="object-cover object-center"
+        sizes="100vw"
+        unoptimized={backdropSrc.startsWith("/api/")}
+      />
       <div className="absolute inset-0 bg-purple-900/70" aria-hidden />
       <div className="site-container relative z-[1]">
         <h2

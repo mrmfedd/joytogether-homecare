@@ -17,6 +17,8 @@ const defaultHero = {
   subheadline: "Compassion That Feels Like Family. Care That Feels Like Home.",
   primaryCta: "Request a Free Consultation",
   secondaryCta: "Explore Our Services",
+  imageUrl: "",
+  imageAlt: "",
 };
 
 export default async function HomePage() {
@@ -30,6 +32,8 @@ export default async function HomePage() {
         subheadline={hero.subheadline}
         primaryCta={hero.primaryCta}
         secondaryCta={hero.secondaryCta}
+        imageSrc={hero.imageUrl || undefined}
+        imageAlt={hero.imageAlt || ""}
       />
       <EmotionalConnection />
       <MajorCarePanels />

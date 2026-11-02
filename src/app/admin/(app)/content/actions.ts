@@ -25,12 +25,21 @@ export async function savePageContentAction(formData: FormData) {
   });
   if (!parsed.success) return;
 
-  let body: unknown;
+  let body: Record<string, unknown>;
   try {
-    body = JSON.parse(parsed.data.bodyJson);
+    body = JSON.parse(parsed.data.bodyJson) as Record<string, unknown>;
   } catch {
     return;
   }
+
+  const imageUrl = String(formData.get("imageUrl") || "").trim();
+  const imageMediaId = String(formData.get("imageUrlMediaId") || "").trim();
+  const imageAlt = String(formData.get("imageAlt") || "").trim();
+  if (imageUrl) {
+    body.imageUrl = imageUrl;
+    if (imageMediaId) body.imageMediaId = imageMediaId;
+  }
+  if (imageAlt) body.imageAlt = imageAlt;
 
   const existing = await prisma.pageContent.findUnique({ where: { key: parsed.data.key } });
   const page = await prisma.pageContent.upsert({

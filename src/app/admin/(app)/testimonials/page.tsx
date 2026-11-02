@@ -1,6 +1,8 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { archiveTestimonialAction, saveTestimonialAction } from "@/app/admin/(app)/testimonials/actions";
+import { mediaPublicPath } from "@/lib/storage/media";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageContent } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +13,10 @@ export default async function AdminTestimonialsPage() {
   const user = await requireAdminSession();
   if (!user || !canManageContent(user.role)) redirect("/admin");
 
-  const testimonials = await prisma.testimonial.findMany({ orderBy: { displayOrder: "asc" } });
+  const testimonials = await prisma.testimonial.findMany({
+    orderBy: { displayOrder: "asc" },
+    include: { mediaAsset: true },
+  });
 
   return (
     <div>
@@ -20,6 +25,7 @@ export default async function AdminTestimonialsPage() {
         <textarea name="quote" required rows={3} placeholder="Quote" className="rounded-xl border border-line px-3 py-2 text-sm" />
         <input name="authorName" required placeholder="Author name" className="rounded-xl border border-line px-3 py-2 text-sm" />
         <input name="authorRole" placeholder="Author role" className="rounded-xl border border-line px-3 py-2 text-sm" />
+        <MediaPicker name="mediaUrl" label="Optional portrait / photo" />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="permissionRecorded" /> Permission recorded
         </label>
@@ -43,6 +49,12 @@ export default async function AdminTestimonialsPage() {
               <textarea name="quote" rows={3} defaultValue={t.quote} className="rounded-lg border border-line px-2 py-1 italic" />
               <input name="authorName" defaultValue={t.authorName} className="rounded-lg border border-line px-2 py-1 font-semibold" />
               <input name="authorRole" defaultValue={t.authorRole || ""} className="rounded-lg border border-line px-2 py-1" />
+              <MediaPicker
+                name="mediaUrl"
+                label="Portrait / photo"
+                defaultUrl={t.mediaAssetId ? mediaPublicPath(t.mediaAssetId) : ""}
+                defaultMediaId={t.mediaAssetId || ""}
+              />
               <label className="flex items-center gap-2">
                 <input type="checkbox" name="permissionRecorded" defaultChecked={t.permissionRecorded} /> Permission recorded
               </label>

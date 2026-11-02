@@ -53,6 +53,8 @@ export default async function PreviewContentPage({
           subheadline={(body as typeof defaultHero).subheadline}
           primaryCta={(body as typeof defaultHero).primaryCta}
           secondaryCta={(body as typeof defaultHero).secondaryCta}
+          imageSrc={(body as { imageUrl?: string }).imageUrl || undefined}
+          imageAlt={(body as { imageAlt?: string }).imageAlt || ""}
         />
       ) : key === "services.hub" ? (
         <PageHero

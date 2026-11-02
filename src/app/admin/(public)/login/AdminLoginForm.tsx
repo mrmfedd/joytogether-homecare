@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 
 export default function AdminLoginForm() {
@@ -27,6 +27,11 @@ export default function AdminLoginForm() {
     setLoading(false);
     if (res?.error) {
       setError("Invalid credentials or account inactive.");
+      return;
+    }
+    const session = await getSession();
+    if (session?.user?.role === "EMPLOYEE") {
+      window.location.href = "/employee";
       return;
     }
     window.location.href = callbackUrl;

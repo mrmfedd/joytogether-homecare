@@ -46,6 +46,7 @@ export const headerNav: NavItem[] = [
     ],
   },
   { type: "link", label: "Private Duty", href: "/services/private-duty-care" },
+  { type: "link", label: "Staff Login", href: "/staff-login" },
   { type: "link", label: "Contact", href: "/contact" },
 ];
 
@@ -67,5 +68,6 @@ export const footerNavLinks = [
   { label: "Fingerprinting", href: "/fingerprinting" },
   { label: "Careers / Apply", href: "/apply" },
   { label: "Payment Information", href: "/payment-information" },
+  { label: "Staff Login", href: "/staff-login" },
   { label: "Contact", href: "/contact" },
 ] as const;

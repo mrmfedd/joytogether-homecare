@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { ContactGoogleMap } from "@/components/contact/ContactGoogleMap";
-import { InquiryForm } from "@/components/forms/InquiryForm";
+import { ConsultationForm } from "@/components/forms/ConsultationForm";
 import { PageHero } from "@/components/layout/PageHero";
 import { site } from "@/content/site";
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description: `Contact Joy Together Home Care — ${site.contact.phone}.`,
+  title: "Contact & Free Consultation",
+  description: `Contact JoyTogether Home Care at ${site.contact.phone} or ${site.contact.email}. Request a free consultation for skilled nursing, hospice, or private duty care.`,
 };
 
 export default function ContactPage() {
@@ -54,7 +54,7 @@ export default function ContactPage() {
               </ContactRow>
             </div>
           </div>
-          <InquiryForm />
+          <ConsultationForm source="contact-page" />
         </div>
       </section>
 

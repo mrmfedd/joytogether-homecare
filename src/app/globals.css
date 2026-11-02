@@ -1,27 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  /* Navy & gold flyer palette (purple-* tokens map to navy for compatibility) */
-  --purple-900: #152238;
-  --purple-800: #1b2a4a;
-  --purple-700: #243656;
-  --purple-600: #2f4568;
-  --purple-500: #3d5a80;
-  --purple-100: #dce8f0;
-  --purple-50: #eef4f8;
-  --sage: #c9a84c;
-  --sage-dark: #a88832;
-  --sage-light: #f5ecd4;
-  --gold: #c9a84c;
-  --gold-light: #e4c56a;
-  --gold-dark: #9a7728;
-  --teal: #2f7d8f;
-  --teal-dark: #256270;
-  --sky: #d8e6ee;
-  --cream: #f4f7fa;
-  --muted: #5a6578;
-  --line: #c8d4de;
+  /* Official JoyTogether brand (blue + green). purple-* kept as navy aliases for existing classes. */
+  --midnight: #061d45;
+  --royal: #0759ae;
+  --sky-brand: #009ddf;
+  --joy-green: #71c73c;
+  --joy-green-dark: #5aa82f;
+  --pearl: #f7f9f5;
+
+  --purple-900: #061d45;
+  --purple-800: #0a2a5c;
+  --purple-700: #0759ae;
+  --purple-600: #0a6bc9;
+  --purple-500: #009ddf;
+  --purple-100: #d7eef9;
+  --purple-50: #eef7fc;
+  --sage: #71c73c;
+  --sage-dark: #5aa82f;
+  --sage-light: #eaf7df;
+  --gold: #71c73c;
+  --gold-light: #9ada6d;
+  --gold-dark: #5aa82f;
+  --teal: #009ddf;
+  --teal-dark: #077db3;
+  --sky: #e8f6fc;
+  --cream: #f7f9f5;
+  --muted: #526377;
+  --line: #d7e3ec;
   --site-gutter: 1rem;
+  --brand-ribbon: linear-gradient(120deg, #061d45 0%, #0759ae 48%, #71c73c 100%);
 }
 
 @theme inline {
@@ -42,6 +50,8 @@
   --color-gold-light: var(--gold-light);
   --color-teal: var(--teal);
   --color-sky: var(--sky);
+  --color-midnight: var(--midnight);
+  --color-royal: var(--royal);
   --font-sans: var(--font-dm);
   --font-display: var(--font-playfair);
 }
@@ -100,8 +110,35 @@ body {
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: var(--royal);
   margin: 0 0 12px;
+}
+
+.brand-ribbon {
+  background: var(--brand-ribbon);
+}
+
+.brand-curve {
+  position: absolute;
+  inset: auto -10% -35%;
+  height: 55%;
+  background:
+    radial-gradient(ellipse at 20% 40%, rgb(0 157 223 / 0.18), transparent 55%),
+    radial-gradient(ellipse at 80% 60%, rgb(113 199 60 / 0.16), transparent 50%);
+  pointer-events: none;
+}
+
+.sticky-consult {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 60;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-consult {
+    transition: none;
+  }
 }
 
 /* Layered so Tailwind utilities (e.g. `hidden`) can override `.btn` display. */

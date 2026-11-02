@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: false,
-  partialPrefetching: true,
   async redirects() {
     return [
       { source: "/about-us", destination: "/about", permanent: true },

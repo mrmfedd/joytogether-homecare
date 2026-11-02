@@ -42,6 +42,22 @@ test.describe("staff login hub", () => {
     );
   });
 
+  test("protected portals redirect unauthenticated users", async ({ page }) => {
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/\/admin\/login/);
+    await page.goto("/employee");
+    await expect(page).toHaveURL(/\/employee\/login/);
+  });
+
+  test("portal login pages reachable from staff hub paths", async ({ page }) => {
+    await page.goto("/staff-login");
+    await page.getByRole("link", { name: /Sign in as administrator/i }).click();
+    await expect(page).toHaveURL(/\/admin\/login$/);
+    await page.goto("/staff-login");
+    await page.getByRole("link", { name: /Sign in as employee/i }).click();
+    await expect(page).toHaveURL(/\/employee\/login$/);
+  });
+
   test("staff login layout on mobile viewport", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/staff-login");

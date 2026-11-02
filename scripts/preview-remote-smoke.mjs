@@ -13,6 +13,8 @@ const expectDb = process.env.EXPECT_DB === "true";
 const checks = [
   { path: "/", expectStatus: 200, label: "homepage" },
   { path: "/admin/login", expectStatus: 200, label: "admin login" },
+  { path: "/staff-login", expectStatus: 200, label: "staff login hub" },
+  { path: "/employee/login", expectStatus: 200, label: "employee login" },
   { path: "/contact", expectStatus: 200, label: "contact" },
   { path: "/services", expectStatus: 200, label: "services" },
   {

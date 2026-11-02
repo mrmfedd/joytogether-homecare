@@ -1,13 +1,15 @@
 # Production database deployment plan (separate Neon)
 
 **Status:** Planning only — do **not** execute without explicit approval.  
-**Rule:** Production must never share the Preview Neon project `lucky-fire-28361357` / `joytogether-preview-db`.
+**Rule:** Production must never share the Preview Neon project `lucky-fire-28361357` / `joytogether-preview-db`.  
+**Expanded plan:** see also `docs/PRODUCTION-NEON-PLAN.md` (migrations, backup, isolation, rollback detail).
 
-## 1. Provision
+## 1. Provision (owner approval required)
 
 1. In Vercel Marketplace (or Neon console), create a **new** Neon resource named e.g. `joytogether-production-db`.
 2. Connect it to the JoyTogether project for **Production** environment **only**.
 3. Confirm Preview remains on `joytogether-preview-db`.
+4. Do **not** enable the production resource for Preview/Development.
 
 ## 2. Environment variables (Production)
 
@@ -21,25 +23,40 @@ Set on Vercel Production (not Preview):
 - `CRON_SECRET`
 - `NEXT_PUBLIC_SITE_URL=https://www.joytogetherhomecare.com`
 
-## 3. Identity check before migrate
+## 3. Identity / interchange checks before migrate
 
 ```bash
 # With Production URLs loaded locally (never mix with preview)
 npm run verify:db
+VERCEL_ENV=production npm run verify:env-isolation
 ```
 
-Confirm hostnames are the **production** Neon endpoint, not `ep-summer-band-bc49hrns…`.
+Confirm hostnames are the **production** Neon endpoint, not `ep-summer-band-bc49hrns…`.  
+`verify:env-isolation` **fails** if Preview host/project markers appear under `VERCEL_ENV=production`.
 
 ## 4. Migrations & seed
+
+Committed migrations to apply:
+
+- `20260330120000_init`
+- `20260330160000_security`
 
 ```bash
 npx prisma migrate deploy   # apply committed migrations only
 npm run db:seed             # settings/services/FAQs — no fictional leads
 ```
 
-Optional: disable auto-seed on Production by ensuring `VERCEL_ENV=production` does not run seed (current `vercel-build.mjs` seeds Preview only).
+`scripts/vercel-build.mjs` seeds Preview only (`VERCEL_ENV=production` skips seed). Keep that behavior.
 
-## 5. First production administrator
+## 5. Backup strategy
+
+| Layer | Action |
+|-------|--------|
+| Neon PITR / history | Enable/retain per Neon plan before cutover |
+| Pre-migrate snapshot | Neon branch or `pg_dump` via `DIRECT_URL` to encrypted owner storage |
+| Post-cutover | Schedule periodic dumps; document retention |
+
+## 6. First production administrator
 
 ```bash
 ADMIN_INVITE_EMAIL=joytogetherhomecare@gmail.com \
@@ -49,7 +66,7 @@ npx tsx scripts/create-admin-invite.ts
 
 Invite is emailed; do not paste tokens into tickets.
 
-## 6. Cutover checklist
+## 7. Cutover checklist
 
 - [ ] `/api/health/db` → connected on production URL
 - [ ] Consultation form creates Lead + SENT notification
@@ -58,6 +75,13 @@ Invite is emailed; do not paste tokens into tickets.
 - [ ] CMS publish reflects on public site
 - [ ] Preview still healthy on isolated DB
 
-## 7. Rollback
+## 8. Rollback
 
-Keep Preview branch + Preview DB unchanged. Production rollback = previous Vercel deployment + leave DB as-is (avoid destructive resets).
+| Scenario | Action |
+|----------|--------|
+| Bad app deploy | Vercel rollback; leave DB intact |
+| Bad migration | Restore Neon backup / PITR to pre-migrate point |
+| Wrong DB wired | Disconnect incorrect resource; re-run `verify:db` / `verify:env-isolation` |
+| Never | Point Production at Preview DB as a “fix” |
+
+Keep Preview branch + Preview DB unchanged during Production incidents.

@@ -217,7 +217,7 @@ body {
 
   a.btn-gold,
   a.btn-gold:visited {
-    color: #fff;
+    color: var(--midnight);
   }
 
   .btn-purple:hover {
@@ -261,12 +261,13 @@ body {
   .btn-gold {
     background: var(--gold);
     border-color: var(--gold-dark);
-    color: #fff;
+    color: var(--midnight);
   }
 
   .btn-gold:hover {
     background: var(--gold-dark);
     border-color: var(--gold-dark);
+    color: var(--midnight);
   }
 
   .btn-white {

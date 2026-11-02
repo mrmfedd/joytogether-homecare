@@ -11,6 +11,8 @@
 
 ## Do not change DNS without approval
 
+Exact records to publish (after approval) are in `docs/RESEND-DNS-RECORDS.md`.
+
 Before any DNS or MX/SPF/DKIM edits for `joytogetherhomecare.com` or the GoDaddy/Wix/Vercel DNS zone:
 
 1. Inventory existing records (SPF, DKIM, DMARC, MX, CNAME).
@@ -21,10 +23,10 @@ Before any DNS or MX/SPF/DKIM edits for `joytogetherhomecare.com` or the GoDaddy
 ## Recommended production sender (after approval)
 
 1. Create or select a Resend project dedicated to JoyTogether.
-2. Add domain `joytogetherhomecare.com` (or `mail.joytogetherhomecare.com` / `notifications.joytogetherhomecare.com`).
-3. Publish Resend DNS records **only after approval**.
+2. Add domain `joytogetherhomecare.com` (or `mail.joytogetherhomecare.com`).
+3. Publish Resend DNS records **only after approval** (copy DKIM from Resend Records tab).
 4. Set Production env:
-   - `RESEND_FROM=JoyTogether Home Care <notifications@joytogetherhomecare.com>` (exact mailbox TBD)
+   - `RESEND_FROM=JoyTogether Home Care <notifications@joytogetherhomecare.com>`
    - `RESEND_API_KEY=<joytogether-only key>`
 5. Send a test to `joytogetherhomecare@gmail.com` and confirm SPF/DKIM pass.
 

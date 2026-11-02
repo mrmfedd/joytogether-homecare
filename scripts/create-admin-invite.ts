@@ -13,6 +13,7 @@ import { createHash, randomBytes } from "crypto";
 import { PrismaClient, UserRole } from "../src/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
+import { site } from "../src/content/site";
 
 function createClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -42,14 +43,20 @@ async function sendInviteEmail(to: string, acceptUrl: string) {
     body: JSON.stringify({
       from: resendFrom,
       to: [to],
-      subject: "JoyTogether Admin invitation (Preview)",
+      subject: `${site.name} Admin invitation`,
       text: [
-        "You have been invited to the JoyTogether Home Care admin (Preview).",
+        `You have been invited to ${site.name} Admin.`,
         "",
         "Open this one-time link within 48 hours to set your password:",
         acceptUrl,
         "",
         "If you did not expect this email, ignore it.",
+        "",
+        "—",
+        site.legalName,
+        `Phone: ${site.contact.phone}`,
+        `Email: ${site.contact.email}`,
+        site.url,
       ].join("\n"),
     }),
   });

@@ -22,7 +22,7 @@ export async function sendLeadEmail(payload: LeadEmailPayload): Promise<{ ok: bo
   }
 
   const text = [
-    "New JoyTogether lead (nonclinical marketing inquiry)",
+    `${site.name} — new lead (nonclinical marketing inquiry)`,
     `Lead ID: ${payload.leadId}`,
     `Name: ${payload.fullName}`,
     `Phone: ${payload.phone}`,
@@ -32,6 +32,12 @@ export async function sendLeadEmail(payload: LeadEmailPayload): Promise<{ ok: bo
     `Location: ${payload.location || "n/a"}`,
     "",
     "Review in admin: /admin/leads",
+    "",
+    "—",
+    site.legalName,
+    `Phone: ${site.contact.phone}`,
+    `Email: ${site.contact.email}`,
+    site.url,
   ].join("\n");
 
   try {
@@ -45,7 +51,7 @@ export async function sendLeadEmail(payload: LeadEmailPayload): Promise<{ ok: bo
         from: resendFrom,
         to: [site.contact.email],
         reply_to: payload.email,
-        subject: `New lead — ${payload.careType}`,
+        subject: `${site.name}: new lead — ${payload.careType}`,
         text,
       }),
     });
@@ -142,8 +148,21 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
     body: JSON.stringify({
       from: resendFrom,
       to: [to],
-      subject: "JoyTogether admin password reset",
-      text: `Use this link once within 1 hour to reset your password:\n\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
+      subject: `${site.name} admin password reset`,
+      text: [
+        `You requested a password reset for ${site.name} Admin.`,
+        "",
+        "Use this one-time link within 1 hour:",
+        resetUrl,
+        "",
+        "If you did not request this, ignore this email.",
+        "",
+        "—",
+        site.legalName,
+        `Phone: ${site.contact.phone}`,
+        `Email: ${site.contact.email}`,
+        site.url,
+      ].join("\n"),
     }),
   });
 

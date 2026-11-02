@@ -18,6 +18,7 @@
     "test:e2e": "playwright test",
     "test:preview-smoke": "node scripts/preview-remote-smoke.mjs",
     "verify:db": "tsx scripts/verify-db-identity.ts",
+    "verify:env-isolation": "tsx scripts/verify-env-isolation.ts",
     "test:rc-security": "node scripts/rc-security-probe.mjs"
   },
   "prisma": {

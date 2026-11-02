@@ -2,113 +2,99 @@
 
 **Branch:** `upgrade/customer-acquisition-redesign`  
 **PR:** [#1](https://github.com/mrmfedd/joytogether-homecare/pull/1)  
+**Latest commit:** `1744d4a`  
 **Updated:** 2026-11-02  
-**Production-ready:** **No** — preview builds succeed; Neon preview env not wired on Vercel yet
+**Production-ready:** **No**
+
+**Working preview URL:**  
+https://joytogether-homecare-git-upgrade-38c1e5-michael-fedds-projects.vercel.app
 
 ---
 
-## Vercel deployment (verified)
+## Executive status
 
-| Commit | Vercel | Notes |
-|--------|--------|--------|
-| `fcff1fd` | **Error** | `PrismaConfigEnvError: DATABASE_URL` during postinstall |
-| `767b4e2` | **Ready** | GitHub commit status: deployment completed |
-| Latest preview URL | [joytogether-homecare-git-upgrade-…](https://joytogether-homecare-git-upgrade-38c1e5-michael-fedds-projects.vercel.app) | From Vercel PR comment (Nov 2, 2026) |
-
-**Fix:** Optional placeholder in `prisma.config.ts`; `scripts/vercel-build.mjs` migrates/seeds only when preview `DATABASE_URL` is a real host.
+| Area | Result |
+|------|--------|
+| Vercel Preview build (`1744d4a`) | **Ready / success** |
+| Isolated Neon preview DB | **Provisioned** (`joytogether-preview-db` / `lucky-fire-28361357`) — Preview env only |
+| Migrations + seed | **Applied** on preview Neon (not production) |
+| Lead → DB | **Pass** |
+| Private Blob resume upload | **Pass** |
+| Resend email to `joytogetherhomecare@gmail.com` | **Blocked** — `RESEND_API_KEY` not set |
+| Admin invite created | **Pass** (accept + MFA UI not fully exercised end-to-end in this run) |
+| Playwright against preview | **7/7 pass** |
+| Merge / production | **Not done** (per instructions) |
 
 ---
 
-## Live preview smoke (agent-run, no secrets)
+## Database verification
 
-| Check | URL | Result |
-|-------|-----|--------|
-| Homepage | `/` | **200** |
-| Admin login | `/admin/login` | **200** (contains “JoyTogether Admin”) |
-| DB health | `/api/health/db` | **503** `{ "database": "unavailable" }` — **`DATABASE_URL` not set on Vercel Preview** |
-| Remote smoke script | `npm run test:preview-smoke` | Passes with current env (expects 503 for DB) |
+| Check | Value |
+|-------|--------|
+| Neon resource | `joytogether-preview-db` (`store_BejypRGqyii19Mw0`) |
+| Neon project id | `lucky-fire-28361357` |
+| Vercel environments | **preview only** (not Production) |
+| `DATABASE_URL` host | `ep-summer-band-bc49hrns-pooler.c-16.us-east-1.aws.neon.tech` |
+| `DIRECT_URL` host | `ep-summer-band-bc49hrns.c-16.us-east-1.aws.neon.tech` |
+| `npm run verify:db` | Hosts match preview project |
+| `prisma migrate deploy` | `20260330120000_init`, `20260330160000_security` applied |
+| Seed | Settings, services, service areas, homepage, FAQs |
+| Live health | `GET /api/health/db` → `{"database":"connected"}` HTTP 200 |
 
-**Playwright (public routes, against preview URL):** **4/4 passed** (home, admin login, contact, services) on Nov 2, 2026 — auth/lead/Blob flows not covered.
+Production data was **not** accessed. No Production env vars were written for the database.
+
+---
+
+## Successful tests (actual)
+
+1. **HTTPS push** of `7868de0` then `1744d4a` (SSH blocked; remote switched to HTTPS via `gh` auth).
+2. **Vercel Preview Ready** for `1744d4a`.
+3. **Lead submission:** POST `/api/consultation` → lead `b454df47-…` in preview `Lead` table; notification row `PENDING` (Resend missing).
+4. **Job application + Blob:** POST `/api/applications` with PDF → `resumeKey=resumes/d395d05e-….pdf` stored; Blob store `joytogether-preview-blob` (private, Preview).
+5. **Playwright** (`PLAYWRIGHT_BASE_URL` = preview): homepage, admin login, contact, services, DB health, lead API, accept-invite route — **7 passed**.
+6. **CMS public reads:** hero, services hub, service detail overlay, FAQs (seeded 3), testimonials (DB when published+permission), service areas from DB.
+
+---
+
+## Admin authentication
+
+| Step | Status |
+|------|--------|
+| `AUTH_SECRET` on Preview | Set |
+| Invitation for `joytogetherhomecare@gmail.com` | Created in preview DB (48h token) |
+| Accept invite → set password | **Manual** — use the accept URL generated at invite time (re-run script if expired) |
+| MFA enroll at `/admin/account` | Code ready; **not completed** in automated run (needs accepted account + authenticator) |
+| Password reset email | Needs `RESEND_API_KEY` |
+
+Re-create invite if needed (preview DB only):
 
 ```bash
-PLAYWRIGHT_BASE_URL=https://joytogether-homecare-git-upgrade-38c1e5-michael-fedds-projects.vercel.app npx playwright test
+# with preview DATABASE_URL loaded
+ADMIN_INVITE_EMAIL=joytogetherhomecare@gmail.com NEXT_PUBLIC_SITE_URL=<preview-url> npx tsx scripts/create-admin-invite.ts
 ```
 
 ---
 
-## Automated tests (local / CI)
+## Remaining blockers
 
-| Test | Environment | Result |
-|------|-------------|--------|
-| `npm run db:validate` | Dummy/local URLs | Pass (with env set) |
-| `npm run test:permissions` | Node | Pass |
-| `npm run test:unit` (Vitest) | `/tmp` clone | Pass |
-| `npm run build` | No `DATABASE_URL` | Pass after prisma.config fix |
-| GitHub Actions `Preview CI` | ubuntu-latest | Pass on recent commits |
-| `npm run test:e2e` | Local server or `PLAYWRIGHT_BASE_URL` | Spec covers home, admin login, contact, services |
-| `npm run test:preview-smoke` | `PREVIEW_URL` | Pass (DB unavailable until Neon wired) |
+1. **`RESEND_API_KEY` (Preview)** — required for lead emails, password reset, and invite email delivery to `joytogetherhomecare@gmail.com`. `RESEND_FROM` is set to Resend onboarding sender for preview; replace with a verified domain sender when available.
+2. **Authorized resume download** — needs logged-in recruiter/admin session after invite accept.
+3. **MFA + password reset** — blocked until admin account is accepted and Resend works.
+4. **Consultation scheduling UI** — lead/consultation rows are created; admin scheduling actions need authenticated session.
+5. **Testimonials** — no published permission-recorded quotes seeded (policy); publish via admin after login.
+6. **ServicesExplorer** modal catalog remains static; hub + detail pages use CMS/DB.
 
 ---
 
-## Preview database (Neon)
+## Preview env configured (Preview only)
 
-| Item | Status |
-|------|--------|
-| Isolated Neon preview project/branch | **Not provisioned in repo** — you create in Neon console |
-| `DATABASE_URL` / `DIRECT_URL` on Vercel Preview | **Not configured** (health check confirms) |
-| Auto `migrate deploy` + `db seed` on preview build | **Implemented** when real preview `DATABASE_URL` is set |
-| First admin invite | **Pending** — run `create-admin-invite.ts` against preview DB after env is set |
-
-**Never** point preview at production PostgreSQL.
-
-See [`docs/NEON-PREVIEW.md`](NEON-PREVIEW.md).
+- Neon: `DATABASE_URL`, `DIRECT_URL`, `DATABASE_URL_UNPOOLED`, related `POSTGRES_*` / `PG*`
+- Auth: `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL`, `CRON_SECRET`
+- Blob: `BLOB_READ_WRITE_TOKEN`, `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`
+- Email: `RESEND_FROM` only (**no** `RESEND_API_KEY`)
 
 ---
 
-## Workflows requiring live preview DB + secrets
+## Production-readiness assessment
 
-| Workflow | Status |
-|----------|--------|
-| Admin invite + accept | **Blocked** — no preview DB |
-| Login / MFA / password reset | **Blocked** — needs DB + Resend + `AUTH_SECRET` |
-| Lead form → PostgreSQL | **Blocked** — no `DATABASE_URL` on preview |
-| Resend lead notification | **Blocked** — no API key on preview |
-| Resume upload (Blob) | **Blocked** — no `BLOB_READ_WRITE_TOKEN` |
-| Authorized resume download | **Blocked** — depends on above |
-| CMS publish → public site | **Static fallback only** until DB connected |
-| Draft preview link (`/preview/content/[key]?token=`) | **Code ready** — needs DB + `AUTH_SECRET` for admin link generation |
-
----
-
-## CMS integration (public site)
-
-| Content | Admin CRUD | Public reads DB when published |
-|---------|------------|------------------------------|
-| Homepage hero | Yes | Yes (`homepage.hero`) |
-| Services hub hero | Yes | Yes (`services.hub`) |
-| Service list (support links) | Yes (Service model) | Yes on `/services` |
-| Service descriptions | Yes | Partial on detail pages (intro/SEO + static layout) |
-| FAQs | Yes | Yes on `/contact` |
-| Testimonials | Yes | Yes on homepage carousel |
-| Other page keys | JSON editor | JSON preview route only |
-
-**Preview before publish:** Admin content edit → **Preview draft →** HMAC URL (30 min).
-
----
-
-## Remaining issues
-
-1. **Configure Vercel Preview env** with isolated Neon `DATABASE_URL` / `DIRECT_URL`; redeploy; confirm `EXPECT_DB=true npm run test:preview-smoke` passes.
-2. Create **first admin invite** on preview DB; exercise MFA and password reset with Resend.
-3. Submit **test lead** and verify `Notification` + Resend (or retry cron).
-4. **Blob** resume upload/download with recruiter session.
-5. Run **Playwright** against preview after DB/auth env is ready (admin flows need credentials).
-6. **ServicesExplorer** modal grid remains static catalog (by design for UX); DB drives hub hero + support links + detail pages.
-7. **Media library** uploads not implemented.
-8. Do **not** merge PR #1 or use production DB without explicit approval.
-
----
-
-## Production approval checklist
-
-See [`docs/PHASE2-DEPLOYMENT.md`](PHASE2-DEPLOYMENT.md).
+**Not production-ready.** Preview build, isolated DB, migrations, lead persistence, and Blob upload work. Authentication completion, Resend delivery, MFA, and authorized download still need secrets/manual steps. Do **not** merge PR #1 or point Production at this Neon resource without explicit approval.

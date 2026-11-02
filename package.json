@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "node scripts/vercel-build.mjs",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
@@ -15,6 +15,7 @@
     "db:seed": "prisma db seed",
     "test:permissions": "tsx scripts/test-permissions.ts",
     "test:unit": "vitest run",
+    "test:e2e": "playwright test",
     "verify:db": "tsx scripts/verify-db-identity.ts"
   },
   "prisma": {
@@ -43,6 +44,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",

@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { CareDiscovery } from "@/components/home/CareDiscovery";
 import { CinematicHero } from "@/components/home/CinematicHero";
 import { EmotionalConnection } from "@/components/home/EmotionalConnection";
@@ -7,7 +8,7 @@ import { MajorCarePanels } from "@/components/home/MajorCarePanels";
 import { PartnersSection } from "@/components/home/PartnersSection";
 import { PrivateDutyFeature } from "@/components/home/PrivateDutyFeature";
 import { ServiceAreas } from "@/components/home/ServiceAreas";
-import { TampaReviewsSection } from "@/components/home/TampaReviewsSection";
+import { HomeReviewsSection } from "@/components/home/HomeReviewsSection";
 import { WhyFamilies } from "@/components/home/WhyFamilies";
 import { getPublishedPageBody } from "@/lib/content/public";
 
@@ -19,6 +20,7 @@ const defaultHero = {
 };
 
 export default async function HomePage() {
+  await connection();
   const hero = await getPublishedPageBody("homepage.hero", defaultHero);
 
   return (
@@ -34,7 +36,7 @@ export default async function HomePage() {
       <PrivateDutyFeature />
       <WhyFamilies />
       <CareDiscovery />
-      <TampaReviewsSection />
+      <HomeReviewsSection />
       <HowCareBegins />
       <PartnersSection />
       <ServiceAreas />

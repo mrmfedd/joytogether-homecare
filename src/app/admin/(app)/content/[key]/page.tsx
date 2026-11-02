@@ -4,6 +4,7 @@ import { savePageContentAction } from "@/app/admin/(app)/content/actions";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageContent } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { previewContentUrl } from "@/lib/content/preview";
 import { PublicationStatus } from "@/generated/prisma";
 
 export default async function EditContentPage({ params }: { params: Promise<{ key: string }> }) {
@@ -17,6 +18,13 @@ export default async function EditContentPage({ params }: { params: Promise<{ ke
     include: { revisions: { orderBy: { createdAt: "desc" }, take: 10, include: { createdBy: { select: { email: true } } } } },
   });
   if (!page) notFound();
+
+  let previewUrl: string | null = null;
+  try {
+    previewUrl = previewContentUrl(page.key);
+  } catch {
+    previewUrl = null;
+  }
 
   return (
     <div className="max-w-3xl">
@@ -55,6 +63,11 @@ export default async function EditContentPage({ params }: { params: Promise<{ ke
         <button type="submit" className="btn btn-purple px-5 py-2 text-sm">
           Save &amp; version
         </button>
+        {previewUrl ? (
+          <a href={previewUrl} target="_blank" rel="noreferrer" className="ml-3 text-sm font-bold text-[var(--royal)]">
+            Preview draft →
+          </a>
+        ) : null}
       </form>
 
       <section className="mt-8">

@@ -31,17 +31,19 @@ export const serviceCategories: ServiceCategory[] = [
   },
   {
     id: "home-care",
-    title: "Home Care",
-    image: "/assets/services/home-care-nursing.jpg",
+    title: "Home Care & Private Duty",
+    image: "/assets/services/home-care-private-duty.jpg",
     summary:
-      "Practical in-home support that keeps living spaces safe, routines steady, and families at ease.",
+      "Personalized private-duty home care that helps seniors stay safe, independent, and comfortable in familiar surroundings — with flexible support from a few hours a week to live-in and 24-hour care.",
     highlights: [
-      "Light housekeeping, laundry, and changing linens",
-      "Vacuuming, dusting, and kitchen tidy-up",
-      "Meal planning and preparation",
-      "Exercising, ROM, and ADL support",
-      "Personalized care plans for each client",
-      "Focused quality care in the place of residence",
+      "One-on-one private duty care matched to your loved one’s needs",
+      "Assistance with bathing, dressing, and grooming",
+      "Live-in and 24-hour care options for continuous support",
+      "Fall prevention and safety supervision at home",
+      "Meal preparation, light housekeeping, and laundry",
+      "Medication reminders and everyday routine support",
+      "Companionship that supports emotional well-being and recovery",
+      "Reliable backup caregivers for family peace of mind",
     ],
   },
   {
@@ -62,7 +64,7 @@ export const serviceCategories: ServiceCategory[] = [
   {
     id: "errands-transportation",
     title: "Errands & Transportation",
-    image: "/assets/services/errands-personal-care.jpg",
+    image: "/assets/services/errands-transport.jpg",
     summary:
       "Reliable local help with the trips and tasks that keep everyday life running smoothly.",
     highlights: [
@@ -77,7 +79,7 @@ export const serviceCategories: ServiceCategory[] = [
   {
     id: "rn-lpn",
     title: "RN / LPN",
-    image: "/assets/services/skilled-nursing-care.jpg",
+    image: "/assets/services/rn-lpn-care.jpg",
     summary:
       "Skilled nursing support from RNs and LPNs for clinical needs that require trained professionals.",
     highlights: [
@@ -92,7 +94,7 @@ export const serviceCategories: ServiceCategory[] = [
   {
     id: "other-work",
     title: "Other Work",
-    image: "/assets/services/home-care-duties.jpg",
+    image: "/assets/services/other-work-companion.jpg",
     summary:
       "Companionship, activities, and monitoring that brighten the day and support independence.",
     highlights: [

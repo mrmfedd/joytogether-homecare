@@ -69,7 +69,7 @@ const localBusinessJsonLd = {
   areaServed: site.contact.serviceArea,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"

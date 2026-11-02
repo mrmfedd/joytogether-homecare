@@ -87,6 +87,24 @@ async function main() {
     update: {},
   });
 
+  await prisma.pageContent.upsert({
+    where: { key: "services.hub" },
+    create: {
+      key: "services.hub",
+      title: "Services Hub Hero",
+      status: PublicationStatus.PUBLISHED,
+      body: {
+        eyebrow: "Our Services",
+        title: "Care Pathways for Every Family Journey",
+        description:
+          "JoyTogether Home Care provides skilled nursing, hospice care, and private duty options — plus practical nonmedical support that helps people remain comfortable at home.",
+        ctaLabel: "Request a Free Consultation →",
+        ctaHref: "/contact",
+      },
+    },
+    update: {},
+  });
+
   if (process.env.SEED_DEV_EXAMPLES === "true") {
     console.log("SEED_DEV_EXAMPLES enabled — skipping fictional leads/testimonials by policy.");
   }

@@ -2,12 +2,22 @@ import { notFound } from "next/navigation";
 import { getPageBodyForPreview } from "@/lib/content/public";
 import { verifyPreviewToken } from "@/lib/content/preview";
 import { CinematicHero } from "@/components/home/CinematicHero";
+import { PageHero } from "@/components/layout/PageHero";
 
 const defaultHero = {
   headline: "The Art of Caring.",
   subheadline: "Compassion That Feels Like Family. Care That Feels Like Home.",
   primaryCta: "Request a Free Consultation",
   secondaryCta: "Explore Our Services",
+};
+
+const defaultServicesHub = {
+  eyebrow: "Our Services",
+  title: "Care Pathways for Every Family Journey",
+  description:
+    "JoyTogether Home Care provides skilled nursing, hospice care, and private duty options — plus practical nonmedical support that helps people remain comfortable at home.",
+  ctaLabel: "Request a Free Consultation →",
+  ctaHref: "/contact",
 };
 
 export default async function PreviewContentPage({
@@ -28,7 +38,9 @@ export default async function PreviewContentPage({
   const body =
     key === "homepage.hero"
       ? await getPageBodyForPreview(key, defaultHero, "draft")
-      : await getPageBodyForPreview(key, {}, "draft");
+      : key === "services.hub"
+        ? await getPageBodyForPreview(key, defaultServicesHub, "draft")
+        : await getPageBodyForPreview(key, {}, "draft");
 
   return (
     <div className="min-h-screen bg-[var(--cream)]">
@@ -41,6 +53,16 @@ export default async function PreviewContentPage({
           subheadline={(body as typeof defaultHero).subheadline}
           primaryCta={(body as typeof defaultHero).primaryCta}
           secondaryCta={(body as typeof defaultHero).secondaryCta}
+        />
+      ) : key === "services.hub" ? (
+        <PageHero
+          eyebrow={(body as typeof defaultServicesHub).eyebrow}
+          title={(body as typeof defaultServicesHub).title}
+          description={(body as typeof defaultServicesHub).description}
+          cta={{
+            label: (body as typeof defaultServicesHub).ctaLabel,
+            href: (body as typeof defaultServicesHub).ctaHref,
+          }}
         />
       ) : (
         <pre className="site-container py-8 text-xs">{JSON.stringify(body, null, 2)}</pre>

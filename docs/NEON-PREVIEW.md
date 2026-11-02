@@ -27,6 +27,10 @@ Confirm hostnames match your **preview** project, not production.
 
 ## 3. Apply migrations (preview only)
 
+On **Vercel Preview**, when `DATABASE_URL` points to your Neon preview host, the build runs `prisma migrate deploy` automatically, then runs **`prisma db seed`** (idempotent upserts) unless you set `SKIP_SEED=true` or `RUN_SEED_ON_PREVIEW=false`.
+
+Locally:
+
 ```bash
 npm run db:migrate:deploy
 npm run db:seed
@@ -62,7 +66,13 @@ Open the one-time accept-invite URL, set password, then enable MFA at `/admin/ac
 
 ## 6. Smoke tests
 
-- `GET /api/health/db` → `{ "ok": true }`
+```bash
+PREVIEW_URL=https://your-branch.vercel.app npm run test:preview-smoke
+# After DATABASE_URL is configured on preview:
+EXPECT_DB=true PREVIEW_URL=... npm run test:preview-smoke
+```
+
+- `GET /api/health/db` → `{ "database": "connected" }` when preview DB is wired
 - Submit consultation form → row in `Lead`, `Notification`
 - `/admin` KPIs reflect live counts
 - Job application with resume → recruiter download (auth required)

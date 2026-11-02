@@ -16,6 +16,7 @@
     "test:permissions": "tsx scripts/test-permissions.ts",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
+    "test:preview-smoke": "node scripts/preview-remote-smoke.mjs",
     "verify:db": "tsx scripts/verify-db-identity.ts"
   },
   "prisma": {

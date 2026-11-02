@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
 import { PageHero } from "@/components/layout/PageHero";
 import { Reveal } from "@/components/motion/Reveal";
 import { ServicesExplorer } from "@/components/services/ServicesExplorer";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { majorCareExperiences, serviceLandings } from "@/content/careServices";
+import { majorCareExperiences } from "@/content/careServices";
+import { getPublishedPageBody, listPublishedServices } from "@/lib/content/public";
+
+const defaultServicesHub = {
+  eyebrow: "Our Services",
+  title: "Care Pathways for Every Family Journey",
+  description:
+    "JoyTogether Home Care provides skilled nursing, hospice care, and private duty options — plus practical nonmedical support that helps people remain comfortable at home.",
+  ctaLabel: "Request a Free Consultation →",
+  ctaHref: "/contact",
+};
 
 export const metadata: Metadata = {
   title: "Our Services | Skilled Nursing, Hospice & Private Duty",
@@ -14,14 +25,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "/services" },
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  await connection();
+  const hub = await getPublishedPageBody("services.hub", defaultServicesHub);
+  const publishedServices = await listPublishedServices();
+  const supportServices = publishedServices.filter((s) => s.category === "support");
+
   return (
     <>
       <PageHero
-        eyebrow="Our Services"
-        title="Care Pathways for Every Family Journey"
-        description="JoyTogether Home Care provides skilled nursing, hospice care, and private duty options — plus practical nonmedical support that helps people remain comfortable at home."
-        cta={{ label: "Request a Free Consultation →", href: "/contact" }}
+        eyebrow={hub.eyebrow}
+        title={hub.title}
+        description={hub.description}
+        cta={{ label: hub.ctaLabel, href: hub.ctaHref }}
       />
 
       <section className="section-pad bg-white">
@@ -66,17 +82,15 @@ export default function ServicesPage() {
             </p>
           </Reveal>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {serviceLandings
-              .filter((s) => s.category === "support")
-              .map((s) => (
-                <Link
-                  key={s.slug}
-                  href={`/services/${s.slug}`}
-                  className="rounded-2xl border border-line bg-white px-5 py-4 text-sm font-bold text-purple-900 shadow-sm hover:border-[var(--royal)]"
-                >
-                  {s.title} →
-                </Link>
-              ))}
+            {supportServices.map((s) => (
+              <Link
+                key={s.slug}
+                href={`/services/${s.slug}`}
+                className="rounded-2xl border border-line bg-white px-5 py-4 text-sm font-bold text-purple-900 shadow-sm hover:border-[var(--royal)]"
+              >
+                {s.name} →
+              </Link>
+            ))}
           </div>
         </div>
       </section>

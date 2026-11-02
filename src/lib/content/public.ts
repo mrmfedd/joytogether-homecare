@@ -74,6 +74,7 @@ export async function listPublishedServices() {
       name: s.title,
       description: s.intro,
       featuredImage: s.image,
+      category: s.category,
     }));
   }
   try {
@@ -87,6 +88,7 @@ export async function listPublishedServices() {
         name: s.title,
         description: s.intro,
         featuredImage: s.image,
+        category: s.category,
       }));
     }
     return rows;
@@ -96,6 +98,7 @@ export async function listPublishedServices() {
       name: s.title,
       description: s.intro,
       featuredImage: s.image,
+      category: s.category,
     }));
   }
 }

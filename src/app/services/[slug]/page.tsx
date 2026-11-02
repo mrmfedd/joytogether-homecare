@@ -14,12 +14,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const staticService = getServiceLanding(slug);
-  const fromDb = await getPublishedServiceBySlug(slug);
-  if (!staticService && !fromDb) return {};
+  const service = (await getPublishedServiceBySlug(slug)) ?? getServiceLanding(slug);
+  if (!service) return {};
   return {
-    title: fromDb?.seoTitle ?? staticService?.seoTitle,
-    description: fromDb?.seoDescription ?? staticService?.seoDescription,
+    title: service.seoTitle,
+    description: service.seoDescription,
     alternates: { canonical: `/services/${slug}` },
   };
 }
@@ -30,20 +29,7 @@ export default async function ServiceSlugPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const staticService = getServiceLanding(slug);
-  if (!staticService) notFound();
-
-  const fromDb = await getPublishedServiceBySlug(slug);
-  const service = fromDb
-    ? {
-        ...staticService,
-        title: fromDb.title,
-        intro: fromDb.intro,
-        image: fromDb.image ?? staticService.image,
-        seoTitle: fromDb.seoTitle ?? staticService.seoTitle,
-        seoDescription: fromDb.seoDescription ?? staticService.seoDescription,
-      }
-    : staticService;
-
+  const service = (await getPublishedServiceBySlug(slug)) ?? getServiceLanding(slug);
+  if (!service) notFound();
   return <ServiceLandingPage service={service} />;
 }

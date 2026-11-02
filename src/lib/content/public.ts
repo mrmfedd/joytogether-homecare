@@ -105,17 +105,14 @@ export async function getPublishedServiceBySlug(slug: string) {
   if (!process.env.DATABASE_URL) return staticLanding ?? null;
   try {
     const row = await prisma.service.findUnique({ where: { slug } });
-    if (row && row.status === "PUBLISHED" && row.visible) {
+    if (row && row.status === "PUBLISHED" && row.visible && staticLanding) {
       return {
-        slug: row.slug,
+        ...staticLanding,
         title: row.name,
         intro: row.description,
-        image: row.featuredImage || staticLanding?.image,
-        seoTitle: row.seoTitle || staticLanding?.seoTitle,
-        seoDescription: row.seoDescription || staticLanding?.seoDescription,
-        category: row.category,
-        sections: staticLanding?.sections ?? [],
-        cta: staticLanding?.cta,
+        image: row.featuredImage || staticLanding.image,
+        seoTitle: row.seoTitle || staticLanding.seoTitle,
+        seoDescription: row.seoDescription || staticLanding.seoDescription,
       };
     }
   } catch {

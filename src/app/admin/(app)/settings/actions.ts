@@ -19,13 +19,13 @@ export async function saveSiteSettingAction(formData: FormData) {
     key: formData.get("key"),
     valueJson: formData.get("valueJson"),
   });
-  if (!parsed.success) return { ok: false as const, error: "Invalid setting" };
+  if (!parsed.success) return;
 
   let value: unknown;
   try {
     value = JSON.parse(parsed.data.valueJson);
   } catch {
-    return { ok: false as const, error: "Value must be valid JSON" };
+    return;
   }
 
   await prisma.siteSetting.upsert({
@@ -36,7 +36,7 @@ export async function saveSiteSettingAction(formData: FormData) {
 
   await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "SiteSetting", entityId: parsed.data.key });
   revalidatePath("/admin/settings");
-  return { ok: true as const };
+  return;
 }
 
 export async function retryNotificationsAction() {
@@ -49,5 +49,5 @@ export async function retryNotificationsAction() {
     meta: { processed },
   });
   revalidatePath("/admin/settings");
-  return { ok: true as const, processed };
+  return;
 }

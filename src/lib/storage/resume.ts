@@ -49,8 +49,11 @@ export async function getResumeStream(storageKey: string): Promise<{ data: Buffe
   }
 
   const result = await get(storageKey, { access: "private", token: process.env.BLOB_READ_WRITE_TOKEN });
+  if (!result || result.statusCode !== 200) {
+    throw new Error("Failed to fetch resume");
+  }
   const data = Buffer.from(await new Response(result.stream).arrayBuffer());
-  const contentType = result.contentType || "application/octet-stream";
+  const contentType = result.blob.contentType || "application/octet-stream";
   return { data, contentType };
 }
 

@@ -19,7 +19,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   try {
     const { data, contentType } = await getResumeStream(application.resumeKey);
     const ext = application.resumeKey.includes(".") ? application.resumeKey.split(".").pop() : "pdf";
-    return new NextResponse(data, {
+    return new NextResponse(new Uint8Array(data), {
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="${application.fullName.replace(/[^a-z0-9-_]+/gi, "_")}-resume.${ext}"`,

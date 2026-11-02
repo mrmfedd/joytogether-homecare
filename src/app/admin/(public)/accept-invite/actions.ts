@@ -11,7 +11,7 @@ export async function acceptInviteAction(formData: FormData) {
   const confirm = String(formData.get("confirm") || "");
 
   if (!token || password.length < 12 || password !== confirm) {
-    return { ok: false, error: "Check password requirements and confirmation." };
+    return;
   }
 
   const invite = await prisma.adminInvitation.findUnique({
@@ -19,12 +19,12 @@ export async function acceptInviteAction(formData: FormData) {
   });
 
   if (!invite || invite.acceptedAt || invite.expiresAt < new Date()) {
-    return { ok: false, error: "Invitation invalid or expired." };
+    return;
   }
 
   const existing = await prisma.user.findUnique({ where: { email: invite.email } });
   if (existing) {
-    return { ok: false, error: "An account already exists for this email." };
+    return;
   }
 
   const passwordHash = await hashPassword(password);

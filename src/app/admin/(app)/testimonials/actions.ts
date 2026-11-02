@@ -22,10 +22,10 @@ const testimonialSchema = z.object({
 export async function saveTestimonialAction(formData: FormData) {
   const user = await requirePermission(canManageContent);
   const parsed = testimonialSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { ok: false as const, error: "Invalid testimonial" };
+  if (!parsed.success) return;
 
   if (parsed.data.status === "PUBLISHED" && !parsed.data.permissionRecorded) {
-    return { ok: false as const, error: "Record permission before publishing." };
+    return;
   }
 
   const data = {
@@ -45,7 +45,7 @@ export async function saveTestimonialAction(formData: FormData) {
   await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "Testimonial", entityId: testimonial.id });
   revalidatePath("/admin/testimonials");
   revalidatePath("/");
-  return { ok: true as const, id: testimonial.id };
+  return;
 }
 
 export async function archiveTestimonialAction(formData: FormData) {
@@ -54,5 +54,5 @@ export async function archiveTestimonialAction(formData: FormData) {
   await prisma.testimonial.update({ where: { id }, data: { status: "ARCHIVED" } });
   await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "Testimonial", entityId: id });
   revalidatePath("/admin/testimonials");
-  return { ok: true as const };
+  return;
 }

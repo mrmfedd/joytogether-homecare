@@ -10,14 +10,14 @@ import { prisma } from "@/lib/prisma";
 export async function updateLeadStatusAction(formData: FormData) {
   const user = await requireAdminSession();
   if (!user || !canManageLeads(user.role)) {
-    return { ok: false, error: "Unauthorized" };
+    return;
   }
 
   const leadId = String(formData.get("leadId") || "");
   const status = String(formData.get("status") || "") as LeadStatus;
   const note = String(formData.get("note") || "").trim();
 
-  if (!leadId) return { ok: false, error: "Missing lead" };
+  if (!leadId) return;
 
   await prisma.$transaction(async (tx) => {
     await tx.lead.update({
@@ -52,18 +52,18 @@ export async function updateLeadStatusAction(formData: FormData) {
   revalidatePath("/admin/private-duty");
   revalidatePath(`/admin/leads/${leadId}`);
   revalidatePath("/admin");
-  return { ok: true };
+  return;
 }
 
 export async function assignLeadAction(formData: FormData) {
   const user = await requireAdminSession();
   if (!user || !canManageLeads(user.role)) {
-    return { ok: false, error: "Unauthorized" };
+    return;
   }
 
   const leadId = String(formData.get("leadId") || "");
   const assigneeId = String(formData.get("assigneeId") || "");
-  if (!leadId || !assigneeId) return { ok: false, error: "Missing fields" };
+  if (!leadId || !assigneeId) return;
 
   const assignee = await prisma.user.findUnique({ where: { id: assigneeId }, select: { name: true, email: true } });
 
@@ -87,18 +87,18 @@ export async function assignLeadAction(formData: FormData) {
 
   revalidatePath("/admin/leads");
   revalidatePath(`/admin/leads/${leadId}`);
-  return { ok: true };
+  return;
 }
 
 export async function scheduleConsultationAction(formData: FormData) {
   const user = await requireAdminSession();
-  if (!user || !canManageLeads(user.role)) return { ok: false, error: "Unauthorized" };
+  if (!user || !canManageLeads(user.role)) return;
 
   const leadId = String(formData.get("leadId") || "");
   const consultationId = String(formData.get("consultationId") || "");
   const scheduledRaw = String(formData.get("scheduledAt") || "");
   const assigneeId = String(formData.get("assigneeId") || user.id);
-  if (!leadId || !consultationId || !scheduledRaw) return { ok: false, error: "Missing fields" };
+  if (!leadId || !consultationId || !scheduledRaw) return;
 
   const scheduledAt = new Date(scheduledRaw);
   await prisma.$transaction(async (tx) => {
@@ -126,19 +126,19 @@ export async function scheduleConsultationAction(formData: FormData) {
 
   revalidatePath(`/admin/leads/${leadId}`);
   revalidatePath("/admin/consultations");
-  return { ok: true };
+  return;
 }
 
 export async function createFollowUpTaskAction(formData: FormData) {
   const user = await requireAdminSession();
-  if (!user || !canManageLeads(user.role)) return { ok: false, error: "Unauthorized" };
+  if (!user || !canManageLeads(user.role)) return;
 
   const leadId = String(formData.get("leadId") || "");
   const title = String(formData.get("title") || "").trim();
   const dueRaw = String(formData.get("dueAt") || "");
   const assigneeId = String(formData.get("assigneeId") || user.id);
   const notes = String(formData.get("notes") || "").trim();
-  if (!leadId || !title) return { ok: false, error: "Title required" };
+  if (!leadId || !title) return;
 
   await prisma.followUpTask.create({
     data: {
@@ -160,12 +160,12 @@ export async function createFollowUpTaskAction(formData: FormData) {
   });
 
   revalidatePath(`/admin/leads/${leadId}`);
-  return { ok: true };
+  return;
 }
 
 export async function completeFollowUpTaskAction(formData: FormData) {
   const user = await requireAdminSession();
-  if (!user || !canManageLeads(user.role)) return { ok: false, error: "Unauthorized" };
+  if (!user || !canManageLeads(user.role)) return;
 
   const taskId = String(formData.get("taskId") || "");
   const leadId = String(formData.get("leadId") || "");
@@ -174,5 +174,5 @@ export async function completeFollowUpTaskAction(formData: FormData) {
     data: { status: "DONE" },
   });
   revalidatePath(`/admin/leads/${leadId}`);
-  return { ok: true };
+  return;
 }

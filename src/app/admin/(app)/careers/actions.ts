@@ -20,7 +20,7 @@ const jobSchema = z.object({
 export async function saveJobPostingAction(formData: FormData) {
   const user = await requirePermission(canManageCareers);
   const parsed = jobSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { ok: false as const, error: "Invalid job posting" };
+  if (!parsed.success) return;
 
   const job = parsed.data.id
     ? await prisma.jobPosting.update({
@@ -51,14 +51,14 @@ export async function saveJobPostingAction(formData: FormData) {
   });
   revalidatePath("/admin/careers");
   revalidatePath("/apply");
-  return { ok: true as const, id: job.id };
+  return;
 }
 
 export async function updateApplicationStatusAction(formData: FormData) {
   const user = await requirePermission(canManageCareers);
   const id = String(formData.get("id") || "");
   const status = String(formData.get("status") || "") as ApplicantStatus;
-  if (!id) return { ok: false as const, error: "Missing application" };
+  if (!id) return;
 
   await prisma.jobApplication.update({
     where: { id },
@@ -66,5 +66,5 @@ export async function updateApplicationStatusAction(formData: FormData) {
   });
   await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "JobApplication", entityId: id, meta: { status } });
   revalidatePath("/admin/careers");
-  return { ok: true as const };
+  return;
 }

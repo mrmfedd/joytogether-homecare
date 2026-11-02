@@ -1,15 +1,13 @@
-import { authenticator } from "otplib";
-
-authenticator.options = { window: 1 };
+import { generateSecret, generateURI, verifySync } from "otplib";
 
 export function generateMfaSecret() {
-  return authenticator.generateSecret();
+  return generateSecret();
 }
 
 export function verifyMfaCode(secret: string, code: string) {
-  return authenticator.verify({ token: code, secret });
+  return verifySync({ secret, token: code });
 }
 
 export function mfaOtpAuthUrl(email: string, secret: string) {
-  return authenticator.keyuri(email, "JoyTogether Admin", secret);
+  return generateURI({ issuer: "JoyTogether Admin", label: email, secret });
 }

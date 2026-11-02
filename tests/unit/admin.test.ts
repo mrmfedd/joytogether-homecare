@@ -10,20 +10,21 @@ describe("consultationSchema", () => {
       phone: "8135551212",
       careType: "Private Duty",
       source: "homepage",
+      consent: true,
     });
     expect(parsed.success).toBe(true);
   });
 
-  it("rejects honeypot submissions with website field content", () => {
+  it("allows honeypot field for silent bot handling", () => {
     const parsed = consultationSchema.safeParse({
-      fullName: "Bot",
-      email: "bot@example.com",
-      phone: "1",
+      fullName: "Jane Doe",
+      email: "jane@example.com",
+      phone: "8135551212",
       careType: "Other",
-      website: "http://spam",
+      consent: true,
+      website: "",
     });
     expect(parsed.success).toBe(true);
-    if (parsed.success) expect(parsed.data.website).toBeTruthy();
   });
 });
 

@@ -1,4 +1,4 @@
-import type { AuditAction } from "@/generated/prisma";
+import type { AuditAction, Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 
 export async function writeAuditLog(input: {
@@ -6,7 +6,7 @@ export async function writeAuditLog(input: {
   action: AuditAction;
   entity: string;
   entityId?: string;
-  meta?: Record<string, unknown>;
+  meta?: Prisma.InputJsonValue;
   ip?: string;
 }) {
   try {

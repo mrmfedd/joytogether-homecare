@@ -26,13 +26,13 @@ export async function saveServiceAction(formData: FormData) {
   const user = await requirePermission(canManageServices);
   const raw = Object.fromEntries(formData.entries());
   const parsed = serviceSchema.safeParse(raw);
-  if (!parsed.success) return { ok: false as const, error: parsed.error.issues[0]?.message || "Invalid input" };
+  if (!parsed.success) return;
 
   const existing = parsed.data.id
     ? await prisma.service.findUnique({ where: { id: parsed.data.id } })
     : null;
   if (existing?.clinicalLocked && !canApproveClinicalCopy(user.role)) {
-    return { ok: false as const, error: "Clinical service copy requires admin approval." };
+    return;
   }
 
   const data = {
@@ -61,15 +61,15 @@ export async function saveServiceAction(formData: FormData) {
 
   revalidatePath("/admin/services");
   revalidatePath("/services");
-  return { ok: true as const, id: service.id };
+  return;
 }
 
 export async function archiveServiceAction(formData: FormData) {
   const user = await requirePermission(canManageServices);
   const id = String(formData.get("id") || "");
-  if (!id) return { ok: false as const, error: "Missing id" };
+  if (!id) return;
   await prisma.service.update({ where: { id }, data: { status: "ARCHIVED", visible: false } });
   await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "Service", entityId: id, meta: { status: "ARCHIVED" } });
   revalidatePath("/admin/services");
-  return { ok: true as const };
+  return;
 }

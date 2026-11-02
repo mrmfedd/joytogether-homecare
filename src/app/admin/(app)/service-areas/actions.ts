@@ -18,7 +18,7 @@ const areaSchema = z.object({
 export async function saveServiceAreaAction(formData: FormData) {
   const user = await requirePermission(canManageServices);
   const parsed = areaSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { ok: false as const, error: "Invalid service area" };
+  if (!parsed.success) return;
 
   const area = parsed.data.id
     ? await prisma.serviceArea.update({
@@ -41,7 +41,7 @@ export async function saveServiceAreaAction(formData: FormData) {
 
   await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "ServiceArea", entityId: area.id });
   revalidatePath("/admin/service-areas");
-  return { ok: true as const, id: area.id };
+  return;
 }
 
 export async function linkServiceAreaAction(formData: FormData) {
@@ -50,7 +50,7 @@ export async function linkServiceAreaAction(formData: FormData) {
   const serviceAreaId = String(formData.get("serviceAreaId") || "");
   const linked = formData.getAll("linked").includes("on");
 
-  if (!serviceId || !serviceAreaId) return { ok: false as const, error: "Missing ids" };
+  if (!serviceId || !serviceAreaId) return;
 
   if (linked) {
     await prisma.serviceOnArea.upsert({
@@ -69,5 +69,5 @@ export async function linkServiceAreaAction(formData: FormData) {
     meta: { serviceId, serviceAreaId, linked },
   });
   revalidatePath("/admin/service-areas");
-  return { ok: true as const };
+  return;
 }

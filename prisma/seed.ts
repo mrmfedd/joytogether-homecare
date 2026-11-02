@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaClient, PublicationStatus } from "../src/generated/prisma";
+import { PrismaClient, PublicationStatus, type Prisma } from "../src/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import { serviceLandings } from "../src/content/careServices";
@@ -33,8 +33,8 @@ async function main() {
   for (const [key, value] of Object.entries(defaultSettings)) {
     await prisma.siteSetting.upsert({
       where: { key },
-      create: { key, value, sensitive: key === "email" },
-      update: { value },
+      create: { key, value: value as Prisma.InputJsonValue, sensitive: key === "email" },
+      update: { value: value as Prisma.InputJsonValue },
     });
   }
 

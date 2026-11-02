@@ -23,13 +23,13 @@ export async function savePageContentAction(formData: FormData) {
     bodyJson: formData.get("bodyJson"),
     status: formData.get("status"),
   });
-  if (!parsed.success) return { ok: false as const, error: "Invalid content" };
+  if (!parsed.success) return;
 
   let body: unknown;
   try {
     body = JSON.parse(parsed.data.bodyJson);
   } catch {
-    return { ok: false as const, error: "Body must be valid JSON" };
+    return;
   }
 
   const existing = await prisma.pageContent.findUnique({ where: { key: parsed.data.key } });
@@ -69,7 +69,7 @@ export async function savePageContentAction(formData: FormData) {
   revalidatePath("/admin/content");
   revalidatePath(`/admin/content/${page.key}`);
   revalidatePath("/");
-  return { ok: true as const };
+  return;
 }
 
 const faqSchema = z.object({
@@ -83,7 +83,7 @@ const faqSchema = z.object({
 export async function saveFaqAction(formData: FormData) {
   const user = await requirePermission(canManageContent);
   const parsed = faqSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { ok: false as const, error: "Invalid FAQ" };
+  if (!parsed.success) return;
 
   const faq = parsed.data.id
     ? await prisma.fAQ.update({
@@ -106,7 +106,7 @@ export async function saveFaqAction(formData: FormData) {
 
   await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "FAQ", entityId: faq.id });
   revalidatePath("/admin/content");
-  return { ok: true as const };
+  return;
 }
 
 export async function deleteFaqAction(formData: FormData) {
@@ -115,5 +115,5 @@ export async function deleteFaqAction(formData: FormData) {
   await prisma.fAQ.delete({ where: { id } });
   await writeAuditLog({ userId: user.id, action: "DELETE", entity: "FAQ", entityId: id });
   revalidatePath("/admin/content");
-  return { ok: true as const };
+  return;
 }

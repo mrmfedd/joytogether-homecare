@@ -1,4 +1,4 @@
-import { LeadStatus } from "@/generated/prisma";
+import { LeadStatus, type Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 
 const privateDutyMatchers = ["private duty", "private-duty", "private pay", "private-pay"];
@@ -81,7 +81,7 @@ export async function listLeads(filters?: {
   q?: string;
   privateDutyOnly?: boolean;
 }) {
-  const where: Parameters<typeof prisma.lead.findMany>[0]["where"] = {};
+  const where: Prisma.LeadWhereInput = {};
   if (filters?.status) where.status = filters.status;
   if (filters?.service) {
     where.serviceInterest = { contains: filters.service, mode: "insensitive" };

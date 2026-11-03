@@ -4,6 +4,7 @@ import { canManageNotices } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
 import { createStaffNoticeAction, publishStaffNoticeAction } from "./actions";
 import { HelpPageHeader } from "@/components/help/HelpPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 
 export default async function AdminNoticesPage() {
   const user = await requireAdminSession();
@@ -67,6 +68,13 @@ export default async function AdminNoticesPage() {
             ) : null}
           </li>
         ))}
+        {notices.length === 0 ? (
+          <AdminEmptyState
+            className="mt-4"
+            title="No staff notices yet"
+            description="Create a draft notice above, then publish when you are ready. Email notifications contain workplace information only — never patient health information."
+          />
+        ) : null}
       </ul>
     </div>
   );

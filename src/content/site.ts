@@ -4,8 +4,8 @@ export const site = {
   tagline: "Trusted in-home care in Tampa Bay",
   description:
     "Compassionate, affordable home care and hospice support throughout the Greater Tampa Bay area. We treat every client like family.",
-  url: "https://joytogether-homecare.vercel.app",
-  legacyUrl: "https://joytogetherhomecare.com",
+  url: "https://www.joytogetherhomecare.com",
+  legacyUrl: "https://www.joytogetherhomecare.com",
   heroImage:
     "https://img1.wsimg.com/isteam/getty/2249342508/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:1240,h:620,cg:true",
   contact: {
@@ -22,6 +22,15 @@ export const site = {
     },
     serviceArea: "Greater Tampa Bay area",
   },
+  /** Public Google Maps listing used for verified review attribution (not a deep link to individual reviews). */
+  googleBusinessProfileUrl:
+    "https://www.google.com/maps/search/?api=1&query=Joy+Together+Home+Care+300+Frandorson+Cir+Ste+3219+Apollo+Beach+FL+33572",
+  /** Footer “Follow Us” — use full https URLs; shown site-wide in the footer. */
+  socialLinks: [
+    { label: "Facebook", href: "https://www.facebook.com/1924180421199141" },
+    { label: "X", href: "https://x.com/joytogetherhome" },
+    { label: "YouTube", href: "https://www.youtube.com/watch?v=LD-d4Cv8HF8" },
+  ],
   copyrightYear: 2026,
   navigation: [
     { label: "Home", href: "/" },

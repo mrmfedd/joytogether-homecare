@@ -1,0 +1,817 @@
+// JoyTogether Home Care — business admin CRM (not clinical/EHR data)
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  CARE_COORDINATOR
+  CONTENT_EDITOR
+  RECRUITER
+  VIEWER
+  EMPLOYEE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONSULTATION_SCHEDULED
+  QUALIFIED
+  CONVERTED
+  NOT_INTERESTED
+  CLOSED
+}
+
+enum ConsultationStatus {
+  REQUESTED
+  SCHEDULED
+  COMPLETED
+  CANCELED
+  NO_SHOW
+}
+
+enum FollowUpStatus {
+  OPEN
+  DONE
+  CANCELED
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ApplicantStatus {
+  NEW
+  UNDER_REVIEW
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  PUBLISH
+}
+
+enum EmployeeClassification {
+  CAREGIVER
+  HOME_HEALTH_AIDE
+  CNA
+  LPN
+  RN
+  HOSPICE_STAFF
+  TRANSPORTATION_STAFF
+  SCHEDULER
+  SUPERVISOR
+}
+
+enum EmploymentStatus {
+  INVITED
+  ACTIVE
+  ON_LEAVE
+  INACTIVE
+}
+
+enum ShiftStatus {
+  DRAFT
+  PUBLISHED
+  CANCELED
+  COMPLETED
+}
+
+enum ShiftConfirmationStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+enum TimeOffStatus {
+  PENDING
+  APPROVED
+  DENIED
+  CANCELED
+}
+
+enum ShiftOfferStatus {
+  OPEN
+  FILLED
+  CANCELED
+  EXPIRED
+}
+
+enum ShiftResponseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum NoticePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TimeEntryStatus {
+  OPEN
+  CLOSED
+}
+
+enum TimesheetCorrectionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  emailVerified  DateTime?
+  name           String?
+  passwordHash   String?
+  role           UserRole  @default(VIEWER)
+  active         Boolean   @default(true)
+  mfaEnabled     Boolean   @default(false)
+  mfaSecret      String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lastLoginAt    DateTime?
+
+  accounts            Account[]
+  sessions            Session[]
+  assignedLeads       Lead[]            @relation("LeadAssignee")
+  leadActivities      LeadActivity[]
+  leadAssignments     LeadAssignment[]
+  consultations       Consultation[]    @relation("ConsultationAssignee")
+  followUpTasks       FollowUpTask[]    @relation("TaskAssignee")
+  contentRevisions    ContentRevision[]
+  auditLogs           AuditLog[]
+  invitationsCreated  AdminInvitation[] @relation("InviteCreator")
+  invitationsAccepted AdminInvitation[] @relation("InviteAccepted")
+  jobReviews          JobApplication[]  @relation("ApplicationReviewer")
+  passwordResetTokens PasswordResetToken[]
+  employeeProfile     EmployeeProfile?
+  employeeInvitesCreated EmployeeInvitation[] @relation("EmployeeInviteCreator")
+  employeeInvitesAccepted EmployeeInvitation[] @relation("EmployeeInviteAccepted")
+  shiftsCreated       Shift[]              @relation("ShiftCreator")
+  staffNoticesCreated StaffNotice[]        @relation("NoticeCreator")
+  staffActivities     StaffActivity[]
+  timeOffReviewed     EmployeeTimeOffRequest[] @relation("TimeOffReviewer")
+  shiftResponsesReviewed ShiftResponse[]   @relation("ShiftResponseReviewer")
+  timesheetCorrectionsReviewed TimesheetCorrection[] @relation("TimesheetCorrectionReviewer")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model AdminInvitation {
+  id          String    @id @default(uuid())
+  email       String
+  role        UserRole
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdById String?
+  acceptedById String?
+  createdAt   DateTime  @default(now())
+
+  createdBy  User? @relation("InviteCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  acceptedBy User? @relation("InviteAccepted", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([email])
+}
+
+model Lead {
+  id                 String     @id @default(uuid())
+  fullName           String
+  email              String
+  phone              String
+  serviceInterest    String
+  location           String?
+  preferredContact   String?
+  preferredTime      String?
+  source             String
+  status             LeadStatus @default(NEW)
+  nonClinicalNotes   String?    @db.Text
+  consentAt          DateTime
+  consentTextVersion String
+  assignedToId       String?
+  idempotencyKey     String?    @unique
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  assignedTo     User?           @relation("LeadAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  activities     LeadActivity[]
+  assignments    LeadAssignment[]
+  consultations  Consultation[]
+  followUpTasks  FollowUpTask[]
+  consentRecords ConsentRecord[]
+
+  @@index([status])
+  @@index([serviceInterest])
+  @@index([createdAt])
+  @@index([email])
+}
+
+model LeadActivity {
+  id        String   @id @default(uuid())
+  leadId    String
+  userId    String?
+  type      String
+  summary   String   @db.Text
+  createdAt DateTime @default(now())
+
+  lead Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([leadId, createdAt])
+}
+
+model LeadAssignment {
+  id         String   @id @default(uuid())
+  leadId     String
+  userId     String
+  assignedAt DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+}
+
+model Consultation {
+  id              String             @id @default(uuid())
+  leadId          String
+  status          ConsultationStatus @default(REQUESTED)
+  scheduledAt     DateTime?
+  assignedToId    String?
+  internalNotes   String?            @db.Text
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  lead       Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignedTo User?           @relation("ConsultationAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  followUps  FollowUpTask[]
+
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model FollowUpTask {
+  id             String         @id @default(uuid())
+  leadId         String?
+  consultationId String?
+  title          String
+  dueAt          DateTime?
+  status         FollowUpStatus @default(OPEN)
+  assignedToId   String?
+  notes          String?        @db.Text
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  lead         Lead?         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  consultation Consultation? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  assignedTo   User?         @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status, dueAt])
+}
+
+model Service {
+  id              String            @id @default(uuid())
+  slug            String            @unique
+  name            String
+  category        String
+  description     String            @db.Text
+  displayOrder    Int               @default(0)
+  featuredImage   String?
+  visible         Boolean           @default(true)
+  status          PublicationStatus @default(PUBLISHED)
+  seoTitle        String?
+  seoDescription  String?
+  clinicalLocked  Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  serviceAreas    ServiceOnArea[]
+
+  @@index([category, displayOrder])
+}
+
+model ServiceArea {
+  id          String            @id @default(uuid())
+  name        String
+  slug        String            @unique
+  description String?           @db.Text
+  visible     Boolean           @default(true)
+  services    ServiceOnArea[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model ServiceOnArea {
+  serviceId     String
+  serviceAreaId String
+  service       Service     @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceArea   ServiceArea @relation(fields: [serviceAreaId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, serviceAreaId])
+}
+
+model PageContent {
+  id        String            @id @default(uuid())
+  key       String            @unique
+  title     String
+  body      Json
+  status    PublicationStatus @default(DRAFT)
+  updatedAt DateTime          @updatedAt
+  createdAt DateTime          @default(now())
+  revisions ContentRevision[]
+}
+
+model ContentRevision {
+  id            String   @id @default(uuid())
+  pageContentId String
+  snapshot      Json
+  createdById   String?
+  createdAt     DateTime @default(now())
+
+  pageContent PageContent @relation(fields: [pageContentId], references: [id], onDelete: Cascade)
+  createdBy   User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([pageContentId, createdAt])
+}
+
+model FAQ {
+  id           String            @id @default(uuid())
+  question     String
+  answer       String            @db.Text
+  displayOrder Int               @default(0)
+  status       PublicationStatus @default(DRAFT)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model Testimonial {
+  id              String            @id @default(uuid())
+  quote           String            @db.Text
+  authorName      String
+  authorRole      String?
+  permissionRecorded Boolean        @default(false)
+  permissionNote  String?
+  displayOrder    Int               @default(0)
+  status          PublicationStatus @default(DRAFT)
+  mediaAssetId    String?
+  mediaAsset      MediaAsset?       @relation(fields: [mediaAssetId], references: [id], onDelete: SetNull)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model MediaAsset {
+  id           String   @id @default(uuid())
+  filename     String
+  mimeType     String
+  sizeBytes    Int
+  storageKey   String   @unique
+  altText      String?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  testimonials Testimonial[]
+}
+
+model JobPosting {
+  id          String            @id @default(uuid())
+  title       String
+  slug        String            @unique
+  description String            @db.Text
+  location    String?
+  status      PublicationStatus @default(DRAFT)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id            String          @id @default(uuid())
+  jobPostingId  String?
+  fullName      String
+  email         String
+  phone         String?
+  position      String
+  message       String?         @db.Text
+  resumeKey     String?
+  status        ApplicantStatus @default(NEW)
+  reviewerId    String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  jobPosting JobPosting? @relation(fields: [jobPostingId], references: [id], onDelete: SetNull)
+  reviewer   User?       @relation("ApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SiteSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  sensitive Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id          String             @id @default(uuid())
+  type        String
+  payload     Json
+  status      NotificationStatus @default(PENDING)
+  attempts    Int                @default(0)
+  lastError   String?            @db.Text
+  leadId      String?
+  sentAt      DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model ConsentRecord {
+  id        String   @id @default(uuid())
+  leadId    String
+  text      String   @db.Text
+  version   String
+  createdAt DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  userId    String?
+  action    AuditAction
+  entity    String
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime    @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+}
+
+model EmployeeInvitation {
+  id           String    @id @default(uuid())
+  email        String
+  classification EmployeeClassification
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  createdById  String?
+  acceptedById String?
+  createdAt    DateTime  @default(now())
+
+  createdBy  User? @relation("EmployeeInviteCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  acceptedBy User? @relation("EmployeeInviteAccepted", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([email])
+}
+
+model EmployeeProfile {
+  id               String                 @id @default(uuid())
+  userId           String                 @unique
+  classification   EmployeeClassification
+  employmentStatus EmploymentStatus       @default(INVITED)
+  phone            String?
+  timezone         String                 @default("America/New_York")
+  department       String?
+  hireDate         DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentials       EmployeeCredential[]
+  availability      EmployeeAvailability[]
+  timeOffRequests   EmployeeTimeOffRequest[]
+  shiftAssignments  ShiftAssignment[]
+  shiftResponses    ShiftResponse[]
+  noticeRecipients  StaffNoticeRecipient[]
+  timeEntries       TimeEntry[]
+  timesheets        Timesheet[]
+
+  @@index([classification, employmentStatus])
+}
+
+model EmployeeCredential {
+  id          String    @id @default(uuid())
+  profileId   String
+  name        String
+  expiresAt   DateTime?
+  verifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model EmployeeAvailability {
+  id          String   @id @default(uuid())
+  profileId   String
+  dayOfWeek   Int?
+  startMinutes Int?
+  endMinutes   Int?
+  unavailableDate DateTime?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model EmployeeTimeOffRequest {
+  id          String        @id @default(uuid())
+  profileId   String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String?       @db.Text
+  status      TimeOffStatus @default(PENDING)
+  reviewerId  String?
+  reviewNote  String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  profile  EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  reviewer User?           @relation("TimeOffReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, status])
+  @@index([startDate, endDate])
+}
+
+model ShiftRecurrence {
+  id             String   @id @default(uuid())
+  rule           Json
+  untilDate      DateTime?
+  createdAt      DateTime @default(now())
+
+  shifts Shift[]
+}
+
+model Shift {
+  id                    String      @id @default(uuid())
+  title                 String?
+  startsAt              DateTime
+  endsAt                DateTime
+  serviceCategory       String
+  status                ShiftStatus @default(DRAFT)
+  workLocationLabel     String?
+  schedulingInstructions String?    @db.Text
+  assignmentReference   String?
+  recurrenceId          String?
+  version               Int         @default(1)
+  createdById           String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  recurrence   ShiftRecurrence? @relation(fields: [recurrenceId], references: [id], onDelete: SetNull)
+  createdBy    User?            @relation("ShiftCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  assignment   ShiftAssignment?
+  offer        ShiftOffer?
+
+  @@index([startsAt, endsAt])
+  @@index([status])
+}
+
+model ShiftAssignment {
+  id                 String                  @id @default(uuid())
+  shiftId            String                  @unique
+  profileId          String
+  confirmationStatus ShiftConfirmationStatus @default(PENDING)
+  confirmedAt        DateTime?
+  declinedAt         DateTime?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  shift   Shift           @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  timeEntries TimeEntry[]
+
+  @@index([profileId])
+}
+
+model ShiftOffer {
+  id                      String           @id @default(uuid())
+  shiftId                 String           @unique
+  status                  ShiftOfferStatus @default(OPEN)
+  requiredClassification  EmployeeClassification?
+  requiredCredentialName  String?
+  expiresAt               DateTime?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+
+  shift     Shift           @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  responses ShiftResponse[]
+}
+
+model ShiftResponse {
+  id          String              @id @default(uuid())
+  offerId     String
+  profileId   String
+  status      ShiftResponseStatus @default(PENDING)
+  reviewerId  String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  offer    ShiftOffer      @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  profile  EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  reviewer User?           @relation("ShiftResponseReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@unique([offerId, profileId])
+  @@index([profileId, status])
+}
+
+model StaffNotice {
+  id              String         @id @default(uuid())
+  title           String
+  body            String         @db.Text
+  priority        NoticePriority @default(NORMAL)
+  requiresAck     Boolean        @default(false)
+  targetAll       Boolean        @default(true)
+  targetClassification EmployeeClassification?
+  targetDepartment String?
+  publishedAt     DateTime?
+  createdById     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  createdBy   User?                  @relation("NoticeCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  recipients  StaffNoticeRecipient[]
+  notifications StaffNotification[]
+}
+
+model StaffNoticeRecipient {
+  id        String    @id @default(uuid())
+  noticeId  String
+  profileId String
+  readAt    DateTime?
+  ackAt     DateTime?
+  createdAt DateTime  @default(now())
+
+  notice  StaffNotice     @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([noticeId, profileId])
+  @@index([profileId])
+}
+
+model StaffNotification {
+  id        String             @id @default(uuid())
+  noticeId  String?
+  profileId String?
+  email     String
+  subject   String
+  status    NotificationStatus @default(PENDING)
+  attempts  Int                @default(0)
+  lastError String?            @db.Text
+  sentAt    DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  notice StaffNotice? @relation(fields: [noticeId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+}
+
+model StaffActivity {
+  id        String   @id @default(uuid())
+  userId    String?
+  profileId String?
+  type      String
+  summary   String   @db.Text
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
+
+model TimeEntry {
+  id                 String          @id @default(uuid())
+  profileId          String
+  shiftAssignmentId  String?
+  clockInAt          DateTime
+  clockOutAt         DateTime?
+  status             TimeEntryStatus @default(OPEN)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  profile    EmployeeProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  assignment ShiftAssignment? @relation(fields: [shiftAssignmentId], references: [id], onDelete: SetNull)
+  corrections TimesheetCorrection[]
+
+  @@index([profileId, clockInAt])
+}
+
+model Timesheet {
+  id          String   @id @default(uuid())
+  profileId   String
+  periodStart DateTime
+  periodEnd   DateTime
+  totalMinutes Int     @default(0)
+  exportedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profile EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, periodStart])
+}
+
+model TimesheetCorrection {
+  id              String                    @id @default(uuid())
+  timeEntryId     String
+  requestedInAt   DateTime?
+  requestedOutAt  DateTime?
+  reason          String                    @db.Text
+  status          TimesheetCorrectionStatus @default(PENDING)
+  reviewerId      String?
+  reviewNote      String?                   @db.Text
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  timeEntry TimeEntry @relation(fields: [timeEntryId], references: [id], onDelete: Cascade)
+  reviewer  User?     @relation("TimesheetCorrectionReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+}

@@ -1,0 +1,27 @@
+name: Preview CI
+
+on:
+  push:
+    branches: [upgrade/customer-acquisition-redesign]
+  pull_request:
+    branches: [upgrade/customer-acquisition-redesign, main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/joytogether?sslmode=disable
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/joytogether?sslmode=disable
+      AUTH_SECRET: ci-auth-secret-ci-auth-secret-ci12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run db:validate
+      - run: npm run db:generate
+      - run: npm run test:permissions
+      - run: npm run test:unit
+      - run: npm run build

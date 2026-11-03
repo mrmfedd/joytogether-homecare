@@ -152,11 +152,6 @@ export const home = {
 
 export const footer = {
   tagline: "Compassionate care. Brighter days. Together.",
-  social: [
-    { label: "Facebook", href: "https://www.facebook.com/" },
-    { label: "Instagram", href: "https://www.instagram.com/" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/" },
-  ],
   legal: [
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Service", href: "/terms" },

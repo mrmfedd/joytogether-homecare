@@ -27,12 +27,22 @@ const greatVibes = Great_Vibes({
 
 export const metadata: Metadata = {
   title: {
-    default: `${site.name} | Compassionate Care. Brighter Days.`,
+    default: `${site.name} | The Art of Caring`,
     template: `%s | ${site.name}`,
   },
   description:
-    "Joy Together Home Care offers compassionate, personalized support to help loved ones live comfortably at home.",
+    "JoyTogether Home Care provides skilled nursing, hospice care, and private duty options for families across the Greater Tampa Bay area.",
   metadataBase: new URL(site.url),
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: `${site.name} | The Art of Caring`,
+    description:
+      "Skilled nursing, hospice care, and private duty support — compassion that feels like family.",
+    url: site.url,
+    siteName: site.name,
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export const viewport = {
@@ -41,13 +51,35 @@ export const viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+const localBusinessJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HomeHealthCareService",
+  name: site.legalName,
+  url: site.url,
+  telephone: site.contact.phone,
+  email: site.contact.email,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: site.contact.address.line1,
+    addressLocality: site.contact.address.city,
+    addressRegion: site.contact.address.state,
+    postalCode: site.contact.address.zip,
+    addressCountry: "US",
+  },
+  areaServed: site.contact.serviceArea,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       className={`${playfair.variable} ${dmSans.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+        />
         <PageShell>{children}</PageShell>
       </body>
     </html>

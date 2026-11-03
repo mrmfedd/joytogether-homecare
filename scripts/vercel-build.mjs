@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import {
   describeMigrationDatabaseUrl,
+  isNonMigratableBuildDatabaseUrl,
   selectMigrationDatabaseUrl,
   shouldRunMigrateDuringBuild,
 } from "./migration-database-url.mjs";
@@ -30,6 +31,7 @@ if (shouldMigrate) {
   }
 } else {
   const productionMigrateAllowed = process.env.RUN_PRODUCTION_MIGRATIONS === "true";
+  const selected = selectMigrationDatabaseUrl(process.env);
   if (vercelEnv === "production" && dbUrl.length > 0 && !productionMigrateAllowed) {
     console.warn(
       "Skipping prisma migrate deploy on Production build (set RUN_PRODUCTION_MIGRATIONS=true only during an approved migrate window).",
@@ -38,6 +40,12 @@ if (shouldMigrate) {
     console.warn("Skipping prisma migrate deploy (no DATABASE_URL / unpooled equivalents).");
   } else if (process.env.SKIP_MIGRATIONS === "true") {
     console.warn("Skipping prisma migrate deploy (SKIP_MIGRATIONS=true).");
+  } else if (vercelEnv !== "preview" && vercelEnv !== "production") {
+    console.warn(
+      "Skipping prisma migrate deploy (migrations run on Vercel Preview deploys and approved Production windows only).",
+    );
+  } else if (migrationMeta.hasConfiguredUrl && isNonMigratableBuildDatabaseUrl(selected.url)) {
+    console.warn("Skipping prisma migrate deploy (non-migratable build database host).");
   }
 }
 

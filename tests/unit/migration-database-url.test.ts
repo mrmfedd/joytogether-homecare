@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MIGRATION_URL_ENV_PRIORITY,
   describeMigrationDatabaseUrl,
+  isNonMigratableBuildDatabaseUrl,
   selectMigrationDatabaseUrl,
   shouldRunMigrateDuringBuild,
 } from "../../scripts/migration-database-url.mjs";
@@ -77,8 +78,36 @@ describe("shouldRunMigrateDuringBuild", () => {
     DATABASE_URL_UNPOOLED: "postgresql://direct/db",
   };
 
-  it("runs on Preview when DATABASE_URL is set", () => {
+  it("runs on Vercel Preview when a real database URL is configured", () => {
     expect(shouldRunMigrateDuringBuild(previewDb)).toBe(true);
+  });
+
+  it("skips GitHub Actions-style localhost credentials without a Postgres service", () => {
+    expect(
+      shouldRunMigrateDuringBuild({
+        DATABASE_URL: "postgresql://ci:ci@localhost:5432/joytogether?sslmode=disable",
+        DIRECT_URL: "postgresql://ci:ci@localhost:5432/joytogether?sslmode=disable",
+        AUTH_SECRET: "ci",
+      }),
+    ).toBe(false);
+  });
+
+  it("skips migrate when only placeholder localhost URLs are present", () => {
+    expect(isNonMigratableBuildDatabaseUrl("postgresql://ci:ci@localhost:5432/db")).toBe(true);
+    expect(isNonMigratableBuildDatabaseUrl("postgresql://build:build@127.0.0.1:5432/build")).toBe(
+      true,
+    );
+    expect(isNonMigratableBuildDatabaseUrl("postgresql://user@ep-neon.aws.neon.tech/db")).toBe(
+      false,
+    );
+  });
+
+  it("does not migrate on npm run build without VERCEL_ENV even if DATABASE_URL is set", () => {
+    expect(
+      shouldRunMigrateDuringBuild({
+        DATABASE_URL: "postgresql://user@ep-neon.aws.neon.tech/db",
+      }),
+    ).toBe(false);
   });
 
   it("skips Production build migrate unless RUN_PRODUCTION_MIGRATIONS=true", () => {

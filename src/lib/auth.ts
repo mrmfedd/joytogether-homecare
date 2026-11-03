@@ -7,6 +7,7 @@ import { authConfig } from "@/lib/auth.config";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 import { verifyMfaCode } from "@/lib/mfa";
+import { isJwtSessionValid } from "@/lib/auth/session-version";
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
@@ -24,6 +25,43 @@ function loginRateLimited(key: string) {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = (user as { role?: string }).role;
+        token.sessionVersion = (user as { sessionVersion?: number }).sessionVersion ?? 0;
+      }
+      if (token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub as string },
+          select: { sessionVersion: true, active: true },
+        });
+        if (
+          !dbUser ||
+          !isJwtSessionValid({
+            active: dbUser.active,
+            dbSessionVersion: dbUser.sessionVersion,
+            tokenSessionVersion: (token.sessionVersion as number | undefined) ?? 0,
+          })
+        ) {
+          token.sessionInvalid = true;
+        }
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (token.sessionInvalid) {
+        return null as unknown as typeof session;
+      }
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as typeof session.user.role;
+      }
+      return session;
+    },
+  },
   providers: [
     Credentials({
       name: "Credentials",

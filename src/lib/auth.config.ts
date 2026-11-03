@@ -1,6 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
 import type { UserRole } from "@/generated/prisma";
-import { prisma } from "@/lib/prisma";
 
 function isPublicAdminPath(path: string) {
   return (
@@ -70,38 +69,6 @@ export const authConfig = {
       }
 
       return true;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: string }).role;
-        token.sessionVersion = (user as { sessionVersion?: number }).sessionVersion ?? 0;
-      }
-      if (token.sub) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub as string },
-          select: { sessionVersion: true, active: true },
-        });
-        if (!dbUser?.active) {
-          token.sessionInvalid = true;
-          return token;
-        }
-        const tokenVersion = (token.sessionVersion as number | undefined) ?? 0;
-        if (dbUser.sessionVersion !== tokenVersion) {
-          token.sessionInvalid = true;
-        }
-      }
-      return token;
-    },
-    session({ session, token }) {
-      if (token.sessionInvalid) {
-        return null as unknown as typeof session;
-      }
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as typeof session.user.role;
-      }
-      return session;
     },
   },
   providers: [],

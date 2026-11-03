@@ -55,8 +55,19 @@ if (!url || url === "[SENSITIVE]") {
   process.exit(1);
 }
 
+const PRODUCTION_NEON_PROJECT = "weathered-term-63569834";
+const PRODUCTION_HOST_MARKER = "ep-nameless-hall";
+
 const host = new URL(url).hostname;
 const previewMarker = host.includes("ep-summer-band") || process.env.NEON_PROJECT_ID === "lucky-fire-28361357";
+const productionIdentityOk =
+  host.includes(PRODUCTION_HOST_MARKER) || process.env.NEON_PROJECT_ID === PRODUCTION_NEON_PROJECT;
+const productionMode = process.env.JT_USE_PRODUCTION_ENV === "true" || Boolean(prodEnvFile);
+
+if (productionMode && previewMarker) {
+  console.log(JSON.stringify({ ok: false, error: "Refusing: connection targets Preview Neon, not Production." }));
+  process.exit(1);
+}
 
 async function main() {
   const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
@@ -108,7 +119,9 @@ async function main() {
       {
         ok: true,
         dbHost: host,
-        environmentHint: previewMarker ? "preview-neon" : "non-preview-host",
+        environmentHint: previewMarker ? "preview-neon" : productionIdentityOk ? "production-neon" : "non-preview-host",
+        productionIdentityVerified: productionMode ? productionIdentityOk : undefined,
+        neonProjectId: process.env.NEON_PROJECT_ID || undefined,
         email,
         user: user
           ? {

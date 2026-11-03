@@ -3,6 +3,7 @@ import { requireAdminSession } from "@/lib/auth";
 import { canReviewTimeOff } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
 import { reviewTimeOffRequestAction } from "./actions";
+import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
 export default async function AdminTimeOffPage() {
   const user = await requireAdminSession();
@@ -15,8 +16,13 @@ export default async function AdminTimeOffPage() {
   });
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-[var(--midnight)]">Time off requests</h1>
+    <div data-help-tour="admin-time-off">
+      <HelpPageHeader
+        audience="ADMIN"
+        role={user.role}
+        pathname="/admin/time-off"
+        title="Time off requests"
+      />
       <ul className="mt-6 space-y-4">
         {requests.map((req) => (
           <li key={req.id} className="rounded-2xl border border-line bg-white p-5">

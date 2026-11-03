@@ -4,6 +4,7 @@ import { listLeads } from "@/lib/admin/queries";
 import { requireAdminSession } from "@/lib/auth";
 import { canViewLeadContact, canViewLeads } from "@/lib/permissions";
 import { redirect } from "next/navigation";
+import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
 const statuses = Object.values(LeadStatus);
 
@@ -30,12 +31,14 @@ export default async function AdminLeadsPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-[var(--midnight)]">Leads</h1>
-          <p className="body-muted mt-1 text-sm">Marketing inquiries only — no clinical records.</p>
-        </div>
-        <form className="flex flex-wrap gap-2">
+      <HelpPageHeader
+        audience="ADMIN"
+        role={user.role}
+        pathname="/admin/leads"
+        title="Leads"
+        description="Marketing inquiries only — no clinical records."
+      />
+      <form className="mb-6 flex flex-wrap gap-2">
           <input
             name="q"
             defaultValue={params.q}
@@ -60,7 +63,6 @@ export default async function AdminLeadsPage({
             Filter
           </button>
         </form>
-      </div>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-white">
         <table className="min-w-full text-left text-sm">

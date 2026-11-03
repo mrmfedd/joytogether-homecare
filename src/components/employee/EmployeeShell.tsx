@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  BookOpen,
   CalendarDays,
   LayoutDashboard,
   LogOut,
@@ -39,6 +40,7 @@ export function EmployeeShell({
     { href: "/employee/availability", label: "Availability", icon: CalendarDays },
     { href: "/employee/time-off", label: "Time Off", icon: Palmtree },
     { href: "/employee/notices", label: "Notices", icon: Bell },
+    { href: "/employee/help", label: "Help", icon: BookOpen },
     { href: "/employee/time-clock", label: "Time Clock", icon: Timer, show: timeClockEnabled },
     { href: "/employee/account", label: "Profile", icon: Shield },
   ].filter((item) => item.show !== false);

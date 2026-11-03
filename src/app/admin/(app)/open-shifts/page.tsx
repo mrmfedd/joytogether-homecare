@@ -4,6 +4,7 @@ import { canManageScheduling } from "@/lib/workforce/permissions";
 import { formatShiftRange } from "@/lib/workforce/queries";
 import { prisma } from "@/lib/prisma";
 import { approveShiftResponseAction, publishOpenShiftOfferAction } from "./actions";
+import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
 export default async function AdminOpenShiftsPage() {
   const user = await requireAdminSession();
@@ -34,9 +35,14 @@ export default async function AdminOpenShiftsPage() {
   ]);
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-[var(--midnight)]">Open shifts</h1>
-      <p className="mt-1 text-sm text-muted">Publish offers and approve employee requests.</p>
+    <div data-help-tour="admin-open-shifts">
+      <HelpPageHeader
+        audience="ADMIN"
+        role={user.role}
+        pathname="/admin/open-shifts"
+        title="Open shifts"
+        description="Publish offers and approve employee requests."
+      />
 
       {unassignedShifts.length > 0 ? (
         <section className="mt-6 rounded-2xl border border-line bg-white p-5">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  BookOpen,
   Briefcase,
   CalendarDays,
   ClipboardList,
@@ -51,6 +52,7 @@ const nav: NavItem[] = [
   { href: "/admin/timesheets", label: "Timesheets", icon: ClipboardList, workforce: true },
   { href: "/admin/workforce-reports", label: "Workforce Reports", icon: LayoutDashboard, workforce: true },
   { href: "/admin/reports", label: "Reports", icon: LayoutDashboard },
+  { href: "/admin/help", label: "Help Center", icon: BookOpen },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/admin/account", label: "Security", icon: Settings },
   { href: "/admin/users", label: "Admins", icon: Users, roles: ["SUPER_ADMIN"] },
@@ -75,7 +77,7 @@ export function AdminShell({
             {user.role.replace("_", " ")}
           </p>
         </div>
-        <nav className="p-3">
+        <nav className="p-3" data-help-tour="admin-nav">
           {nav
             .filter((item) => {
               if (item.workforce && !canManageWorkforce(user.role)) return false;

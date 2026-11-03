@@ -43,7 +43,7 @@ export async function upsertHelpCategoryAction(formData: FormData) {
   return { ok: true, editorId: user.id };
 }
 
-export async function saveHelpArticleAction(formData: FormData) {
+export async function saveHelpArticleAction(formData: FormData): Promise<void> {
   const user = await requireHelpEditor();
   const id = String(formData.get("id") || "").trim();
   const categoryId = String(formData.get("categoryId") || "").trim();
@@ -69,12 +69,12 @@ export async function saveHelpArticleAction(formData: FormData) {
     : [];
 
   if (!categoryId || !slug || !title || !content) {
-    return { error: "Title, slug, category, and content are required." };
+    redirect("/admin/help/manage?error=validation");
   }
 
   if (id) {
     const existing = await prisma.helpArticle.findUnique({ where: { id } });
-    if (!existing) return { error: "Article not found." };
+    if (!existing) redirect("/admin/help/manage?error=notfound");
 
     await prisma.$transaction([
       prisma.helpArticleRevision.create({
@@ -125,7 +125,7 @@ export async function saveHelpArticleAction(formData: FormData) {
   revalidatePath("/admin/help/manage");
   revalidatePath("/admin/help");
   revalidatePath("/employee/help");
-  return { ok: true };
+  redirect("/admin/help/manage");
 }
 
 export async function toggleHelpArticlePublishedAction(formData: FormData) {

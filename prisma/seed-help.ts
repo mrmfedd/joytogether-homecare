@@ -1,4 +1,4 @@
-import type { PrismaClient } from "../../src/generated/prisma";
+import type { PrismaClient } from "../src/generated/prisma";
 import { helpSeedCategories, helpSeedFaqs } from "../src/content/help/seed-data";
 
 export async function seedHelpCenter(prisma: PrismaClient) {

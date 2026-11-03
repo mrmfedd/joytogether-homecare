@@ -24,6 +24,10 @@
     "verify:production-connectivity": "tsx scripts/verify-production-connectivity.ts",
     "compare:db-identities": "tsx scripts/compare-db-identities.ts",
     "verify:production-wiring": "tsx scripts/verify-production-vercel-wiring.ts",
+    "verify:production-blob-wiring": "tsx scripts/verify-production-blob-wiring.ts",
+    "verify:production-db-readonly": "tsx scripts/verify-production-db-readonly.ts",
+    "verify:production-resend": "tsx scripts/verify-production-resend.ts",
+    "verify:resend-env-isolation": "tsx scripts/compare-resend-env-isolation.ts",
     "test:rc-security": "node scripts/rc-security-probe.mjs"
   },
   "prisma": {

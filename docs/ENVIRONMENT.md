@@ -4,14 +4,25 @@
 
 - **PostgreSQL** on [Neon](https://neon.tech) (separate projects/branches recommended)
 - **Prisma ORM 7** with `@prisma/adapter-pg` at runtime
-- Migrations use **`DIRECT_URL`** (non-pooled) via `prisma.config.ts`
+- **Migrations** pick a connection in `prisma.config.ts` via `scripts/migration-database-url.mjs` (unpooled first).
+- **Runtime queries** use pooled **`DATABASE_URL`** through `@prisma/adapter-pg` (unchanged).
+
+### Migration URL priority (`prisma migrate deploy`)
+
+1. `DIRECT_URL`
+2. `DATABASE_URL_UNPOOLED`
+3. `POSTGRES_URL_NON_POOLING`
+4. `DATABASE_URL` (pooled fallback only if nothing else is set)
+
+Vercel Neon integrations usually inject (2) and (3) on Production; Preview may use `DIRECT_URL` from a pulled env file.
 
 ## Required environment variables
 
 | Variable | Purpose |
 |----------|---------|
 | `DATABASE_URL` | Pooled connection for the Next.js app (Neon `-pooler` host) |
-| `DIRECT_URL` | Direct connection for `prisma migrate deploy` (no pooler) |
+| `DIRECT_URL` | Optional explicit direct URL for migrations (overrides unpooled Neon vars when set) |
+| `DATABASE_URL_UNPOOLED` / `POSTGRES_URL_NON_POOLING` | Neon integration unpooled URLs for migrations when `DIRECT_URL` is unset |
 | `AUTH_SECRET` | NextAuth session signing (32+ random bytes) |
 | `RESEND_API_KEY` | Optional — lead/application email notifications |
 | `RESEND_FROM` | Verified sender, e.g. `JoyTogether <notifications@yourdomain.com>` |

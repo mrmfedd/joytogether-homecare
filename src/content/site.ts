@@ -25,6 +25,12 @@ export const site = {
   /** Public Google Maps listing used for verified review attribution (not a deep link to individual reviews). */
   googleBusinessProfileUrl:
     "https://www.google.com/maps/search/?api=1&query=Joy+Together+Home+Care+300+Frandorson+Cir+Ste+3219+Apollo+Beach+FL+33572",
+  /** Footer “Follow Us” — use full https URLs; shown site-wide in the footer. */
+  socialLinks: [
+    { label: "Facebook", href: "https://www.facebook.com/1924180421199141" },
+    { label: "X", href: "https://x.com/joytogetherhome" },
+    { label: "YouTube", href: "https://www.youtube.com/watch?v=LD-d4Cv8HF8" },
+  ],
   copyrightYear: 2026,
   navigation: [
     { label: "Home", href: "/" },

@@ -12,6 +12,20 @@ type LeadEmailPayload = {
   location?: string;
 };
 
+export type JobApplicationEmailPayload = {
+  applicationId: string;
+  fullName: string;
+  position: string;
+  email: string;
+  phone?: string;
+  hasResume: boolean;
+};
+
+function publicBaseUrl() {
+  const base = process.env.NEXT_PUBLIC_SITE_URL?.trim() || site.url;
+  return base.replace(/\/$/, "");
+}
+
 const MAX_ATTEMPTS = 5;
 
 export async function sendLeadEmail(payload: LeadEmailPayload): Promise<{ ok: boolean; error?: string; messageId?: string }> {
@@ -112,6 +126,127 @@ export async function queueLeadNotification(payload: LeadEmailPayload) {
   return { notificationId: notification.id, ...result };
 }
 
+export async function sendJobApplicationEmail(
+  payload: JobApplicationEmailPayload,
+): Promise<{ ok: boolean; error?: string; messageId?: string }> {
+  const resendKey = process.env.RESEND_API_KEY;
+  const resendFrom = process.env.RESEND_FROM;
+  if (!resendKey || !resendFrom) {
+    return { ok: false, error: "RESEND not configured" };
+  }
+
+  if (/teezbydesign/i.test(resendFrom)) {
+    return { ok: false, error: "Invalid sender domain for JoyTogether notifications" };
+  }
+
+  const adminUrl = `${publicBaseUrl()}/admin/careers#application-${payload.applicationId}`;
+  const text = [
+    `${site.name} — new job application`,
+    `Application ID: ${payload.applicationId}`,
+    `Name: ${payload.fullName}`,
+    `Position: ${payload.position}`,
+    `Email: ${payload.email}`,
+    `Phone: ${payload.phone || "n/a"}`,
+    `Resume on file: ${payload.hasResume ? "yes (download in admin — not attached to this email)" : "no"}`,
+    "",
+    "Review in admin:",
+    adminUrl,
+    "",
+    "—",
+    site.legalName,
+    `Phone: ${site.contact.phone}`,
+    `Email: ${site.contact.email}`,
+    site.url,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: resendFrom,
+        to: [site.contact.email],
+        reply_to: payload.email,
+        subject: `${site.name}: job application — ${payload.position}`,
+        text,
+      }),
+    });
+    const json = (await res.json().catch(() => ({}))) as { id?: string; message?: string };
+    if (!res.ok) {
+      return { ok: false, error: json.message || `Resend HTTP ${res.status}` };
+    }
+    return { ok: true, messageId: json.id };
+  } catch {
+    return { ok: false, error: "Resend request failed" };
+  }
+}
+
+export async function deliverJobApplicationNotification(notificationId: string) {
+  const notification = await prisma.notification.findUnique({ where: { id: notificationId } });
+  if (!notification || notification.type !== "job_application_created") {
+    return { ok: false, error: "Not found" };
+  }
+  if (notification.status === "SENT") {
+    return { ok: true, skipped: true as const };
+  }
+
+  const payload = notification.payload as JobApplicationEmailPayload;
+  const result = await sendJobApplicationEmail(payload);
+  const attempts = notification.attempts + 1;
+  let status: NotificationStatus = "PENDING";
+  if (result.ok) status = "SENT";
+  else if (attempts >= MAX_ATTEMPTS) status = "FAILED";
+
+  await prisma.notification.update({
+    where: { id: notificationId },
+    data: {
+      attempts,
+      status,
+      lastError: result.error,
+      sentAt: result.ok ? new Date() : notification.sentAt,
+      payload: {
+        ...payload,
+        resendMessageId: result.messageId,
+      } as Prisma.InputJsonValue,
+    },
+  });
+
+  return { ok: result.ok, status, error: result.error };
+}
+
+export async function queueJobApplicationNotification(payload: JobApplicationEmailPayload) {
+  const existing = await prisma.notification.findFirst({
+    where: {
+      type: "job_application_created",
+      payload: {
+        path: ["applicationId"],
+        equals: payload.applicationId,
+      },
+    },
+  });
+  if (existing) {
+    if (existing.status === "SENT") {
+      return { notificationId: existing.id, ok: true, skipped: true as const };
+    }
+    const result = await deliverJobApplicationNotification(existing.id);
+    return { notificationId: existing.id, ...result };
+  }
+
+  const notification = await prisma.notification.create({
+    data: {
+      type: "job_application_created",
+      payload: payload as Prisma.InputJsonValue,
+      status: "PENDING",
+    },
+  });
+
+  const result = await deliverJobApplicationNotification(notification.id);
+  return { notificationId: notification.id, ...result };
+}
+
 export async function processNotificationRetries(limit = 20) {
   const pending = await prisma.notification.findMany({
     where: {
@@ -126,6 +261,9 @@ export async function processNotificationRetries(limit = 20) {
   for (const n of pending) {
     if (n.type === "lead_created") {
       await deliverLeadNotification(n.id);
+      processed += 1;
+    } else if (n.type === "job_application_created") {
+      await deliverJobApplicationNotification(n.id);
       processed += 1;
     }
   }

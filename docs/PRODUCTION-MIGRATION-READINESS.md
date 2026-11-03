@@ -13,7 +13,7 @@
 | Is `joytogether-production` connected to `joytogether-homecare` for **Production only**? | **Yes** — Vercel integration + env scope verified |
 | Is Preview still on `joytogether-preview-db` only? | **Yes** — Neon vars remain **Preview**-scoped |
 | Are Production and Preview Neon identities distinct? | **Yes** (Preview markers unchanged; Production has separate integration) |
-| Is the database ready for an **approved** `prisma migrate deploy`? | **Conditionally yes** — wiring complete; take backup snapshot before migrate |
+| Is the database ready for an **approved** `prisma migrate deploy`? | **Yes** — wiring + unpooled migration URL selection fixed; take backup snapshot before migrate |
 
 **Overall:** **Migration-ready after you approve `docs/PRODUCTION-MIGRATION-PLAN.md`**, with pre-migrate backup recommended (see backup section).
 
@@ -34,7 +34,7 @@ Present (names only, no values): `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_
 
 Also injected by Neon integration (review): `NEON_AUTH_BASE_URL`, `VITE_NEON_AUTH_URL` — JoyTogether uses **NextAuth + Prisma**; disable or ignore Neon Auth if not needed.
 
-**Note:** `DIRECT_URL` is not a separate Vercel key; use `DATABASE_URL_UNPOOLED` / `POSTGRES_URL_NON_POOLING` for migrations (matches Preview pattern).
+**Note:** Prisma migrations read connection URLs via `scripts/migration-database-url.mjs` in this order: `DIRECT_URL` → `DATABASE_URL_UNPOOLED` → `POSTGRES_URL_NON_POOLING` → `DATABASE_URL`. Vercel Production Neon injects the unpooled vars; `DIRECT_URL` is optional. **Production Vercel builds skip `migrate deploy`** unless `RUN_PRODUCTION_MIGRATIONS=true` during an approved window.
 
 ### Preview env (unchanged)
 

@@ -26,7 +26,8 @@ Last validated: 2026-11-02 — script reported `ok: true`.
 ## Pre-migrate checklist
 
 - [ ] `joytogether-production` connected to Vercel **Production only** (Preview still on `joytogether-preview-db`)
-- [ ] `vercel env pull .env.production.local --environment=production` includes `DATABASE_URL` / `DIRECT_URL` (or unpooled equivalents)
+- [ ] Production env includes unpooled migration vars (`DATABASE_URL_UNPOOLED` / `POSTGRES_URL_NON_POOLING` from Neon) or `DIRECT_URL`
+- [ ] `npm run test:unit -- migration-database-url` — migration URL priority tests pass
 - [ ] `VERCEL_ENV=production npm run verify:env-isolation` — **PASS** (no `ep-summer-band-bc49hrns`, no Preview `NEON_PROJECT_ID`)
 - [ ] `npm run verify:db` — hosts differ from Preview
 - [ ] Neon backup: branch snapshot or `pg_dump` via `DIRECT_URL` to encrypted owner storage
@@ -39,9 +40,12 @@ Last validated: 2026-11-02 — script reported `ok: true`.
 export $(grep -v '^#' .env.production.local | xargs)  # or dotenv via scripts/load-local-env.ts
 npm run verify:db
 VERCEL_ENV=production npm run verify:env-isolation
+# Uses unpooled URL via prisma.config.ts (DIRECT_URL → DATABASE_URL_UNPOOLED → POSTGRES_URL_NON_POOLING → DATABASE_URL)
 npx prisma migrate deploy
 npm run db:seed
 ```
+
+**Vercel Production builds** do **not** run `migrate deploy` unless `RUN_PRODUCTION_MIGRATIONS=true` is set for an approved window. Prefer manual `npx prisma migrate deploy` from an owner machine or a one-off job with unpooled env loaded.
 
 **Do not** run `db:seed` on Preview from this procedure. Vercel build already skips seed when `VERCEL_ENV=production`.
 

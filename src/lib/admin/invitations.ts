@@ -10,8 +10,8 @@ export type InviteValidation =
   | { ok: false; reason: "missing" | "invalid" | "expired" | "used" | "account_exists" };
 
 async function sendInviteEmail(to: string, acceptUrl: string) {
-  const resendKey = process.env.RESEND_API_KEY;
-  const resendFrom = process.env.RESEND_FROM;
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  const resendFrom = process.env.RESEND_FROM?.trim();
   if (!resendKey || !resendFrom) {
     throw new Error("RESEND_API_KEY and RESEND_FROM must be configured to send invitations.");
   }
@@ -130,5 +130,11 @@ export async function createAndEmailAdminInvitation(params: {
     });
   }
 
-  return { invitationId: invitation.id, email, role: params.role, priorInvitesBurned: burned };
+  return {
+    invitationId: invitation.id,
+    email,
+    role: params.role,
+    priorInvitesBurned: burned,
+    resendMessageId: messageId,
+  };
 }

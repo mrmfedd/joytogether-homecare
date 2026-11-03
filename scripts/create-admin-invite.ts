@@ -6,7 +6,7 @@
  * Usage:
  *   ADMIN_INVITE_EMAIL=you@example.com npx tsx scripts/create-admin-invite.ts
  */
-import "dotenv/config";
+import "./load-local-env";
 import { UserRole } from "../src/generated/prisma";
 import { createAndEmailAdminInvitation } from "../src/lib/admin/invitations";
 import { prisma } from "../src/lib/prisma";
@@ -21,9 +21,23 @@ async function main() {
 
   const result = await createAndEmailAdminInvitation({ email, role, baseUrl: base });
 
-  console.log(`Invitation created for ${result.email} (${result.role}).`);
-  console.log(`Prior outstanding invites invalidated: ${result.priorInvitesBurned}.`);
-  console.log(`Invite email delivered (Resend message accepted).`);
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        email: result.email,
+        role: result.role,
+        invitationIdPrefix: result.invitationId.slice(0, 8),
+        priorInvitesBurned: result.priorInvitesBurned,
+        resendMessageId: result.resendMessageId ?? null,
+        resendAccepted: Boolean(result.resendMessageId),
+        portalBaseUrl: base,
+        acceptPath: "/admin/accept-invite",
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 main()

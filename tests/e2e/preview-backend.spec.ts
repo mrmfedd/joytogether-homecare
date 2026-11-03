@@ -34,6 +34,21 @@ test.describe("preview backend smoke", () => {
     expect(json.leadId).toBeTruthy();
   });
 
+  test("job application persists without requiring email delivery", async ({ request }) => {
+    const form = new FormData();
+    form.set("name", "Playwright Applicant");
+    form.set("email", `pw-applicant-${Date.now()}@example.com`);
+    form.set("phone", "8135550199");
+    form.set("position", "Home Care Aide");
+    form.set("message", "Automated preview application");
+    form.set("website", "");
+
+    const res = await request.post("/api/applications", { multipart: form });
+    expect(res.status()).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+  });
+
   test("admin accept-invite route loads", async ({ page }) => {
     await page.goto("/admin/accept-invite?token=invalid");
     await expect(page.locator("body")).toBeVisible();

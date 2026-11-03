@@ -54,17 +54,17 @@ export function Footer() {
             <p className="mb-4 text-sm font-bold uppercase tracking-wider text-[var(--gold-light)]">
               Follow Us
             </p>
-            <div className="flex gap-3">
-              {footer.social.map((item) => (
+            <div className="flex flex-wrap gap-3">
+              {site.socialLinks.map((item) => (
                 <a
-                  key={item.label}
+                  key={item.href}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-sm font-bold hover:bg-[var(--gold)] hover:text-purple-900"
+                  className="grid h-10 min-w-10 place-items-center rounded-full bg-white/10 px-2 text-sm font-bold hover:bg-[var(--gold)] hover:text-purple-900"
                   aria-label={item.label}
                 >
-                  {item.label[0]}
+                  {item.label === "YouTube" ? "YT" : item.label[0]}
                 </a>
               ))}
             </div>

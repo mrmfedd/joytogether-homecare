@@ -82,7 +82,7 @@ export default async function AdminCareersPage() {
             </thead>
             <tbody>
               {applications.map((a) => (
-                <tr key={a.id} className="border-b border-line/70 align-top">
+                <tr key={a.id} id={`application-${a.id}`} className="border-b border-line/70 align-top scroll-mt-24">
                   <td className="px-4 py-3">{a.createdAt.toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     {a.fullName}

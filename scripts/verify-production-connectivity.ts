@@ -5,6 +5,7 @@
  */
 import { config } from "dotenv";
 import pg from "pg";
+import { describeMigrationDatabaseUrl, selectMigrationDatabaseUrl } from "./migration-database-url.mjs";
 
 const NEON_KEYS = [
   "DATABASE_URL",
@@ -46,11 +47,16 @@ const directUrl =
   process.env.POSTGRES_URL_NON_POOLING?.trim() ||
   dbUrl;
 
+const migrationMeta = describeMigrationDatabaseUrl(process.env);
+const migrationSelection = selectMigrationDatabaseUrl(process.env);
+
 const summary = {
   vercelEnv: process.env.VERCEL_ENV || "(unset)",
   dbHost: hostOf(dbUrl) || "(unset)",
   directHost: hostOf(directUrl) || "(unset)",
   neonProjectId: process.env.NEON_PROJECT_ID?.trim() || "(unset)",
+  prismaMigrationUrlSource: migrationMeta.source,
+  prismaMigrationUsesUnpooled: migrationMeta.unpooled,
   connected: false,
   latencyMs: 0 as number | undefined,
   publicTables: [] as string[],
@@ -60,21 +66,26 @@ const summary = {
 };
 
 async function main() {
-  if (!dbUrl) {
+  if (!migrationMeta.hasConfiguredUrl) {
     summary.error =
-      "No DATABASE_URL in environment — Vercel integration secrets are not included in `vercel env pull`; use Neon Browse data or export URLs for local TCP check";
+      "No migration database URL in environment — Vercel integration secrets are not included in `vercel env pull`; use Neon console or export URLs for local TCP check";
     console.log(JSON.stringify(summary, null, 2));
     process.exit(1);
   }
 
-  if (summary.dbHost.includes(PREVIEW_MARKER) || summary.neonProjectId === PREVIEW_PROJECT) {
+  if (dbUrl && (summary.dbHost.includes(PREVIEW_MARKER) || summary.neonProjectId === PREVIEW_PROJECT)) {
     summary.error = "Production env points at Preview Neon markers";
     console.log(JSON.stringify(summary, null, 2));
     process.exit(1);
   }
 
+  const connectUrl =
+    migrationSelection.source !== "build_placeholder"
+      ? migrationSelection.url
+      : directUrl || dbUrl;
+
   const client = new pg.Client({
-    connectionString: directUrl || dbUrl,
+    connectionString: connectUrl,
     ssl: { rejectUnauthorized: false },
   });
 

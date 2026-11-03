@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { dbHealthCheck } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
+import { queueJobApplicationNotification } from "@/lib/notifications";
 import { storeResume } from "@/lib/storage/resume";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -78,6 +79,24 @@ export async function POST(req: Request) {
       await prisma.jobApplication.delete({ where: { id: application.id } });
       return NextResponse.json({ ok: false, error: "Could not store resume. Please try again." }, { status: 500 });
     }
+  }
+
+  const resumeKeyAfterUpload = await prisma.jobApplication.findUnique({
+    where: { id: application.id },
+    select: { resumeKey: true },
+  });
+
+  try {
+    await queueJobApplicationNotification({
+      applicationId: application.id,
+      fullName: application.fullName,
+      position: application.position,
+      email: application.email,
+      phone: application.phone ?? undefined,
+      hasResume: Boolean(resumeKeyAfterUpload?.resumeKey),
+    });
+  } catch {
+    // Application is persisted; notification can be retried via cron.
   }
 
   await writeAuditLog({

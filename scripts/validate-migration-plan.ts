@@ -44,6 +44,13 @@ function main() {
         missingMigrations: missing,
         unexpectedMigrations: extra,
         migrationSqlPresent: sqlChecks,
+        migrationUrlEnvPriority: [
+          "DIRECT_URL",
+          "DATABASE_URL_UNPOOLED",
+          "POSTGRES_URL_NON_POOLING",
+          "DATABASE_URL",
+        ],
+        productionBuildMigrates: "Only when RUN_PRODUCTION_MIGRATIONS=true",
         productionApplyCommand: "npx prisma migrate deploy",
         productionSeedCommand: "npm run db:seed",
         approvalRequired: true,

@@ -130,7 +130,7 @@ test.describe("PR3 admin portal operations (Preview)", () => {
     await page.goto("/admin/consultations");
     await page.getByText("New consultation").click();
     const cForm = page.locator("form").filter({ has: page.getByRole("button", { name: /Create consultation/i }) });
-    await cForm.locator('select[name="leadId"]').selectOption({ label: new RegExp(mark) });
+    await cForm.locator('select[name="leadId"]').selectOption({ label: `${mark} Lead` });
     await cForm.locator('input[name="scheduledAt"]').fill(localDateTimeInput(slot));
     await cForm.getByRole("button", { name: /Create consultation/i }).click();
     await expect(page.getByText(mark).first()).toBeVisible({ timeout: 20_000 });

@@ -144,4 +144,7 @@ No new production deploy was performed during this audit.
 
 ## Post-audit push
 
+**Launch-prep commit pushed:** `85ddc8b` — *Launch prep: production docs, migration guard tests, notifications, and audit.*  
+Re-run GitHub/Vercel checks on this SHA before merge.
+
 This document is updated when the **launch-prep commit** is pushed to `origin/upgrade/customer-acquisition-redesign`. Record final deployed SHA here after owner merge/deploy.

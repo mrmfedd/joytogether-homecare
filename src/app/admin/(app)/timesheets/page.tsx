@@ -77,7 +77,7 @@ export default async function AdminTimesheetsPage({
         role={user.role}
         pathname="/admin/timesheets"
         title="Timesheets"
-        description="Review clock entries from the employee time clock. Approval here is operational review — not payroll processing."
+        description="Review clock entries from Employee Portal → Time clock (when enabled in settings). Approval here is operational review — not payroll processing."
       />
 
       <form method="get" className="mt-4 flex flex-wrap items-end gap-3 print:hidden">
@@ -167,9 +167,9 @@ export default async function AdminTimesheetsPage({
           <AdminEmptyState
             className="mt-4"
             title="No time entries in this range"
-            description="Employees clock in and out from Employee Portal → Time clock. Entries will appear here for review."
-            actionLabel="Employee time clock help"
-            actionHref="/admin/help"
+            description="Employees clock in and out from Employee Portal → Time clock when workforce settings enable it. Entries appear here for review and correction approval."
+            actionLabel="Workforce settings"
+            actionHref="/admin/settings"
           />
         ) : (
           <div className="mt-3 overflow-x-auto rounded-2xl border border-line bg-white">

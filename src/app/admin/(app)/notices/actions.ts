@@ -142,4 +142,57 @@ export async function publishStaffNoticeAction(formData: FormData) {
 
   await writeAuditLog({ userId: user.id, action: "PUBLISH", entity: "StaffNotice", entityId: noticeId });
   revalidatePath("/admin/notices");
+  revalidatePath(`/admin/notices/${noticeId}`);
+}
+
+export async function updateStaffNoticeDraftAction(formData: FormData) {
+  const user = await requireAdminSession();
+  if (!user || !canManageNotices(user.role)) return;
+
+  const noticeId = String(formData.get("noticeId") || "");
+  const title = String(formData.get("title") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+  const priority = (String(formData.get("priority") || "NORMAL") as NoticePriority) || "NORMAL";
+  const requiresAck = formData.get("requiresAck") === "on";
+  const targetAll = formData.has("targetAll") ? formData.get("targetAll") === "on" : true;
+  const targetClassification = String(formData.get("targetClassification") || "") as EmployeeClassification | "";
+  const targetDepartment = String(formData.get("targetDepartment") || "").trim() || null;
+  if (!noticeId || !title || !body) return;
+
+  const notice = await prisma.staffNotice.findUnique({ where: { id: noticeId } });
+  if (!notice || notice.publishedAt || notice.archivedAt) return;
+
+  await prisma.staffNotice.update({
+    where: { id: noticeId },
+    data: {
+      title,
+      body,
+      priority,
+      requiresAck,
+      targetAll,
+      targetClassification: targetClassification || null,
+      targetDepartment,
+    },
+  });
+
+  await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "StaffNotice", entityId: noticeId });
+  revalidatePath("/admin/notices");
+  revalidatePath(`/admin/notices/${noticeId}`);
+}
+
+export async function archiveStaffNoticeAction(formData: FormData) {
+  const user = await requireAdminSession();
+  if (!user || !canManageNotices(user.role)) return;
+
+  const noticeId = String(formData.get("noticeId") || "");
+  if (!noticeId) return;
+
+  await prisma.staffNotice.update({
+    where: { id: noticeId },
+    data: { archivedAt: new Date() },
+  });
+
+  await writeAuditLog({ userId: user.id, action: "UPDATE", entity: "StaffNotice", entityId: noticeId, meta: { archived: true } });
+  revalidatePath("/admin/notices");
+  revalidatePath(`/admin/notices/${noticeId}`);
 }

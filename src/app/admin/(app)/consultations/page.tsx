@@ -8,10 +8,15 @@ import { createAdminConsultationAction } from "./actions";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
-export default async function AdminConsultationsPage() {
+export default async function AdminConsultationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const user = await requireAdminSession();
   if (!user || !canViewLeads(user.role)) redirect("/admin");
   const canEdit = canManageLeads(user.role);
+  const params = await searchParams;
 
   const [consultations, recentLeads, assignees] = await Promise.all([
     prisma.consultation.findMany({
@@ -28,7 +33,7 @@ export default async function AdminConsultationsPage() {
       select: { id: true, fullName: true, serviceInterest: true },
     }),
     prisma.user.findMany({
-      where: { role: { in: ["SUPER_ADMIN", "ADMIN"] }, active: true },
+      where: { role: { in: ["SUPER_ADMIN", "ADMIN", "CARE_COORDINATOR"] }, active: true },
       select: { id: true, name: true, email: true },
       orderBy: { name: "asc" },
     }),
@@ -43,6 +48,16 @@ export default async function AdminConsultationsPage() {
         title="Consultations"
         description="Scheduling and follow-up — nonclinical notes only."
       />
+
+      <div className="mt-2 flex flex-wrap gap-4 print:hidden">
+        <Link href="/admin/consultations/calendar" className="text-sm font-bold text-[var(--royal)] hover:underline">
+          Calendar view →
+        </Link>
+      </div>
+
+      {params.error ? (
+        <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{decodeURIComponent(params.error)}</p>
+      ) : null}
 
       {canEdit ? (
         <details className="mt-4 rounded-2xl border border-line bg-white p-5 print:hidden">

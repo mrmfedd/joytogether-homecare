@@ -73,20 +73,28 @@ export function ReportExportBar({
   from: string;
   to: string;
 }) {
-  const q = new URLSearchParams({ category, format: "csv" });
-  if (from) q.set("from", from);
-  if (to) q.set("to", to);
+  const exportLink = (format: string, label: string) => {
+    const q = new URLSearchParams({ category, format });
+    if (from) q.set("from", from);
+    if (to) q.set("to", to);
+    return (
+      <a
+        key={format}
+        href={`/api/admin/reports/export?${q.toString()}`}
+        className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold hover:border-[var(--royal)]"
+      >
+        {label}
+      </a>
+    );
+  };
   return (
     <div className="mt-6 flex flex-wrap gap-3 print:hidden">
       <button type="button" onClick={() => window.print()} className="btn btn-gold px-4 py-2 text-sm">
         Print report
       </button>
-      <a
-        href={`/api/admin/reports/export?${q.toString()}`}
-        className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold hover:border-[var(--royal)]"
-      >
-        Download CSV
-      </a>
+      {exportLink("csv", "Download CSV")}
+      {exportLink("xlsx", "Download Excel")}
+      {exportLink("pdf", "Download PDF")}
     </div>
   );
 }

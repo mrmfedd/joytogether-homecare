@@ -1,11 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import type { ConsultationStatus } from "@/generated/prisma";
 import { requireAdminSession } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { canManageLeads } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import {
+  findConsultationScheduleConflicts,
+  formatConsultationConflictMessage,
+} from "@/lib/admin/consultation-scheduling";
 
 export async function updateConsultationAction(formData: FormData) {
   const user = await requireAdminSession();
@@ -17,16 +22,29 @@ export async function updateConsultationAction(formData: FormData) {
   const status = String(formData.get("status") || "") as ConsultationStatus;
   const scheduledRaw = String(formData.get("scheduledAt") || "");
   const notes = String(formData.get("notes") || "").trim();
+  const assigneeId = String(formData.get("assigneeId") || user.id);
 
   const scheduledAt = scheduledRaw ? new Date(scheduledRaw) : null;
+
+  if (scheduledAt && assigneeId) {
+    const conflicts = await findConsultationScheduleConflicts({
+      assignedToId: assigneeId,
+      scheduledAt,
+      excludeConsultationId: id,
+    });
+    const msg = formatConsultationConflictMessage(conflicts);
+    if (msg) {
+      redirect(`/admin/consultations/calendar?error=${encodeURIComponent(msg)}`);
+    }
+  }
 
   const updated = await prisma.consultation.update({
     where: { id },
     data: {
       status,
       scheduledAt,
-      internalNotes: notes || undefined,
-      assignedToId: user.id,
+      ...(notes ? { internalNotes: notes } : {}),
+      assignedToId: assigneeId,
     },
   });
 
@@ -39,6 +57,7 @@ export async function updateConsultationAction(formData: FormData) {
   });
 
   revalidatePath("/admin/consultations");
+  revalidatePath("/admin/consultations/calendar");
   revalidatePath(`/admin/leads/${updated.leadId}`);
 }
 
@@ -57,6 +76,17 @@ export async function createAdminConsultationAction(formData: FormData) {
 
   const scheduledAt = scheduledRaw ? new Date(scheduledRaw) : null;
   const status: ConsultationStatus = scheduledAt ? "SCHEDULED" : "REQUESTED";
+
+  if (scheduledAt) {
+    const conflicts = await findConsultationScheduleConflicts({
+      assignedToId: assigneeId,
+      scheduledAt,
+    });
+    const msg = formatConsultationConflictMessage(conflicts);
+    if (msg) {
+      redirect(`/admin/consultations?error=${encodeURIComponent(msg)}`);
+    }
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.consultation.create({
@@ -95,6 +125,7 @@ export async function createAdminConsultationAction(formData: FormData) {
   });
 
   revalidatePath("/admin/consultations");
+  revalidatePath("/admin/consultations/calendar");
   revalidatePath(`/admin/leads/${leadId}`);
   revalidatePath("/admin");
 }

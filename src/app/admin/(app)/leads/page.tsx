@@ -3,7 +3,7 @@ import { LeadStatus } from "@/generated/prisma";
 import { createManualLeadAction } from "@/app/admin/(app)/leads/actions";
 import { listLeads } from "@/lib/admin/queries";
 import { requireAdminSession } from "@/lib/auth";
-import { canManageLeads, canViewLeadContact, canViewLeads } from "@/lib/permissions";
+import { canManageLeads, canViewLeadContact, canViewLeads, canViewReports } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
@@ -87,10 +87,15 @@ export default async function AdminLeadsPage({
         </button>
         {canEdit ? (
           <a
-            href={`/api/admin/reports/export?category=leads`}
+            href="/api/admin/reports/export?category=leads"
             className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold"
           >
             Export summary CSV
+          </a>
+        ) : null}
+        {canEdit && canViewReports(user.role) ? (
+          <a href="/api/admin/leads/export" className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold">
+            Export lead detail CSV
           </a>
         ) : null}
       </form>

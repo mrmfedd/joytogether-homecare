@@ -3,8 +3,8 @@ import { requireAdminSession } from "@/lib/auth";
 import { canManageScheduling } from "@/lib/workforce/permissions";
 import { formatShiftRange } from "@/lib/workforce/queries";
 import { prisma } from "@/lib/prisma";
-import {
-  assignEmployeeToShiftAction,
+import { HelpPageHeader } from "@/components/help/HelpPageHeader";
+import { assignEmployeeToShiftAction,
   cancelShiftAction,
   createShiftAction,
   moveShiftWeekAction,
@@ -54,11 +54,14 @@ export default async function AdminSchedulingPage({
   nextWeek.setDate(start.getDate() + 7);
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-[var(--midnight)]">Scheduling</h1>
-      <p className="mt-1 text-sm text-muted">
-        Week of {start.toLocaleDateString()} — create, assign, and publish shifts.
-      </p>
+    <div data-help-tour="admin-scheduling">
+      <HelpPageHeader
+        audience="ADMIN"
+        role={user.role}
+        pathname="/admin/scheduling"
+        title="Scheduling"
+        description={`Week of ${start.toLocaleDateString()} — create, assign, and publish shifts.`}
+      />
 
       <div className="mt-4 flex gap-2 text-sm">
         <a href={`/admin/scheduling?week=${prevWeek.toISOString()}`} className="rounded-xl border border-line bg-white px-3 py-1.5 font-semibold">

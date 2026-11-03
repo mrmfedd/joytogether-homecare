@@ -181,6 +181,7 @@ model User {
   timeOffReviewed     EmployeeTimeOffRequest[] @relation("TimeOffReviewer")
   shiftResponsesReviewed ShiftResponse[]   @relation("ShiftResponseReviewer")
   timesheetCorrectionsReviewed TimesheetCorrection[] @relation("TimesheetCorrectionReviewer")
+  helpArticleRevisions HelpArticleRevision[] @relation("HelpArticleEditor")
 }
 
 model PasswordResetToken {
@@ -814,4 +815,79 @@ model TimesheetCorrection {
   reviewer  User?     @relation("TimesheetCorrectionReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
 
   @@index([status])
+}
+
+enum HelpAudience {
+  ADMIN
+  EMPLOYEE
+}
+
+model HelpCategory {
+  id        String       @id @default(uuid())
+  audience  HelpAudience
+  slug      String
+  title     String
+  summary   String?      @db.Text
+  sortOrder Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  articles  HelpArticle[]
+
+  @@unique([audience, slug])
+  @@index([audience, sortOrder])
+}
+
+model HelpArticle {
+  id             String       @id @default(uuid())
+  categoryId     String
+  slug           String
+  title          String
+  summary        String?      @db.Text
+  content        String       @db.Text
+  keywords       String[]     @default([])
+  contextRoutes  String[]     @default([])
+  allowedRoles   UserRole[]   @default([])
+  published      Boolean      @default(true)
+  sortOrder      Int          @default(0)
+  appVersion     String?
+  lastReviewedAt DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  category       HelpCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  revisions      HelpArticleRevision[]
+  faqs           HelpFaq[]
+
+  @@unique([categoryId, slug])
+  @@index([published, updatedAt])
+}
+
+model HelpArticleRevision {
+  id         String      @id @default(uuid())
+  articleId  String
+  title      String
+  content    String      @db.Text
+  summary    String?     @db.Text
+  editorId   String?
+  changeNote String?     @db.Text
+  createdAt  DateTime    @default(now())
+  article    HelpArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  editor     User?       @relation("HelpArticleEditor", fields: [editorId], references: [id], onDelete: SetNull)
+
+  @@index([articleId, createdAt])
+}
+
+model HelpFaq {
+  id        String       @id @default(uuid())
+  audience  HelpAudience
+  question  String
+  answer    String       @db.Text
+  keywords  String[]     @default([])
+  sortOrder Int          @default(0)
+  published Boolean      @default(true)
+  articleId String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  article   HelpArticle? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+
+  @@index([audience, published, sortOrder])
 }

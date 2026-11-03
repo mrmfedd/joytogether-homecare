@@ -37,7 +37,7 @@ export default async function AdminDashboardPage() {
       <h1 className="font-display text-3xl text-[var(--midnight)]">Dashboard</h1>
       <p className="body-muted mt-2">Live CRM metrics from PostgreSQL (preview database).</p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-help-tour="admin-dashboard-kpis">
         <StatCard label="Total inquiries" value={kpis.totalLeads} href="/admin/leads" />
         <StatCard label="New inquiries" value={kpis.newLeads} href="/admin/leads?status=NEW" />
         <StatCard label="Awaiting follow-up" value={kpis.awaitingFollowUp} href="/admin/leads" />

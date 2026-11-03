@@ -3,6 +3,7 @@ import { requireAdminSession } from "@/lib/auth";
 import { canManageEmployees } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
 import { deactivateEmployeeProfileAction, inviteEmployeeAction } from "./actions";
+import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
 const classifications = [
   "CAREGIVER",
@@ -33,9 +34,14 @@ export default async function AdminEmployeesPage() {
   ]);
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-[var(--midnight)]">Employees</h1>
-      <p className="mt-1 text-sm text-muted">Invite team members and manage portal access.</p>
+    <div data-help-tour="admin-employees">
+      <HelpPageHeader
+        audience="ADMIN"
+        role={user.role}
+        pathname="/admin/employees"
+        title="Employees"
+        description="Invite team members and manage portal access."
+      />
 
       <form action={inviteEmployeeAction} className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-white p-5">
         <label className="text-sm">

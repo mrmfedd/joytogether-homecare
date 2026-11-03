@@ -78,6 +78,19 @@ async function main() {
     throw new Error("Account not eligible for admin recovery.");
   }
 
+  const allowedEmails = (process.env.ADMIN_RECOVERY_ALLOWED_EMAILS || "mrmfedd@gmail.com")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (!allowedEmails.includes(email)) {
+    await client.end();
+    throw new Error("Email not on ADMIN_RECOVERY_ALLOWED_EMAILS allowlist.");
+  }
+  if (user.role !== "SUPER_ADMIN") {
+    await client.end();
+    throw new Error("Account recovery is restricted to SUPER_ADMIN accounts.");
+  }
+
   const token = randomBytes(32).toString("hex");
   const tokenHash = hashToken(token);
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hashRecoveryToken } from "@/lib/admin/recovery-token-hash";
+import { hashRecoveryToken } from "@/lib/admin/account-recovery";
 
 describe("admin account recovery tokens", () => {
   it("hashes tokens without exposing raw values", () => {

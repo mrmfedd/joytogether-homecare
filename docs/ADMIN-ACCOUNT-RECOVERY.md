@@ -28,7 +28,8 @@ Read `recommendedRecovery` in the JSON output.
 
 Requires a **one-time deploy** with migration `20261103120000_admin_account_recovery` and Production env var:
 
-- `ADMIN_RECOVERY_SECRET` — 32+ random characters (operator-only, not committed)
+- **`ADMIN_RECOVERY_SECRET`** — 32+ random characters (operator-only, not committed)
+- **`ADMIN_RECOVERY_ALLOWED_EMAILS`** — comma-separated allowlist (default in script: `mrmfedd@gmail.com`)
 
 ### Operator steps (Production)
 

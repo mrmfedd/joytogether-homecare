@@ -9,6 +9,7 @@
  *   JT_USE_PRODUCTION_ENV=true ADMIN_INVITE_EMAIL=mrmfedd@gmail.com node scripts/inspect-admin-account.mjs
  */
 import { config } from "dotenv";
+import { existsSync, readFileSync } from "fs";
 import pg from "pg";
 import { createHash } from "crypto";
 
@@ -19,6 +20,23 @@ if (process.env.JT_USE_PRODUCTION_ENV === "true") {
   config({ path: ".env.production.local", override: true });
 }
 
+function loadEnvFile(path) {
+  if (!existsSync(path)) return;
+  for (const line of readFileSync(path, "utf8").split("\n")) {
+    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+    if (!m) continue;
+    let val = m[2].trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
+    }
+    if (val === "[SENSITIVE]") continue;
+    process.env[m[1]] = val;
+  }
+}
+
+const prodEnvFile = process.env.JT_PROD_ENV_FILE?.trim();
+if (prodEnvFile) loadEnvFile(prodEnvFile);
+
 const email = (process.env.ADMIN_INVITE_EMAIL || "").trim().toLowerCase();
 if (!email) {
   console.log(JSON.stringify({ ok: false, error: "Set ADMIN_INVITE_EMAIL" }));
@@ -26,11 +44,12 @@ if (!email) {
 }
 
 const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || process.env.POSTGRES_URL_NON_POOLING;
-if (!url) {
+if (!url || url === "[SENSITIVE]") {
   console.log(
     JSON.stringify({
       ok: false,
-      error: "No database URL in environment. Re-run `vercel env pull --environment=production` with Neon linked.",
+      error:
+        "No usable database URL. Use JT_PROD_ENV_FILE with Neon unpooled URL from Vercel/Neon console, or replace [SENSITIVE] placeholders after `vercel env pull`.",
     }),
   );
   process.exit(1);

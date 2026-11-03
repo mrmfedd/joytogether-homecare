@@ -44,6 +44,7 @@ export async function completeAdminAccountRecovery(input: {
         passwordHash,
         mfaEnabled: false,
         mfaSecret: null,
+        sessionVersion: { increment: 1 },
       },
     }),
     prisma.session.deleteMany({ where: { userId: validation.userId } }),

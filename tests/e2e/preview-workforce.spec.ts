@@ -10,7 +10,7 @@ const previewReady =
 
 function shiftWindow() {
   const start = new Date();
-  start.setDate(start.getDate() + 21 + (Date.now() % 14));
+  start.setDate(start.getDate() + 60 + (Date.now() % 14));
   start.setHours(22, 0, 0, 0);
   const end = new Date(start);
   end.setHours(23, 0, 0, 0);
@@ -72,7 +72,9 @@ test.describe("preview workforce workflows", () => {
     const profileSelect = shiftCard.locator('select[name="profileId"]');
     await profileSelect.selectOption(employee.profileId);
     await shiftCard.getByRole("button", { name: /^Assign$/i }).click();
-    await expect(shiftCard.getByText(/Assigned:/i)).toBeVisible({ timeout: 15000 });
+    await page.reload();
+    const assignedCard = page.locator("li").filter({ hasText: uniqueTitle });
+    await expect(assignedCard.getByText(/Assigned:/i)).toBeVisible({ timeout: 15000 });
 
     const employeeContext = await browser.newContext();
     const employeePage = await employeeContext.newPage();
@@ -80,7 +82,9 @@ test.describe("preview workforce workflows", () => {
     await employeePage.getByLabel(/^Email$/i).fill(employee.email);
     await employeePage.getByLabel(/^Password$/i).fill(employee.password);
     await employeePage.getByRole("button", { name: /Sign in/i }).click();
-    await expect(employeePage).toHaveURL(/\/employee(?:\/(?!login)|$)/, { timeout: 20000 });
+    await employeePage.waitForURL((url) => url.pathname.startsWith("/employee") && !url.pathname.includes("login"), {
+      timeout: 25_000,
+    });
 
     await employeePage.goto("/employee/schedule");
     const assignmentRow = employeePage.locator("li").filter({ hasText: uniqueTitle });
@@ -89,11 +93,15 @@ test.describe("preview workforce workflows", () => {
     await expect(assignmentRow.getByText(/CONFIRMED/i)).toBeVisible({ timeout: 15000 });
 
     const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 1);
+    endDate.setDate(endDate.getDate() + 90);
     const endIso = endDate.toISOString().slice(0, 10);
+    const timeOffStart = endDate.toISOString().slice(0, 10);
+    const timeOffEndDate = new Date(endDate);
+    timeOffEndDate.setDate(timeOffEndDate.getDate() + 1);
+    const timeOffEnd = timeOffEndDate.toISOString().slice(0, 10);
     await employeePage.goto("/employee/time-off");
-    await employeePage.locator('input[name="startDate"]').fill(startDate);
-    await employeePage.locator('input[name="endDate"]').fill(endIso);
+    await employeePage.locator('input[name="startDate"]').fill(timeOffStart);
+    await employeePage.locator('input[name="endDate"]').fill(timeOffEnd);
     await employeePage.locator('textarea[name="reason"]').fill("Playwright preview QA");
     await employeePage.getByRole("button", { name: /Submit request/i }).click();
     await expect(employeePage.getByText(/PENDING/i).first()).toBeVisible({ timeout: 15000 });

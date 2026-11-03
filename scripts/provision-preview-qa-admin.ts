@@ -7,6 +7,7 @@
  *   PREVIEW_QA_PASSWORD='...' npx tsx scripts/provision-preview-qa-admin.ts
  */
 import "./load-local-env";
+import { ensurePreviewQaPassword } from "./preview-qa-password";
 import bcrypt from "bcryptjs";
 import { generateSecret, generateSync } from "otplib";
 import { PrismaClient, UserRole } from "../src/generated/prisma";
@@ -31,8 +32,7 @@ function createClient() {
 const prisma = createClient();
 
 async function main() {
-  const password = process.env.PREVIEW_QA_PASSWORD;
-  if (!password || password.length < 12) throw new Error("PREVIEW_QA_PASSWORD required (12+ chars)");
+  const password = ensurePreviewQaPassword();
 
   const passwordHash = await bcrypt.hash(password, 12);
   const mfaSecret = generateSecret();
@@ -71,7 +71,10 @@ async function main() {
     sampleCodeAtProvision: sampleCode,
   };
   const path = "/tmp/jt-preview-env/qa-admin.json";
-  await import("fs/promises").then((fs) => fs.writeFile(path, JSON.stringify(out), { mode: 0o600 }));
+  await import("fs/promises").then(async (fs) => {
+    await fs.mkdir("/tmp/jt-preview-env", { recursive: true });
+    await fs.writeFile(path, JSON.stringify(out), { mode: 0o600 });
+  });
   console.log(`Preview QA admin ready: ${user.email}`);
   console.log(`Credentials written to ${path} (local temp only; not committed).`);
 }

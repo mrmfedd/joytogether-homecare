@@ -29,7 +29,15 @@ export default function AdminLoginForm() {
       setError("Invalid credentials or account inactive.");
       return;
     }
-    const session = await getSession();
+    if (!res?.ok) {
+      setError("Sign-in could not be completed. Try again.");
+      return;
+    }
+    let session = await getSession();
+    for (let i = 0; i < 12 && !session?.user?.role; i += 1) {
+      await new Promise((r) => setTimeout(r, 150));
+      session = await getSession();
+    }
     if (session?.user?.role === "EMPLOYEE") {
       window.location.href = "/employee";
       return;

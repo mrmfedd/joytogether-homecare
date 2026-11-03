@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { generateSync } from "otplib";
 import { existsSync, readFileSync } from "fs";
+import { employeeLogin } from "./helpers/preview-auth";
 
 const previewOnly = !!process.env.PLAYWRIGHT_BASE_URL?.includes("vercel.app");
 const adminPath = "/tmp/jt-preview-env/qa-admin.json";
@@ -78,13 +79,7 @@ test.describe("preview workforce workflows", () => {
 
     const employeeContext = await browser.newContext();
     const employeePage = await employeeContext.newPage();
-    await employeePage.goto("/employee/login");
-    await employeePage.getByLabel(/^Email$/i).fill(employee.email);
-    await employeePage.getByLabel(/^Password$/i).fill(employee.password);
-    await employeePage.getByRole("button", { name: /Sign in/i }).click();
-    await employeePage.waitForURL((url) => url.pathname.startsWith("/employee") && !url.pathname.includes("login"), {
-      timeout: 25_000,
-    });
+    await employeeLogin(employeePage, employee);
 
     await employeePage.goto("/employee/schedule");
     const assignmentRow = employeePage.locator("li").filter({ hasText: uniqueTitle });

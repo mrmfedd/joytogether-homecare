@@ -1,7 +1,7 @@
 # PR #3 QA report — Admin portal operations
 
 **Branch:** `feature/admin-portal-operations`  
-**Verified commits:** `23f3446` (Preview QA scripts) + follow-up E2E/login fixes (pending push)  
+**Verified commits:** `e4c3795` (Playwright QA + employee login session fix; Vercel green)  
 **Preview URL:** https://joytogether-homecare-git-feature-d72e9f-michael-fedds-projects.vercel.app  
 **Preview Neon:** `ep-summer-band-bc49hrns…` / project `lucky-fire-28361357`  
 **Production:** Not modified (no merge, no Production Neon writes)

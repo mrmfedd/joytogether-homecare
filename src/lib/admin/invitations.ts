@@ -7,7 +7,7 @@ import { site } from "@/content/site";
 
 export type InviteValidation =
   | { ok: true; email: string; role: UserRole }
-  | { ok: false; reason: "missing" | "invalid" | "expired" | "used" | "account_exists" };
+  | { ok: false; reason: "missing" | "invalid" | "expired" | "used" | "account_exists" | "reprovision_mismatch" };
 
 async function sendInviteEmail(to: string, acceptUrl: string) {
   const resendKey = process.env.RESEND_API_KEY?.trim();
@@ -77,6 +77,12 @@ export async function validateAdminInviteToken(token: string | undefined | null)
   if (invite.expiresAt < new Date()) return { ok: false, reason: "expired" };
 
   const existing = await prisma.user.findUnique({ where: { email: invite.email } });
+  if (invite.reprovisionUserId) {
+    if (!existing || existing.id !== invite.reprovisionUserId) {
+      return { ok: false, reason: "reprovision_mismatch" };
+    }
+    return { ok: true, email: invite.email, role: invite.role };
+  }
   if (existing) return { ok: false, reason: "account_exists" };
 
   return { ok: true, email: invite.email, role: invite.role };
@@ -129,6 +135,64 @@ export async function createAndEmailAdminInvitation(params: {
       meta: { email, role: params.role, priorInvitesBurned: burned, resendAccepted: Boolean(messageId) },
     });
   }
+
+  return {
+    invitationId: invitation.id,
+    email,
+    role: params.role,
+    priorInvitesBurned: burned,
+    resendMessageId: messageId,
+  };
+}
+
+/** Fresh setup for an existing administrator (password/MFA reset + reprovision invite). */
+export async function createAndEmailAdminReprovisionInvitation(params: {
+  email: string;
+  role: UserRole;
+  baseUrl: string;
+  reprovisionUserId: string;
+  operatorNote?: string;
+}) {
+  const email = params.email.trim().toLowerCase();
+  const base = params.baseUrl.replace(/\/$/, "");
+  if (!base) throw new Error("NEXT_PUBLIC_SITE_URL is required.");
+
+  const user = await prisma.user.findUnique({ where: { id: params.reprovisionUserId } });
+  if (!user || user.email !== email) {
+    throw new Error("Reprovision target user not found or email mismatch.");
+  }
+
+  const burned = await burnOutstandingInvites(email);
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = hashInviteToken(token);
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 48);
+
+  const invitation = await prisma.adminInvitation.create({
+    data: {
+      email,
+      role: params.role,
+      tokenHash,
+      expiresAt,
+      reprovisionUserId: user.id,
+    },
+  });
+
+  const acceptUrl = `${base}/admin/accept-invite?token=${token}`;
+  const messageId = await sendInviteEmail(email, acceptUrl);
+
+  await writeAuditLog({
+    userId: user.id,
+    action: "UPDATE",
+    entity: "User",
+    entityId: user.id,
+    meta: {
+      event: "ADMIN_REPROVISION_INVITE_SENT",
+      role: params.role,
+      priorInvitesBurned: burned,
+      resendAccepted: Boolean(messageId),
+      operatorNote: params.operatorNote ?? null,
+    },
+  });
 
   return {
     invitationId: invitation.id,

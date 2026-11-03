@@ -14,6 +14,11 @@ Apply committed migrations only to the **new** Neon resource `joytogether-produc
 | 1 | `20260330120000_init` | Core schema (CMS, leads, auth tables) |
 | 2 | `20260330160000_security` | Security hardening migration |
 | 3 | `20261102190000_workforce` | Employee portal, scheduling, notices, time clock |
+| 4 | `20261103120000_admin_account_recovery` | Operator-initiated admin recovery tokens |
+| 5 | `20261103130000_user_session_version` | JWT invalidation via `User.sessionVersion` |
+| 6 | `20261103140000_admin_reprovision_invite` | Reprovision invitations for existing SUPER_ADMIN reset |
+
+**Before SUPER_ADMIN reprovision reset:** migrations **4–6** must be applied on Production Neon (`joytogether-production` / `ep-nameless-hall…`). The live app must be deployed with matching code (accept-invite reprovision path + `scripts/reset-production-super-admin.ts`).
 
 Validation command (safe anytime):
 
@@ -51,7 +56,7 @@ npm run db:seed
 
 ## Post-migrate verification
 
-- [ ] `_prisma_migrations` lists all three migrations
+- [ ] `_prisma_migrations` lists all applied migrations (through `20261103140000_admin_reprovision_invite` before admin reprovision reset)
 - [ ] `npx tsx scripts/verify-preview-migrations.ts` pattern adapted for prod (tables exist) or manual `\dt` in SQL editor
 - [ ] `/api/health/db` on a **non-customer-facing** production smoke deploy (only after explicit deploy approval)
 

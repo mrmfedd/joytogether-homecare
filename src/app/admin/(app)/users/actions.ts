@@ -78,6 +78,35 @@ export async function acceptInviteAction(formData: FormData) {
   }
 
   const passwordHash = await hashPassword(password);
+
+  if (invite.reprovisionUserId) {
+    await prisma.user.update({
+      where: { id: invite.reprovisionUserId },
+      data: {
+        name: name || invite.email,
+        role: invite.role,
+        passwordHash,
+        active: true,
+        mfaEnabled: false,
+        mfaSecret: null,
+        sessionVersion: { increment: 1 },
+      },
+    });
+    await prisma.session.deleteMany({ where: { userId: invite.reprovisionUserId } });
+    await prisma.adminInvitation.update({
+      where: { id: invite.id },
+      data: { acceptedAt: new Date(), acceptedById: invite.reprovisionUserId },
+    });
+    await writeAuditLog({
+      userId: invite.reprovisionUserId,
+      action: "UPDATE",
+      entity: "User",
+      entityId: invite.reprovisionUserId,
+      meta: { via: "reprovision_invitation", email: invite.email, role: invite.role },
+    });
+    redirect("/admin/login?accepted=1");
+  }
+
   const user = await prisma.user.create({
     data: {
       email: invite.email,

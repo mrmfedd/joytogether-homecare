@@ -7,6 +7,7 @@ const errorCopy: Record<string, string> = {
   expired: "This invitation has expired. Request a new invite.",
   used: "This invitation was already used.",
   account_exists: "An account already exists for this email. Use forgot password or sign in.",
+  reprovision_mismatch: "This invitation is not valid for the current account. Request a new setup invite.",
   password: "Passwords must match and be at least 12 characters.",
 };
 

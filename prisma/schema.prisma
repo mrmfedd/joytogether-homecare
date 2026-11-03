@@ -171,6 +171,7 @@ model User {
   auditLogs           AuditLog[]
   invitationsCreated  AdminInvitation[] @relation("InviteCreator")
   invitationsAccepted AdminInvitation[] @relation("InviteAccepted")
+  invitationsReprovision AdminInvitation[] @relation("InviteReprovision")
   jobReviews          JobApplication[]  @relation("ApplicationReviewer")
   passwordResetTokens PasswordResetToken[]
   adminAccountRecoveryTokens AdminAccountRecoveryToken[]
@@ -256,10 +257,12 @@ model AdminInvitation {
   acceptedAt  DateTime?
   createdById String?
   acceptedById String?
+  reprovisionUserId String?
   createdAt   DateTime  @default(now())
 
   createdBy  User? @relation("InviteCreator", fields: [createdById], references: [id], onDelete: SetNull)
   acceptedBy User? @relation("InviteAccepted", fields: [acceptedById], references: [id], onDelete: SetNull)
+  reprovisionUser User? @relation("InviteReprovision", fields: [reprovisionUserId], references: [id], onDelete: SetNull)
 
   @@index([email])
 }

@@ -3,9 +3,9 @@ import { hashPassword, hashToken } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
-export function hashRecoveryToken(token: string) {
-  return hashToken(token);
-}
+import { hashRecoveryToken } from "@/lib/admin/recovery-token-hash";
+
+export { hashRecoveryToken };
 
 export async function validateAdminRecoveryToken(token: string) {
   if (!token.trim()) return { ok: false as const, reason: "missing" as const };

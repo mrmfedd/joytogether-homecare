@@ -4,7 +4,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import { serviceLandings } from "../src/content/careServices";
 import { site } from "../src/content/site";
-import { seedHelpCenter } from "./seed-help";
 
 function createClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -147,9 +146,7 @@ async function main() {
     console.log("SEED_DEV_EXAMPLES enabled — skipping fictional leads/testimonials by policy.");
   }
 
-  await seedHelpCenter(prisma);
-
-  console.log("Seed complete (settings, services, service areas, homepage, FAQs, help center).");
+  console.log("Seed complete (settings, services, service areas, homepage, FAQs).");
 }
 
 main()

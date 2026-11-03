@@ -306,3 +306,42 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
 
   return { ok: res.ok, error: res.ok ? undefined : `HTTP ${res.status}` };
 }
+
+export async function sendAdminAccountRecoveryEmail(to: string, recoveryUrl: string) {
+  const resendKey = process.env.RESEND_API_KEY;
+  const resendFrom = process.env.RESEND_FROM;
+  if (!resendKey || !resendFrom) {
+    return { ok: false, error: "RESEND not configured" };
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: resendFrom,
+      to: [to],
+      subject: `${site.name} — secure administrator account recovery`,
+      text: [
+        `A secure account recovery was authorized for ${site.name} Admin access.`,
+        "",
+        "Use this one-time link within 30 minutes to set a new password and reset MFA enrollment:",
+        recoveryUrl,
+        "",
+        "After signing in, you must enroll a new authenticator on Account → Security.",
+        "",
+        "If you did not request this recovery, contact JoyTogether leadership immediately.",
+        "",
+        "—",
+        site.legalName,
+        `Phone: ${site.contact.phone}`,
+        `Email: ${site.contact.email}`,
+        site.url,
+      ].join("\n"),
+    }),
+  });
+
+  return { ok: res.ok, error: res.ok ? undefined : `HTTP ${res.status}` };
+}

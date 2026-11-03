@@ -3,7 +3,6 @@ import { requireAdminSession } from "@/lib/auth";
 import { canManageNotices } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
 import { createStaffNoticeAction, publishStaffNoticeAction } from "./actions";
-import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
 export default async function AdminNoticesPage() {
   const user = await requireAdminSession();
@@ -17,13 +16,8 @@ export default async function AdminNoticesPage() {
 
   return (
     <div>
-      <HelpPageHeader
-        audience="ADMIN"
-        role={user.role}
-        pathname="/admin/notices"
-        title="Staff notices"
-        description="Publish workplace announcements (no PHI in email)."
-      />
+      <h1 className="font-display text-3xl text-[var(--midnight)]">Staff notices</h1>
+      <p className="mt-1 text-sm text-muted">Publish workplace announcements (no PHI in email).</p>
 
       <form action={createStaffNoticeAction} className="mt-6 space-y-3 rounded-2xl border border-line bg-white p-5">
         <input name="title" required placeholder="Title" className="w-full rounded-xl border border-line px-3 py-2" />

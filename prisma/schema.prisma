@@ -172,6 +172,7 @@ model User {
   invitationsAccepted AdminInvitation[] @relation("InviteAccepted")
   jobReviews          JobApplication[]  @relation("ApplicationReviewer")
   passwordResetTokens PasswordResetToken[]
+  adminAccountRecoveryTokens AdminAccountRecoveryToken[]
   employeeProfile     EmployeeProfile?
   employeeInvitesCreated EmployeeInvitation[] @relation("EmployeeInviteCreator")
   employeeInvitesAccepted EmployeeInvitation[] @relation("EmployeeInviteAccepted")
@@ -185,6 +186,19 @@ model User {
 }
 
 model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AdminAccountRecoveryToken {
   id        String    @id @default(uuid())
   userId    String
   tokenHash String    @unique

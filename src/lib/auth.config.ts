@@ -6,7 +6,8 @@ function isPublicAdminPath(path: string) {
     path.startsWith("/admin/login") ||
     path.startsWith("/admin/accept-invite") ||
     path.startsWith("/admin/forgot-password") ||
-    path.startsWith("/admin/reset-password")
+    path.startsWith("/admin/reset-password") ||
+    path.startsWith("/admin/account-recovery")
   );
 }
 

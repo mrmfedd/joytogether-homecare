@@ -7,6 +7,7 @@
  *   PREVIEW_QA_PASSWORD='...' npx tsx scripts/provision-preview-qa-employee.ts
  */
 import "./load-local-env";
+import { ensurePreviewQaPassword } from "./preview-qa-password";
 import bcrypt from "bcryptjs";
 import { PrismaClient, UserRole, EmployeeClassification } from "../src/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -30,8 +31,7 @@ function createClient() {
 const { prisma, pool } = createClient();
 
 async function main() {
-  const password = process.env.PREVIEW_QA_PASSWORD;
-  if (!password || password.length < 12) throw new Error("PREVIEW_QA_PASSWORD required (12+ chars)");
+  const password = ensurePreviewQaPassword();
 
   const passwordHash = await bcrypt.hash(password, 12);
 

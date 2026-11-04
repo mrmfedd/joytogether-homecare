@@ -21,6 +21,10 @@ export async function getDashboardKpis() {
     jobApplications,
     convertedLeads,
     notificationsFailed,
+    pendingTimeOff,
+    openShiftOffers,
+    pendingTimesheetCorrections,
+    openTimeEntries,
   ] = await Promise.all([
     prisma.lead.count(),
     prisma.lead.count({ where: { status: "NEW" } }),
@@ -47,6 +51,10 @@ export async function getDashboardKpis() {
     prisma.jobApplication.count(),
     prisma.lead.count({ where: { status: "CONVERTED" } }),
     prisma.notification.count({ where: { status: "FAILED" } }),
+    prisma.employeeTimeOffRequest.count({ where: { status: "PENDING" } }),
+    prisma.shiftOffer.count({ where: { status: "OPEN" } }),
+    prisma.timesheetCorrection.count({ where: { status: "PENDING" } }),
+    prisma.timeEntry.count({ where: { status: "OPEN" } }),
   ]);
 
   const conversionRate =
@@ -70,6 +78,10 @@ export async function getDashboardKpis() {
     jobApplications,
     conversionRate,
     notificationsFailed,
+    pendingTimeOff,
+    openShiftOffers,
+    pendingTimesheetCorrections,
+    openTimeEntries,
     bySource,
     isPrivateDuty,
   };

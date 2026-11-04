@@ -183,7 +183,7 @@ const adminCategories: HelpSeedCategory[] = [
       },
       mkSection(
         "Administrator Dashboard",
-        "The dashboard aggregates real counts from PostgreSQL—total inquiries, new leads, consultations, service-line interest, job applications, conversion rate, and failed notifications.",
+        "The dashboard aggregates real counts from PostgreSQL—inquiries, consultations, workforce queues (time off, open shifts, timesheet corrections), job applications, conversion rate, and failed notifications.",
         "All roles that can access `/admin` see KPI cards. The inquiries-by-source panel requires report permission (SUPER_ADMIN, ADMIN, CARE_COORDINATOR).",
         [
           "Open **Dashboard** (`/admin`) after sign-in.",
@@ -191,8 +191,10 @@ const adminCategories: HelpSeedCategory[] = [
           "Check **Scheduled consultations** and open **Consultations** to follow up on active intake.",
           "Monitor **Private Duty inquiries** and service-line cards (Skilled Nursing, Hospice, Transportation) for marketing trends.",
           "Open **Job applications** from its KPI when recruiting volume increases.",
+          "Review workforce cards: **Pending time off**, **Open shift offers**, **Timesheet corrections**, and **Open time entries** link to the matching admin modules.",
+          "Open **Administrative reports** or **Workforce reports** from the dashboard when you need printable summaries.",
           "If you have report access, scroll to **Inquiries by source** to see grouped lead sources.",
-          "Click **Failed notifications** (when non-zero) to investigate email delivery in Settings."
+          "Click **Failed notifications** (when non-zero) to investigate email delivery in Settings.",
         ],
         "You understand which metrics are clickable, which lists they open, and that numbers reflect live database state rather than samples.",
         {
@@ -492,20 +494,20 @@ const adminCategories: HelpSeedCategory[] = [
         sortOrder: 1,
         keywords: ["notices", "announcements", "acknowledgment"],
         contextRoutes: ["/admin/notices"],
-      allowedRoles: ["SUPER_ADMIN", "ADMIN", "CARE_COORDINATOR"],
       },
       mkSection(
         "Staff Notices and Communications",
         "Notices broadcast operational updates to employees. Some notices require acknowledgment, which the dashboard tracks as unread counts for each employee.",
         "SUPER_ADMIN, ADMIN, and CARE_COORDINATOR.",
         [
-          "Open **Notices** and click create to draft a new announcement.",
+          "Open **Notices** and use **New draft notice** to compose an announcement.",
           "Enter a clear title and body without patient identifiers or PHI.",
-          "Choose recipients (all active employees or targeted groups as the form allows).",
-          "Enable acknowledgment required when employees must confirm they read safety or policy updates.",
-          "Publish the notice; active employees see it under `/employee/notices`.",
-          "Monitor acknowledgment completion from the admin notice detail view.",
-          "Edit or unpublish outdated notices to reduce clutter in the employee feed."
+          "Choose **All active employees** or filter by classification and department.",
+          "Enable **Requires acknowledgment** when employees must confirm they read safety or policy updates.",
+          "Save the draft, open the notice title to edit, then **Publish & notify** when ready.",
+          "Open a published notice to view recipient read/ack timestamps.",
+          "Use **Archive notice** when an announcement should leave the active list (Archived tab).",
+          "Emails contain workplace text only — never patient health information.",
         ],
         "Published notices appear in the Employee Portal and acknowledgment-required items show on employee dashboards until completed.",
         {
@@ -540,10 +542,12 @@ const adminCategories: HelpSeedCategory[] = [
         "SUPER_ADMIN, ADMIN, and CARE_COORDINATOR manage leads. VIEWER may read lists without editing.",
         [
           "Open **Leads** from the sidebar or dashboard KPI links.",
+          "Use **Create lead manually** to enter phone or walk-in inquiries with administrator-recorded consent.",
           "Filter by status (for example NEW) to prioritize untouched inquiries.",
-          "Open a lead detail page to read service interest, source, and submission time.",
-          "Update status as you contact the family and record notes on the detail form.",
-          "Assign responsibility when your process uses assignee fields on the record.",
+          "Download **Export summary CSV** when you need a nonclinical metrics extract (requires report permission).",
+          "Open a lead detail page to **Edit lead record**, update status, assign staff, and manage follow-up tasks.",
+          "Use **Archive lead** (type ARCHIVE) to close a record when intake is complete.",
+          "Download **Export lead detail CSV** from the list when you have report permission (contact fields respect your role).",
           "Use masked contact display appropriately—only roles with contact permission see full phone or email.",
           "Link follow-up actions to **Consultations** when a family moves to scheduled intake."
         ],
@@ -563,7 +567,7 @@ const adminCategories: HelpSeedCategory[] = [
         summary: "Track consultation requests, update statuses, assign coordinators, and document follow-up from the consultations workspace.",
         sortOrder: 2,
         keywords: ["consultations", "appointments", "intake"],
-        contextRoutes: ["/admin/consultations"],
+        contextRoutes: ["/admin/consultations", "/admin/consultations/calendar"],
       },
       mkSection(
         "Consultations",
@@ -571,9 +575,11 @@ const adminCategories: HelpSeedCategory[] = [
         "SUPER_ADMIN, ADMIN, and CARE_COORDINATOR.",
         [
           "Open **Consultations** from the sidebar or dashboard shortcut.",
+          "Open **Calendar view** for a month grid of scheduled consultations.",
+          "Use **New consultation** to link a consultation to an existing lead and optionally set date, assignee, and notes.",
           "Review the list for appointments needing confirmation or status updates.",
-          "Open a record to read family context and prior lead linkage.",
-          "Update status fields to match your intake pipeline stages implemented in the form.",
+          "Use inline **Save** on each row to reschedule, change status, or add internal notes.",
+          "If scheduling fails, read the conflict message — assignees cannot double-book overlapping consultations.",
           "Add internal notes without storing PHI beyond what the family already submitted voluntarily.",
           "Coordinate with **Leads** so marketing status stays aligned after consultations complete.",
           "Retry notifications from **Settings** if families report missing confirmation emails."
@@ -602,8 +608,8 @@ const adminCategories: HelpSeedCategory[] = [
         "SUPER_ADMIN, ADMIN, and CARE_COORDINATOR.",
         [
           "Open **Private Duty** from the sidebar or the dashboard KPI card.",
-          "Review new submissions and distinguish them from skilled nursing or hospice leads.",
-          "Open each record to read service details submitted on the public form.",
+          "Use **Add private duty lead** for walk-in private-pay inquiries (stored in the shared Leads database).",
+          "Review inquiries whose service text includes Private Duty or private pay.",
           "Update internal status or notes consistent with your private-duty sales process.",
           "Route families to **Consultations** when they are ready for a scheduled conversation.",
           "Ensure public **Services** content describes private duty accurately to reduce misclassified inquiries.",
@@ -832,23 +838,23 @@ const adminCategories: HelpSeedCategory[] = [
       {
         slug: "reports-and-analytics",
         title: "Reports and Analytics",
-        summary: "Use CRM Reports charts, workforce reports, and timesheets to review inquiry trends and hours when permissions allow.",
+        summary: "Category-based administrative reports with date ranges, print layout, and CSV export backed by PostgreSQL metrics.",
         sortOrder: 1,
         keywords: ["reports", "analytics", "timesheets", "workforce"],
         contextRoutes: ["/admin/reports", "/admin/timesheets", "/admin/workforce-reports"],
       },
       mkSection(
         "Reports and Analytics",
-        "JoyTogether exposes live SQL-backed analytics—lead groupings by service interest, monthly inquiry counts, workforce summaries, and optional timesheet approval when time clock is enabled.",
+        "JoyTogether exposes live SQL-backed analytics—lead, consultation, private duty, employee, shift, time off, and timesheet categories with date-range filters.",
         "CRM reports: SUPER_ADMIN, ADMIN, CARE_COORDINATOR. Workforce reports and timesheets: workforce admin roles.",
         [
-          "Open **Reports** for marketing analytics charts grouped by service interest and month.",
-          "Compare chart trends with dashboard KPIs to validate sudden spikes.",
-          "Open **Workforce Reports** for scheduling and hour summaries available to workforce admins.",
-          "Open **Timesheets** when time clock is enabled to approve employee clock entries tied to shifts.",
-          "Use date filters or week navigation provided on each page rather than exporting fabricated spreadsheets.",
-          "Investigate anomalies by drilling into underlying Leads or Scheduling records.",
-          "Share insights with leadership using screenshots that redact family contact information."
+          "Open **Reports** and pick a category tab (Leads, Consultations, Private duty, Employees, Shifts, Time off, Timesheets).",
+          "Set **From** and **To** dates, then click **Apply range**—metrics count only records in that period (employee metrics ignore dates where noted).",
+          "Click **Print report** for a print-friendly layout with company header and generation timestamp.",
+          "Click **Download CSV**, **Download Excel**, or **Download PDF** to export the same summary metrics server-side (authorization required).",
+          "Open **Workforce Reports** for scheduling KPIs separate from CRM reports.",
+          "Open **Timesheets** to filter clock entries, review missing clock-outs, and approve correction requests.",
+          "Investigate anomalies by opening underlying Leads, Scheduling, or Open Shifts records.",
         ],
         "You interpret live metrics from PostgreSQL and approve timesheets without relying on external BI tools.",
         {

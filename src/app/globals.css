@@ -745,3 +745,25 @@ main {
   margin: 0 0 16px;
   letter-spacing: -0.02em;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .report-print-root,
+  .report-print-root * {
+    visibility: visible;
+  }
+  .report-print-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  nav,
+  header,
+  aside,
+  .admin-sidebar {
+    display: none !important;
+  }
+}

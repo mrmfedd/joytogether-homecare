@@ -1,23 +1,32 @@
-import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 import {
   assignLeadAction,
   createFollowUpTaskAction,
   completeFollowUpTaskAction,
   scheduleConsultationAction,
   updateLeadStatusAction,
+  updateLeadFieldsAction,
 } from "@/app/admin/(app)/leads/actions";
+import { ArchiveLeadForm } from "./ArchiveLeadForm";
 import { requireAdminSession } from "@/lib/auth";
 import { listAssignableStaff } from "@/lib/admin/staff";
-import { canManageLeads, canViewLeadContact, canViewLeads } from "@/lib/permissions";
+import { canManageLeads, canViewLeadContact, canViewLeads, canViewReports } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { LeadStatus } from "@/generated/prisma";
 
-export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LeadDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const user = await requireAdminSession();
   if (!user || !canViewLeads(user.role)) redirect("/admin");
 
   const { id } = await params;
+  const sp = await searchParams;
   const [lead, staff, tasks] = await Promise.all([
     prisma.lead.findUnique({
       where: { id },
@@ -34,6 +43,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
   const showContact = canViewLeadContact(user.role);
   const canEdit = canManageLeads(user.role);
+  const canExport = canViewReports(user.role);
   const consultation = lead.consultations[0];
 
   return (
@@ -43,6 +53,42 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       </Link>
       <h1 className="mt-2 font-display text-3xl text-[var(--midnight)]">{lead.fullName}</h1>
       <p className="text-sm text-muted">Lead ID: {lead.id}</p>
+
+      {sp.error ? (
+        <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{decodeURIComponent(sp.error)}</p>
+      ) : null}
+
+      {canExport ? (
+        <p className="mt-4">
+          <a href="/api/admin/leads/export" className="text-sm font-bold text-[var(--royal)] hover:underline">
+            Export leads CSV (authorized)
+          </a>
+        </p>
+      ) : null}
+
+      {canEdit && showContact ? (
+        <form action={updateLeadFieldsAction} className="mt-6 rounded-2xl border border-line bg-white p-5">
+          <h2 className="font-semibold">Edit lead record</h2>
+          <input type="hidden" name="leadId" value={lead.id} />
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <input name="fullName" required defaultValue={lead.fullName} className="rounded-xl border border-line px-3 py-2 text-sm" />
+            <input name="email" type="email" required defaultValue={lead.email} className="rounded-xl border border-line px-3 py-2 text-sm" />
+            <input name="phone" required defaultValue={lead.phone} className="rounded-xl border border-line px-3 py-2 text-sm" />
+            <input name="serviceInterest" required defaultValue={lead.serviceInterest} className="rounded-xl border border-line px-3 py-2 text-sm" />
+            <input name="location" defaultValue={lead.location || ""} placeholder="Location" className="rounded-xl border border-line px-3 py-2 text-sm" />
+            <input name="preferredContact" defaultValue={lead.preferredContact || ""} placeholder="Preferred contact" className="rounded-xl border border-line px-3 py-2 text-sm" />
+            <textarea
+              name="nonClinicalNotes"
+              rows={3}
+              defaultValue={lead.nonClinicalNotes || ""}
+              className="sm:col-span-2 rounded-xl border border-line px-3 py-2 text-sm"
+            />
+          </div>
+          <button type="submit" className="btn btn-purple mt-3 px-4 py-2 text-sm">
+            Save fields
+          </button>
+        </form>
+      ) : null}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-line bg-white p-5">
@@ -65,9 +111,6 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             <li>Status: {lead.status}</li>
             <li>Preferred contact: {lead.preferredContact || "—"}</li>
           </ul>
-          {lead.nonClinicalNotes ? (
-            <p className="mt-3 rounded-lg bg-[var(--cream)] p-3 text-sm">{lead.nonClinicalNotes}</p>
-          ) : null}
         </div>
       </div>
 
@@ -161,6 +204,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               </button>
             </div>
           </form>
+
+          {lead.status !== "CLOSED" ? (
+            <div className="mt-6">
+              <ArchiveLeadForm leadId={lead.id} />
+            </div>
+          ) : null}
         </>
       ) : null}
 
@@ -186,7 +235,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               ) : null}
             </li>
           ))}
-          {tasks.length === 0 ? <li className="text-sm text-muted">No tasks yet.</li> : null}
+          {tasks.length === 0 ? <li className="text-sm text-muted">No follow-up tasks yet. Add one above when you need a reminder.</li> : null}
         </ul>
       </section>
 

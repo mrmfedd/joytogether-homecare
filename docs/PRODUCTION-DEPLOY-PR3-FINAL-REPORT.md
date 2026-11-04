@@ -6,7 +6,11 @@
 **PR:** https://github.com/mrmfedd/joytogether-homecare/pull/3 (**merged** 2026-11-04T06:45:41Z)  
 **Live site:** https://www.joytogetherhomecare.com  
 
-**Deployment status:** **COMPLETE** (database migrate + Help seed applied). **Partial verification:** Neon snapshot ID not readable via API; authenticated export/print smoke requires owner MFA session.
+**Deployment status:** **COMPLETE** (database migrate + Help seed applied). **Production acceptance:** Owner hands-on testing complete **2026-11-04** — release treated as accepted (`docs/PRODUCTION-ACCEPTANCE-REPORT.md`). **Partial verification:** Neon snapshot ID not readable via API; authenticated export/print smoke requires owner MFA session.
+
+**Production URLs:** https://www.joytogetherhomecare.com · Admin `/admin/login` · Employee `/employee/login`
+
+**Rollback (application):** Vercel promote **`17748d9`** (pre–PR #3) or last known-good **`c8a4007`**.
 
 ---
 
@@ -138,4 +142,6 @@ Preview vs Production hosts remain **isolated** (documented in prior QA).
 | Automated tests this session | DB verify, migration list, readonly HTTP smoke, 21× export **401** matrix |
 | Bootstrap endpoint | **404** |
 
-**Verdict:** PR #3 Production rollout **shipped** (merge, Vercel, migrate, Help seed). Treat backup metadata and authenticated reporting QA as the remaining operator items before calling the launch fully signed off.
+**Verdict:** PR #3 Production rollout **shipped and accepted** (merge, Vercel, migrate, Help seed, owner sign-off). Remaining operator items: **Neon snapshot ID in Console**, optional authenticated export byte check, **owner ADMIN invite** when approved (`docs/ADMINISTRATOR-ONBOARDING-GUIDE.md`).
+
+**Ops documentation index:** `PRODUCTION-ACCEPTANCE-REPORT.md`, `BACKUP-RECOVERY-RUNBOOK.md`, `SECURITY-VERIFICATION-CHECKLIST.md`, `ADMINISTRATOR-ONBOARDING-GUIDE.md`, `EMPLOYEE-ONBOARDING-GUIDE.md`, `ADMIN-REPORTING-OPERATIONS.md`, `ROUTINE-MAINTENANCE-CHECKLIST.md`, `PRODUCTION-CHANGE-MANAGEMENT.md`.

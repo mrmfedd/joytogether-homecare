@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getDashboardKpis } from "@/lib/admin/queries";
 import { requireAdminSession } from "@/lib/auth";
 import { canViewReports } from "@/lib/permissions";
+import { canViewPatientDirectory } from "@/lib/patient/permissions";
+import { getPatientCoordinationKpis } from "@/lib/patient/dashboard-metrics";
 import { redirect } from "next/navigation";
 
 function StatCard({ label, value, href }: { label: string; value: number | string; href?: string }) {
@@ -19,8 +21,16 @@ export default async function AdminDashboardPage() {
   if (!user) redirect("/admin/login");
 
   let kpis;
+  let patientKpis = null;
   try {
     kpis = await getDashboardKpis();
+    if (canViewPatientDirectory(user.role)) {
+      try {
+        patientKpis = await getPatientCoordinationKpis();
+      } catch {
+        patientKpis = null;
+      }
+    }
   } catch {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-900">
@@ -46,6 +56,23 @@ export default async function AdminDashboardPage() {
         <StatCard label="Job applications" value={kpis.jobApplications} href="/admin/careers" />
         <StatCard label="Failed notifications" value={kpis.notificationsFailed} href="/admin/settings" />
       </div>
+
+      {patientKpis ? (
+        <>
+          <h2 className="mt-10 text-sm font-bold uppercase tracking-wide text-muted">Patient care coordination</h2>
+          <p className="mt-1 text-xs text-muted">Counts from live database records after patient migration is applied.</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard label="Active patients" value={patientKpis.activePatients} href="/admin/patients/active" />
+            <StatCard label="Active assignments" value={patientKpis.activeAssignments} href="/admin/patients/assignments" />
+            <StatCard label="Today's visits" value={patientKpis.todaysVisits} href="/admin/scheduling" />
+            <StatCard label="Notes awaiting review" value={patientKpis.notesAwaitingReview} href="/admin/patients/notes" />
+            <StatCard label="Unread messages" value={patientKpis.unreadThreads} href="/admin/messages?filter=unread" />
+            <StatCard label="Urgent alerts" value={patientKpis.urgentAlerts} href="/admin/patients/alerts" />
+            <StatCard label="Open follow-ups" value={patientKpis.openAlerts} href="/admin/patients/alerts" />
+            <StatCard label="Patient directory" value="Open" href="/admin/patients" />
+          </div>
+        </>
+      ) : null}
 
       <h2 className="mt-10 text-sm font-bold uppercase tracking-wide text-muted">Workforce</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

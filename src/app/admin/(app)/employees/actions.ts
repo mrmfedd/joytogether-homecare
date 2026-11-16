@@ -1,30 +1,91 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
 import type { EmployeeClassification } from "@/generated/prisma";
 import { requireAdminSession } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
-import { createAndEmailEmployeeInvitation } from "@/lib/employee/invitations";
+import { createEmployeeActivationWithoutEmail } from "@/lib/employee/invitations";
 import { canManageEmployees } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
+import { publicSiteBaseUrl } from "@/lib/site-url";
 
-export async function inviteEmployeeAction(formData: FormData) {
-  const user = await requireAdminSession();
-  if (!user || !canManageEmployees(user.role)) return;
+const employeeClassifications = [
+  "CAREGIVER",
+  "HOME_HEALTH_AIDE",
+  "CNA",
+  "LPN",
+  "RN",
+  "HOSPICE_STAFF",
+  "TRANSPORTATION_STAFF",
+  "SCHEDULER",
+  "SUPERVISOR",
+] as const satisfies readonly EmployeeClassification[];
 
-  const email = String(formData.get("email") || "").trim();
-  const classification = String(formData.get("classification") || "") as EmployeeClassification;
-  if (!email || !classification) return;
+const createEmployeeManuallySchema = z.object({
+  email: z.string().trim().toLowerCase().email("Valid email required."),
+  name: z.string().trim().min(1, "Name is required.").max(200),
+  classification: z.enum(employeeClassifications),
+  phone: z.string().trim().max(50).optional(),
+  department: z.string().trim().max(100).optional(),
+});
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
-  await createAndEmailEmployeeInvitation({
-    email,
-    classification,
-    baseUrl,
-    createdByUserId: user.id,
+function formOptionalString(value: FormDataEntryValue | null) {
+  const trimmed = String(value ?? "").trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function employeeCreateErrorParam(error: unknown): string {
+  const raw = error instanceof Error ? error.message : "create_failed";
+  if (raw.includes("EmployeeInvitation") && raw.toLowerCase().includes("does not exist")) {
+    return "Workforce database tables are missing. Run production migrations and redeploy.";
+  }
+  if (raw.includes("EmployeeProfile") && raw.toLowerCase().includes("does not exist")) {
+    return "Workforce database tables are missing. Run production migrations and redeploy.";
+  }
+  return raw;
+}
+
+export async function createEmployeeManuallyAction(formData: FormData) {
+  const actor = await requireAdminSession();
+  if (!actor || !canManageEmployees(actor.role)) {
+    redirect("/admin/employees?error=unauthorized");
+  }
+
+  const parsed = createEmployeeManuallySchema.safeParse({
+    email: String(formData.get("email") || ""),
+    name: String(formData.get("name") || ""),
+    classification: String(formData.get("classification") || ""),
+    phone: formOptionalString(formData.get("phone")),
+    department: formOptionalString(formData.get("department")),
   });
 
-  revalidatePath("/admin/employees");
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "invalid_fields";
+    redirect(`/admin/employees?error=${encodeURIComponent(message)}`);
+  }
+
+  const { email, name, classification, phone, department } = parsed.data;
+
+  try {
+    const result = await createEmployeeActivationWithoutEmail({
+      email,
+      name,
+      classification,
+      phone,
+      department,
+      baseUrl: publicSiteBaseUrl(),
+      createdByUserId: actor.id,
+    });
+
+    revalidatePath("/admin/employees");
+    redirect(
+      `/admin/employees?created=1&activation=${encodeURIComponent(result.activationUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
+    );
+  } catch (e) {
+    redirect(`/admin/employees?error=${encodeURIComponent(employeeCreateErrorParam(e))}`);
+  }
 }
 
 export async function deactivateEmployeeProfileAction(formData: FormData) {

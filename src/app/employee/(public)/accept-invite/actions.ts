@@ -14,11 +14,11 @@ export async function acceptEmployeeInviteAction(formData: FormData) {
 
   const validation = await validateEmployeeInviteToken(token);
   if (!validation.ok) {
-    redirect(`/employee/accept-invite?error=${validation.reason}`);
+    redirect(`/employee/accept-invite?error=${validation.reason}${token ? `&token=${encodeURIComponent(token)}` : ""}`);
   }
 
   if (password.length < 12 || password !== confirm) {
-    redirect("/employee/accept-invite?error=password");
+    redirect(`/employee/accept-invite?error=password&token=${encodeURIComponent(token)}`);
   }
 
   const invite = await prisma.employeeInvitation.findUnique({
@@ -29,35 +29,69 @@ export async function acceptEmployeeInviteAction(formData: FormData) {
   }
 
   const passwordHash = await hashPassword(password);
-  const user = await prisma.user.create({
-    data: {
-      email: invite.email,
-      name: name || invite.email,
-      role: "EMPLOYEE",
-      passwordHash,
-      active: true,
-    },
+  const existing = await prisma.user.findUnique({
+    where: { email: invite.email },
+    include: { employeeProfile: true },
   });
 
-  await prisma.employeeProfile.create({
-    data: {
-      userId: user.id,
-      classification: invite.classification,
-      employmentStatus: "ACTIVE",
-    },
-  });
+  let profileId: string;
 
-  await prisma.employeeInvitation.update({
-    where: { id: invite.id },
-    data: { acceptedAt: new Date(), acceptedById: user.id },
-  });
+  if (existing?.employeeProfile) {
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          passwordHash,
+          active: true,
+          ...(name ? { name } : {}),
+        },
+      }),
+      prisma.employeeProfile.update({
+        where: { id: existing.employeeProfile.id },
+        data: { employmentStatus: "ACTIVE" },
+      }),
+      prisma.employeeInvitation.update({
+        where: { id: invite.id },
+        data: { acceptedAt: new Date(), acceptedById: existing.id },
+      }),
+    ]);
+    profileId = existing.employeeProfile.id;
+  } else {
+    const user = await prisma.user.create({
+      data: {
+        email: invite.email,
+        name: name || invite.email,
+        role: "EMPLOYEE",
+        passwordHash,
+        active: true,
+      },
+    });
+
+    const profile = await prisma.employeeProfile.create({
+      data: {
+        userId: user.id,
+        classification: invite.classification,
+        employmentStatus: "ACTIVE",
+      },
+    });
+
+    await prisma.employeeInvitation.update({
+      where: { id: invite.id },
+      data: { acceptedAt: new Date(), acceptedById: user.id },
+    });
+
+    profileId = profile.id;
+  }
 
   await writeAuditLog({
-    userId: user.id,
-    action: "CREATE",
+    userId: existing?.id,
+    action: existing ? "UPDATE" : "CREATE",
     entity: "EmployeeProfile",
-    entityId: user.id,
-    meta: { via: "employee_invitation", email: invite.email },
+    entityId: profileId,
+    meta: {
+      via: validation.pendingProfile ? "employee_activation" : "employee_invitation",
+      email: invite.email,
+    },
   });
 
   redirect("/employee/login?accepted=1");

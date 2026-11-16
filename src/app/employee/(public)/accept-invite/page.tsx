@@ -1,8 +1,9 @@
 import { acceptEmployeeInviteAction } from "./actions";
 import { validateEmployeeInviteToken } from "@/lib/employee/invitations";
+import { prisma } from "@/lib/prisma";
 
 const errorCopy: Record<string, string> = {
-  missing: "This invitation link is incomplete. Contact your scheduler for a new invite.",
+  missing: "This activation link is incomplete. Ask your administrator for a new link.",
   invalid: "This invitation link is not valid.",
   expired: "This invitation has expired.",
   used: "This invitation was already used.",
@@ -18,6 +19,15 @@ export default async function EmployeeAcceptInvitePage({
   const { token, error } = await searchParams;
   const validation = token ? await validateEmployeeInviteToken(token) : { ok: false as const, reason: "missing" as const };
   const showForm = validation.ok;
+  const defaultName =
+    validation.ok && validation.pendingProfile
+      ? (
+          await prisma.user.findUnique({
+            where: { email: validation.email },
+            select: { name: true },
+          })
+        )?.name
+      : undefined;
   const errorMessage = error ? errorCopy[error] || "Unable to accept invitation." : null;
 
   return (
@@ -44,6 +54,8 @@ export default async function EmployeeAcceptInvitePage({
             <input
               name="name"
               required
+              defaultValue={defaultName || ""}
+              readOnly={Boolean(defaultName)}
               className="mt-1 w-full rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-[var(--midnight)]"
             />
           </label>

@@ -4,14 +4,18 @@ import { writeAuditLog } from "@/lib/audit";
 import { hashInviteToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { site } from "@/content/site";
+import { publicSiteBaseUrl } from "@/lib/site-url";
+import { buildEmployeeActivationUrl, isPendingEmployeeActivation } from "@/lib/employee/activation";
+
+export { buildEmployeeActivationUrl, isPendingEmployeeActivation } from "@/lib/employee/activation";
 
 export type EmployeeInviteValidation =
-  | { ok: true; email: string; classification: EmployeeClassification }
+  | { ok: true; email: string; classification: EmployeeClassification; pendingProfile?: boolean }
   | { ok: false; reason: "missing" | "invalid" | "expired" | "used" | "account_exists" };
 
 async function sendEmployeeInviteEmail(to: string, acceptUrl: string) {
-  const resendKey = process.env.RESEND_API_KEY;
-  const resendFrom = process.env.RESEND_FROM;
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  const resendFrom = process.env.RESEND_FROM?.trim();
   if (!resendKey || !resendFrom) {
     throw new Error("RESEND_API_KEY and RESEND_FROM must be configured.");
   }
@@ -70,9 +74,102 @@ export async function validateEmployeeInviteToken(
   if (!invite) return { ok: false, reason: "invalid" };
   if (invite.acceptedAt) return { ok: false, reason: "used" };
   if (invite.expiresAt < new Date()) return { ok: false, reason: "expired" };
-  const existing = await prisma.user.findUnique({ where: { email: invite.email } });
-  if (existing) return { ok: false, reason: "account_exists" };
-  return { ok: true, email: invite.email, classification: invite.classification };
+  const existing = await prisma.user.findUnique({
+    where: { email: invite.email },
+    include: { employeeProfile: true },
+  });
+  if (existing && !isPendingEmployeeActivation(existing)) {
+    return { ok: false, reason: "account_exists" };
+  }
+  return {
+    ok: true,
+    email: invite.email,
+    classification: invite.classification,
+    pendingProfile: Boolean(existing),
+  };
+}
+
+const EMPLOYEE_ACTIVATION_HOURS = 48 * 7;
+
+export async function createEmployeeActivationWithoutEmail(params: {
+  email: string;
+  name: string;
+  classification: EmployeeClassification;
+  phone?: string;
+  department?: string;
+  baseUrl: string;
+  createdByUserId: string;
+}) {
+  const email = params.email.trim().toLowerCase();
+  if (!email.includes("@")) throw new Error("Valid email required.");
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    throw new Error("An account already exists for this email.");
+  }
+
+  const burned = await burnOutstandingInvites(email);
+  const token = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * EMPLOYEE_ACTIVATION_HOURS);
+  const base = publicSiteBaseUrl(params.baseUrl);
+
+  const { profile, invitation } = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        email,
+        name: params.name.trim(),
+        role: "EMPLOYEE",
+        active: false,
+      },
+    });
+
+    const profile = await tx.employeeProfile.create({
+      data: {
+        userId: user.id,
+        classification: params.classification,
+        employmentStatus: "INVITED",
+        ...(params.phone ? { phone: params.phone } : {}),
+        ...(params.department ? { department: params.department } : {}),
+      },
+    });
+
+    const invitation = await tx.employeeInvitation.create({
+      data: {
+        email,
+        classification: params.classification,
+        tokenHash: hashInviteToken(token),
+        expiresAt,
+        createdById: params.createdByUserId,
+      },
+    });
+
+    return { profile, invitation };
+  });
+
+  const activationUrl = buildEmployeeActivationUrl(base, token);
+
+  await writeAuditLog({
+    userId: params.createdByUserId,
+    action: "CREATE",
+    entity: "EmployeeProfile",
+    entityId: profile.id,
+    meta: {
+      via: "manual_admin_activation",
+      email,
+      classification: params.classification,
+      priorInvitesBurned: burned,
+      invitationId: invitation.id,
+    },
+  });
+
+  return {
+    profileId: profile.id,
+    invitationId: invitation.id,
+    email,
+    activationUrl,
+    expiresAt,
+    priorInvitesBurned: burned,
+  };
 }
 
 export async function createAndEmailEmployeeInvitation(params: {
@@ -83,8 +180,7 @@ export async function createAndEmailEmployeeInvitation(params: {
 }) {
   const email = params.email.trim().toLowerCase();
   if (!email.includes("@")) throw new Error("Valid email required.");
-  const base = params.baseUrl.replace(/\/$/, "");
-  if (!base) throw new Error("NEXT_PUBLIC_SITE_URL required.");
+  const base = publicSiteBaseUrl(params.baseUrl);
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) throw new Error("An account already exists for this email.");

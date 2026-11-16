@@ -5,8 +5,10 @@ import { prisma } from "@/lib/prisma";
 import {
   createEmployeeManuallyAction,
   deactivateEmployeeProfileAction,
+  deleteEmployeeProfileAction,
   regenerateEmployeeActivationLinkAction,
 } from "./actions";
+import { ConfirmSubmitButton } from "@/components/admin/ConfirmSubmitButton";
 import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
 const classifications = [
@@ -29,6 +31,7 @@ export default async function AdminEmployeesPage({
     created?: string;
     activation?: string;
     expires?: string;
+    deleted?: string;
   }>;
 }) {
   const user = await requireAdminSession();
@@ -87,6 +90,11 @@ export default async function AdminEmployeesPage({
           ) : (
             " If you did not copy the activation link, resolve duplicate email issues and add the employee again."
           )}
+        </p>
+      ) : null}
+      {params.deleted === "1" ? (
+        <p className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900" role="status">
+          Employee removed permanently.
         </p>
       ) : null}
       {errorMessage ? (
@@ -187,12 +195,23 @@ export default async function AdminEmployeesPage({
                           </button>
                         </form>
                       ) : null}
-                      {p.employmentStatus !== "INACTIVE" ? (
+                      {p.employmentStatus === "ACTIVE" && p.user.active ? (
                         <form action={deactivateEmployeeProfileAction}>
                           <input type="hidden" name="profileId" value={p.id} />
-                          <button type="submit" className="text-xs font-semibold text-red-700">
+                          <button type="submit" className="text-xs font-semibold text-amber-800">
                             Deactivate
                           </button>
+                        </form>
+                      ) : null}
+                      {(!p.user.active && p.employmentStatus === "INVITED") || p.employmentStatus === "INACTIVE" ? (
+                        <form action={deleteEmployeeProfileAction}>
+                          <input type="hidden" name="profileId" value={p.id} />
+                          <ConfirmSubmitButton
+                            message={`Permanently remove ${p.user.name || p.user.email}? This cannot be undone.`}
+                            className="text-xs font-semibold text-red-700"
+                          >
+                            Remove
+                          </ConfirmSubmitButton>
                         </form>
                       ) : null}
                     </div>

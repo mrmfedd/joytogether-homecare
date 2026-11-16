@@ -13,6 +13,7 @@ import {
 import { canManageEmployees } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
 import { publicSiteBaseUrl } from "@/lib/site-url";
+import { deleteEmployeeProfilePermanently } from "@/lib/employee/delete-profile";
 
 const employeeClassifications = [
   "CAREGIVER",
@@ -118,6 +119,32 @@ export async function regenerateEmployeeActivationLinkAction(formData: FormData)
   redirect(
     `/admin/employees?created=1&activation=${encodeURIComponent(result.activationUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
   );
+}
+
+export async function deleteEmployeeProfileAction(formData: FormData) {
+  const actor = await requireAdminSession();
+  if (!actor || !canManageEmployees(actor.role)) {
+    redirect("/admin/employees?error=unauthorized");
+  }
+
+  const profileId = String(formData.get("profileId") || "");
+  if (!profileId) redirect("/admin/employees?error=missing_profile");
+
+  try {
+    const removed = await deleteEmployeeProfilePermanently(profileId);
+    await writeAuditLog({
+      userId: actor.id,
+      action: "DELETE",
+      entity: "EmployeeProfile",
+      entityId: removed.profileId,
+      meta: { email: removed.email, permanent: true },
+    });
+  } catch (e) {
+    redirect(`/admin/employees?error=${encodeURIComponent(employeeCreateErrorParam(e))}`);
+  }
+
+  revalidatePath("/admin/employees");
+  redirect("/admin/employees?deleted=1");
 }
 
 export async function deactivateEmployeeProfileAction(formData: FormData) {

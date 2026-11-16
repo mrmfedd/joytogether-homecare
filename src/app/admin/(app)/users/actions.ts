@@ -3,12 +3,68 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { UserRole } from "@/generated/prisma";
-import { createAndEmailAdminInvitation } from "@/lib/admin/invitations";
+import { createAdminActivationWithoutEmail, createAndEmailAdminInvitation } from "@/lib/admin/invitations";
+import { publicSiteBaseUrl } from "@/lib/site-url";
+import { z } from "zod";
 import { requireAdminSession, hashPassword, hashInviteToken } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { canManageUsers } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { validateAdminInviteToken } from "@/lib/admin/invitations";
+
+const adminInviteRoles = [
+  "SUPER_ADMIN",
+  "ADMIN",
+  "CARE_COORDINATOR",
+  "CONTENT_EDITOR",
+  "RECRUITER",
+  "VIEWER",
+] as const satisfies readonly UserRole[];
+
+const createAdminManuallySchema = z.object({
+  email: z.string().trim().toLowerCase().email("Valid email required."),
+  role: z.enum(adminInviteRoles),
+});
+
+function adminCreateErrorParam(error: unknown): string {
+  return error instanceof Error ? error.message : "create_failed";
+}
+
+export async function createAdminManuallyAction(formData: FormData) {
+  const actor = await requireAdminSession();
+  if (!actor || !canManageUsers(actor.role)) {
+    redirect("/admin/users?error=unauthorized");
+  }
+
+  const parsed = createAdminManuallySchema.safeParse({
+    email: String(formData.get("email") || ""),
+    role: String(formData.get("role") || ""),
+  });
+
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "invalid_fields";
+    redirect(`/admin/users?error=${encodeURIComponent(message)}`);
+  }
+
+  const { email, role } = parsed.data;
+
+  let result: Awaited<ReturnType<typeof createAdminActivationWithoutEmail>>;
+  try {
+    result = await createAdminActivationWithoutEmail({
+      email,
+      role,
+      baseUrl: publicSiteBaseUrl(),
+      createdByUserId: actor.id,
+    });
+  } catch (e) {
+    redirect(`/admin/users?error=${encodeURIComponent(adminCreateErrorParam(e))}`);
+  }
+
+  revalidatePath("/admin/users");
+  redirect(
+    `/admin/users?created=1&activation=${encodeURIComponent(result.acceptUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
+  );
+}
 
 export async function sendAdminInviteAction(formData: FormData) {
   const user = await requireAdminSession();

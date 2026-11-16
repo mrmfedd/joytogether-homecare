@@ -7,7 +7,13 @@ import { AdminUsersPageClient } from "@/components/admin/AdminUsersPageClient";
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; sent?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    sent?: string;
+    created?: string;
+    activation?: string;
+    expires?: string;
+  }>;
 }) {
   const user = await requireAdminSession();
   if (!user || !canManageUsers(user.role)) redirect("/admin");
@@ -16,6 +22,7 @@ export default async function AdminUsersPage({
 
   const [users, invites] = await Promise.all([
     prisma.user.findMany({
+      where: { role: { not: "EMPLOYEE" } },
       orderBy: { createdAt: "desc" },
       select: { id: true, email: true, name: true, role: true, active: true, lastLoginAt: true },
     }),
@@ -32,6 +39,9 @@ export default async function AdminUsersPage({
       invites={invites}
       error={params.error ? decodeURIComponent(params.error) : undefined}
       sent={params.sent === "1"}
+      created={params.created === "1"}
+      activationUrl={params.activation ? decodeURIComponent(params.activation) : undefined}
+      activationExpires={params.expires ? decodeURIComponent(params.expires) : undefined}
     />
   );
 }

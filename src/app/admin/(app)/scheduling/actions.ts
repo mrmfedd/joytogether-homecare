@@ -6,6 +6,9 @@ import { writeAuditLog } from "@/lib/audit";
 import { canManageScheduling } from "@/lib/workforce/permissions";
 import { findApprovedTimeOffOverlap, findShiftConflictsForProfile } from "@/lib/workforce/shifts";
 import { prisma } from "@/lib/prisma";
+import { assertPatientAccess, PatientAccessDeniedError } from "@/lib/patient/access";
+import { canViewPatientDirectory } from "@/lib/patient/permissions";
+import { upsertPatientVisitForShift } from "@/lib/patient/visits";
 
 export async function createShiftAction(formData: FormData) {
   const user = await requireAdminSession();
@@ -22,6 +25,8 @@ export async function createShiftAction(formData: FormData) {
   const endsAt = new Date(endsRaw);
   if (endsAt <= startsAt) return;
 
+  const patientId = String(formData.get("patientId") || "").trim() || null;
+
   const shift = await prisma.shift.create({
     data: {
       title,
@@ -31,8 +36,24 @@ export async function createShiftAction(formData: FormData) {
       workLocationLabel,
       status: "DRAFT",
       createdById: user.id,
+      patientId: patientId || undefined,
     },
   });
+
+  if (patientId) {
+    if (!canViewPatientDirectory(user.role)) return;
+    try {
+      await assertPatientAccess({ kind: "admin", userId: user.id, role: user.role }, patientId);
+      await upsertPatientVisitForShift({
+        patientId,
+        shiftId: shift.id,
+        actorUserId: user.id,
+      });
+    } catch (e) {
+      if (e instanceof PatientAccessDeniedError) return;
+      throw e;
+    }
+  }
 
   await writeAuditLog({ userId: user.id, action: "CREATE", entity: "Shift", entityId: shift.id });
   revalidatePath("/admin/scheduling");
@@ -118,6 +139,21 @@ export async function assignEmployeeToShiftAction(formData: FormData) {
     create: { shiftId, profileId, confirmationStatus: "PENDING" },
     update: { profileId, confirmationStatus: "PENDING", confirmedAt: null, declinedAt: null },
   });
+
+  if (shift.patientId && canViewPatientDirectory(user.role)) {
+    try {
+      await assertPatientAccess({ kind: "admin", userId: user.id, role: user.role }, shift.patientId);
+      await upsertPatientVisitForShift({
+        patientId: shift.patientId,
+        shiftId,
+        primaryProfileId: profileId,
+        actorUserId: user.id,
+      });
+    } catch (e) {
+      if (e instanceof PatientAccessDeniedError) return;
+      throw e;
+    }
+  }
 
   revalidatePath("/admin/scheduling");
 }

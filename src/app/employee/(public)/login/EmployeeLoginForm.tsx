@@ -95,7 +95,12 @@ export default function EmployeeLoginForm() {
       <Link href="/employee/forgot-password" className="mt-4 block text-center text-sm text-sky-200 hover:underline">
         Forgot password?
       </Link>
-      <p className="mt-6 text-xs text-white/70">Access is by invitation only. Patient information is not available here.</p>
+      <p className="mt-6 text-xs text-white/70">
+        First-time setup: open the <strong className="text-white/90">full activation link</strong> from your administrator
+        (it includes <code className="rounded bg-white/10 px-1">/employee/activate</code> or{" "}
+        <code className="rounded bg-white/10 px-1">/employee/accept-invite</code>). This sign-in page is only after you
+        have created a password. Patient information is not available here.
+      </p>
     </div>
   );
 }

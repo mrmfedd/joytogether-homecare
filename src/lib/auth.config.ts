@@ -14,6 +14,7 @@ function isPublicAdminPath(path: string) {
 function isPublicEmployeePath(path: string) {
   return (
     path.startsWith("/employee/login") ||
+    path.startsWith("/employee/activate") ||
     path.startsWith("/employee/accept-invite") ||
     path.startsWith("/employee/forgot-password") ||
     path.startsWith("/employee/reset-password")

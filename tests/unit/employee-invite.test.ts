@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { site } from "@/content/site";
 import { publicSiteBaseUrl } from "@/lib/site-url";
+import { buildEmployeeActivationUrl, isPendingEmployeeActivation } from "@/lib/employee/activation";
 
 describe("employee invitation — site URL resolution", () => {
   const prev = process.env.NEXT_PUBLIC_SITE_URL;
@@ -23,5 +24,29 @@ describe("employee invitation — site URL resolution", () => {
   it("honors explicit override over env", () => {
     process.env.NEXT_PUBLIC_SITE_URL = "https://preview.example.com";
     expect(publicSiteBaseUrl("https://custom.example.com/")).toBe("https://custom.example.com");
+  });
+});
+
+describe("employee activation (offline)", () => {
+  it("builds /employee/activate URL with token", () => {
+    const url = buildEmployeeActivationUrl("https://www.joytogetherhomecare.com/", "abc123");
+    expect(url).toBe("https://www.joytogetherhomecare.com/employee/activate?token=abc123");
+  });
+
+  it("detects pending admin-provisioned profiles", () => {
+    expect(
+      isPendingEmployeeActivation({
+        passwordHash: null,
+        active: false,
+        employeeProfile: { employmentStatus: "INVITED" },
+      }),
+    ).toBe(true);
+    expect(
+      isPendingEmployeeActivation({
+        passwordHash: "hashed",
+        active: true,
+        employeeProfile: { employmentStatus: "ACTIVE" },
+      }),
+    ).toBe(false);
   });
 });

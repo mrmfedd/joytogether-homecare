@@ -2,50 +2,90 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import type { EmployeeClassification } from "@/generated/prisma";
 import { requireAdminSession } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
-import { createAndEmailEmployeeInvitation } from "@/lib/employee/invitations";
+import { createEmployeeActivationWithoutEmail } from "@/lib/employee/invitations";
 import { canManageEmployees } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
 import { publicSiteBaseUrl } from "@/lib/site-url";
 
-function employeeInviteErrorParam(error: unknown): string {
-  const raw = error instanceof Error ? error.message : "invite_failed";
-  if (raw.includes("RESEND_API_KEY")) {
-    return "Email delivery is not configured (RESEND_API_KEY / RESEND_FROM).";
-  }
+const employeeClassifications = [
+  "CAREGIVER",
+  "HOME_HEALTH_AIDE",
+  "CNA",
+  "LPN",
+  "RN",
+  "HOSPICE_STAFF",
+  "TRANSPORTATION_STAFF",
+  "SCHEDULER",
+  "SUPERVISOR",
+] as const satisfies readonly EmployeeClassification[];
+
+const createEmployeeManuallySchema = z.object({
+  email: z.string().trim().toLowerCase().email("Valid email required."),
+  name: z.string().trim().min(1, "Name is required.").max(200),
+  classification: z.enum(employeeClassifications),
+  phone: z.string().trim().max(50).optional(),
+  department: z.string().trim().max(100).optional(),
+});
+
+function formOptionalString(value: FormDataEntryValue | null) {
+  const trimmed = String(value ?? "").trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function employeeCreateErrorParam(error: unknown): string {
+  const raw = error instanceof Error ? error.message : "create_failed";
   if (raw.includes("EmployeeInvitation") && raw.toLowerCase().includes("does not exist")) {
+    return "Workforce database tables are missing. Run production migrations and redeploy.";
+  }
+  if (raw.includes("EmployeeProfile") && raw.toLowerCase().includes("does not exist")) {
     return "Workforce database tables are missing. Run production migrations and redeploy.";
   }
   return raw;
 }
 
-export async function inviteEmployeeAction(formData: FormData) {
-  const user = await requireAdminSession();
-  if (!user || !canManageEmployees(user.role)) {
+export async function createEmployeeManuallyAction(formData: FormData) {
+  const actor = await requireAdminSession();
+  if (!actor || !canManageEmployees(actor.role)) {
     redirect("/admin/employees?error=unauthorized");
   }
 
-  const email = String(formData.get("email") || "").trim();
-  const classification = String(formData.get("classification") || "") as EmployeeClassification;
-  if (!email || !classification) {
-    redirect("/admin/employees?error=missing_fields");
+  const parsed = createEmployeeManuallySchema.safeParse({
+    email: String(formData.get("email") || ""),
+    name: String(formData.get("name") || ""),
+    classification: String(formData.get("classification") || ""),
+    phone: formOptionalString(formData.get("phone")),
+    department: formOptionalString(formData.get("department")),
+  });
+
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "invalid_fields";
+    redirect(`/admin/employees?error=${encodeURIComponent(message)}`);
   }
+
+  const { email, name, classification, phone, department } = parsed.data;
 
   try {
-    await createAndEmailEmployeeInvitation({
+    const result = await createEmployeeActivationWithoutEmail({
       email,
+      name,
       classification,
+      phone,
+      department,
       baseUrl: publicSiteBaseUrl(),
-      createdByUserId: user.id,
+      createdByUserId: actor.id,
     });
-  } catch (e) {
-    redirect(`/admin/employees?error=${encodeURIComponent(employeeInviteErrorParam(e))}`);
-  }
 
-  revalidatePath("/admin/employees");
-  redirect("/admin/employees?sent=1");
+    revalidatePath("/admin/employees");
+    redirect(
+      `/admin/employees?created=1&activation=${encodeURIComponent(result.activationUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
+    );
+  } catch (e) {
+    redirect(`/admin/employees?error=${encodeURIComponent(employeeCreateErrorParam(e))}`);
+  }
 }
 
 export async function deactivateEmployeeProfileAction(formData: FormData) {

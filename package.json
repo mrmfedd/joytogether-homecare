@@ -30,7 +30,9 @@
     "verify:production-resend": "tsx scripts/verify-production-resend.ts",
     "verify:resend-env-isolation": "tsx scripts/compare-resend-env-isolation.ts",
     "test:rc-security": "node scripts/rc-security-probe.mjs",
-    "generate:training-manual": "tsx scripts/generate-training-manual-pdf.ts"
+    "generate:training-manual": "tsx scripts/generate-training-manual-pdf.ts",
+    "generate:patient-care-manuals": "tsx scripts/generate-patient-care-manuals.ts",
+    "test:patient-access": "vitest run tests/unit/patient-access-security.test.ts tests/unit/patient-permissions.test.ts tests/unit/patient-phi-crypto.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

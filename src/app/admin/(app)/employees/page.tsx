@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/auth";
 import { canManageEmployees } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
-import { createEmployeeManuallyAction, deactivateEmployeeProfileAction } from "./actions";
+import {
+  createEmployeeManuallyAction,
+  deactivateEmployeeProfileAction,
+  regenerateEmployeeActivationLinkAction,
+} from "./actions";
 import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 
 const classifications = [
@@ -94,8 +98,8 @@ export default async function AdminEmployeesPage({
       <section className="mt-6 rounded-2xl border border-line bg-white p-5">
         <h2 className="font-display text-lg">Add employee manually</h2>
         <p className="mt-1 text-sm text-muted">
-          Creates a pending profile. Copy the one-time activation link below and share it privately (in person or by
-          phone). The employee sets their own password on first visit — nothing is emailed.
+          Creates a pending profile. Copy the one-time activation link below and share it privately (in person, phone, or
+          your own text). The app does not email employees automatically. They set their own password on first visit.
         </p>
         <form action={createEmployeeManuallyAction} className="mt-4 flex flex-wrap items-end gap-3">
           <label className="text-sm">
@@ -134,8 +138,8 @@ export default async function AdminEmployeesPage({
         <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
           <h2 className="font-display text-lg text-amber-950">Pending activations</h2>
           <p className="mt-1 text-sm text-amber-900">
-            These employees have not completed password setup. Re-create or use a new activation link if the prior link
-            expired (links are shown only once at creation).
+            These employees have not completed password setup. No email was sent — use <strong>New activation link</strong>{" "}
+            in the roster below and share the link manually. Links are shown only once after you generate them.
           </p>
           <ul className="mt-3 space-y-1 text-sm text-amber-950">
             {pendingInvites.map((inv) => (
@@ -174,14 +178,24 @@ export default async function AdminEmployeesPage({
                     ) : null}
                   </td>
                   <td className="px-4 py-3">
-                    {p.employmentStatus !== "INACTIVE" ? (
-                      <form action={deactivateEmployeeProfileAction}>
-                        <input type="hidden" name="profileId" value={p.id} />
-                        <button type="submit" className="text-xs font-semibold text-red-700">
-                          Deactivate
-                        </button>
-                      </form>
-                    ) : null}
+                    <div className="flex flex-wrap items-center gap-3">
+                      {!p.user.active && p.employmentStatus === "INVITED" ? (
+                        <form action={regenerateEmployeeActivationLinkAction}>
+                          <input type="hidden" name="profileId" value={p.id} />
+                          <button type="submit" className="text-xs font-semibold text-[var(--royal)]">
+                            New activation link
+                          </button>
+                        </form>
+                      ) : null}
+                      {p.employmentStatus !== "INACTIVE" ? (
+                        <form action={deactivateEmployeeProfileAction}>
+                          <input type="hidden" name="profileId" value={p.id} />
+                          <button type="submit" className="text-xs font-semibold text-red-700">
+                            Deactivate
+                          </button>
+                        </form>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               ))}

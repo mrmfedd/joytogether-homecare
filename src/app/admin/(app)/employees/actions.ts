@@ -6,7 +6,10 @@ import { z } from "zod";
 import type { EmployeeClassification } from "@/generated/prisma";
 import { requireAdminSession } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
-import { createEmployeeActivationWithoutEmail } from "@/lib/employee/invitations";
+import {
+  createEmployeeActivationWithoutEmail,
+  regenerateEmployeeActivationLink,
+} from "@/lib/employee/invitations";
 import { canManageEmployees } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
 import { publicSiteBaseUrl } from "@/lib/site-url";
@@ -76,6 +79,34 @@ export async function createEmployeeManuallyAction(formData: FormData) {
       classification,
       phone,
       department,
+      baseUrl: publicSiteBaseUrl(),
+      createdByUserId: actor.id,
+    });
+  } catch (e) {
+    redirect(`/admin/employees?error=${encodeURIComponent(employeeCreateErrorParam(e))}`);
+  }
+
+  revalidatePath("/admin/employees");
+  redirect(
+    `/admin/employees?created=1&activation=${encodeURIComponent(result.activationUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
+  );
+}
+
+export async function regenerateEmployeeActivationLinkAction(formData: FormData) {
+  const actor = await requireAdminSession();
+  if (!actor || !canManageEmployees(actor.role)) {
+    redirect("/admin/employees?error=unauthorized");
+  }
+
+  const profileId = String(formData.get("profileId") || "");
+  if (!profileId) {
+    redirect("/admin/employees?error=missing_profile");
+  }
+
+  let result: Awaited<ReturnType<typeof regenerateEmployeeActivationLink>>;
+  try {
+    result = await regenerateEmployeeActivationLink({
+      profileId,
       baseUrl: publicSiteBaseUrl(),
       createdByUserId: actor.id,
     });

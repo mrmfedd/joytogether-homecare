@@ -172,6 +172,61 @@ export async function createEmployeeActivationWithoutEmail(params: {
   };
 }
 
+export async function regenerateEmployeeActivationLink(params: {
+  profileId: string;
+  baseUrl: string;
+  createdByUserId: string;
+}) {
+  const profile = await prisma.employeeProfile.findUnique({
+    where: { id: params.profileId },
+    include: { user: true },
+  });
+  if (!profile) throw new Error("Employee not found.");
+
+  if (
+    !isPendingEmployeeActivation({
+      passwordHash: profile.user.passwordHash,
+      active: profile.user.active,
+      employeeProfile: { employmentStatus: profile.employmentStatus },
+    })
+  ) {
+    throw new Error("This employee is not awaiting activation.");
+  }
+
+  const email = profile.user.email;
+  const burned = await burnOutstandingInvites(email);
+  const token = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * EMPLOYEE_ACTIVATION_HOURS);
+  const base = publicSiteBaseUrl(params.baseUrl);
+
+  const invitation = await prisma.employeeInvitation.create({
+    data: {
+      email,
+      classification: profile.classification,
+      tokenHash: hashInviteToken(token),
+      expiresAt,
+      createdById: params.createdByUserId,
+    },
+  });
+
+  const activationUrl = buildEmployeeActivationUrl(base, token);
+
+  await writeAuditLog({
+    userId: params.createdByUserId,
+    action: "UPDATE",
+    entity: "EmployeeProfile",
+    entityId: profile.id,
+    meta: {
+      via: "regenerate_activation_link",
+      email,
+      invitationId: invitation.id,
+      priorInvitesBurned: burned,
+    },
+  });
+
+  return { profileId: profile.id, email, activationUrl, expiresAt };
+}
+
 export async function createAndEmailEmployeeInvitation(params: {
   email: string;
   classification: EmployeeClassification;

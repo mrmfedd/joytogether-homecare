@@ -1,4 +1,4 @@
-// JoyTogether Home Care — business admin CRM (not clinical/EHR data)
+// JoyTogether Home Care — business admin CRM + authorized patient care coordination (PHI)
 
 generator client {
   provider = "prisma-client-js"
@@ -185,6 +185,19 @@ model User {
   shiftResponsesReviewed ShiftResponse[]   @relation("ShiftResponseReviewer")
   timesheetCorrectionsReviewed TimesheetCorrection[] @relation("TimesheetCorrectionReviewer")
   helpArticleRevisions HelpArticleRevision[] @relation("HelpArticleEditor")
+  patientsCreated                 Patient[]                    @relation("PatientCreatedBy")
+  patientsCoordinated             Patient[]                    @relation("PatientCoordinator")
+  patientAssignmentsSupervised    PatientAssignment[]          @relation("AssignmentSupervisor")
+  patientVisitsSupervised         PatientVisit[]               @relation("VisitSupervisor")
+  patientCareNotesReviewed        PatientCareNote[]            @relation("CareNoteReviewer")
+  patientCareNoteAddenda          PatientCareNoteAddendum[]    @relation("CareNoteAddendumAuthor")
+  patientAlertsReportedUser       PatientAlert[]               @relation("AlertReporterUser")
+  patientAlertsAssigned           PatientAlert[]               @relation("AlertAssignee")
+  patientAuditEvents              PatientAuditEvent[]
+  messageThreadsCreated           MessageThread[]              @relation("ThreadCreator")
+  messageThreadParticipations     MessageThreadParticipant[]
+  messagesSent                    Message[]
+  messageReadReceipts             MessageReadReceipt[]
 }
 
 model PasswordResetToken {
@@ -584,6 +597,10 @@ model EmployeeProfile {
   noticeRecipients  StaffNoticeRecipient[]
   timeEntries       TimeEntry[]
   timesheets        Timesheet[]
+  patientAssignments PatientAssignment[]
+  patientCareNotes   PatientCareNote[]
+  patientAlertsReported PatientAlert[] @relation("AlertReporterProfile")
+  patientVisitsPrimary PatientVisit[] @relation("VisitPrimaryCaregiver")
 
   @@index([classification, employmentStatus])
 }
@@ -666,9 +683,13 @@ model Shift {
   createdBy    User?            @relation("ShiftCreator", fields: [createdById], references: [id], onDelete: SetNull)
   assignment   ShiftAssignment?
   offer        ShiftOffer?
+  patientId    String?
+  patient      Patient?       @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  patientVisit PatientVisit?
 
   @@index([startsAt, endsAt])
   @@index([status])
+  @@index([patientId])
 }
 
 model ShiftAssignment {
@@ -909,4 +930,385 @@ model HelpFaq {
   article   HelpArticle? @relation(fields: [articleId], references: [id], onDelete: SetNull)
 
   @@index([audience, published, sortOrder])
+}
+
+enum PatientServiceType {
+  SKILLED_NURSING
+  HOSPICE
+  PRIVATE_DUTY
+  PATIENT_TRANSPORTATION
+}
+
+enum PatientStatus {
+  ACTIVE
+  PENDING
+  ON_HOLD
+  DISCHARGED
+  INACTIVE
+}
+
+enum PatientAssignmentStatus {
+  ACTIVE
+  PENDING
+  ENDED
+  CANCELED
+}
+
+enum PatientVisitStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+  NO_SHOW
+}
+
+enum CareNoteCategory {
+  DAILY_CARE
+  PERSONAL_CARE
+  MEDICATION_OBSERVATION
+  MOBILITY
+  MEALS_HYDRATION
+  BEHAVIOR_MOOD
+  PATIENT_CONCERN
+  CHANGE_IN_CONDITION
+  TRANSPORTATION
+  GENERAL_NOTE
+}
+
+enum CareNoteStatus {
+  DRAFT
+  SUBMITTED
+}
+
+enum PatientAlertType {
+  CHANGE_IN_CONDITION
+  MISSED_VISIT
+  CAREGIVER_CONCERN
+  PATIENT_COMPLAINT
+  FOLLOW_UP_REQUIRED
+  CARE_INSTRUCTION_UPDATE
+}
+
+enum PatientAlertPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum PatientAlertStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum MessageThreadKind {
+  PATIENT
+  STAFF
+  GENERAL
+}
+
+enum MessageUrgency {
+  NORMAL
+  URGENT
+}
+
+model Patient {
+  id                    String              @id @default(uuid())
+  publicId              String              @unique
+  firstName             String
+  middleName            String?
+  lastName              String
+  dateOfBirth           DateTime
+  phone                 String
+  email                 String?
+  addressLine1          String
+  addressLine2          String?
+  city                  String
+  state                 String
+  postalCode            String
+  serviceType           PatientServiceType
+  startOfCareDate       DateTime?
+  status                PatientStatus       @default(PENDING)
+  coordinatorUserId     String?
+  internalOfficeNotes   String?             @db.Text
+  createdByUserId       String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  coordinator User?  @relation("PatientCoordinator", fields: [coordinatorUserId], references: [id], onDelete: SetNull)
+  createdBy   User?  @relation("PatientCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  emergencyContacts  PatientEmergencyContact[]
+  careInstructions   PatientCareInstruction[]
+  assignments        PatientAssignment[]
+  visits             PatientVisit[]
+  careNotes          PatientCareNote[]
+  alerts             PatientAlert[]
+  messageThreads     MessageThread[]
+  auditEvents        PatientAuditEvent[]
+  shifts             Shift[]
+
+  @@index([status, lastName, firstName])
+  @@index([serviceType, status])
+  @@index([coordinatorUserId])
+}
+
+model PatientEmergencyContact {
+  id           String   @id @default(uuid())
+  patientId    String
+  name         String
+  phone        String
+  relationship String
+  isPrimary    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+}
+
+model PatientCareInstruction {
+  id                       String   @id @default(uuid())
+  patientId                String
+  careInstructions         String?  @db.Text
+  mobilityRequirements     String?  @db.Text
+  dietaryRestrictions      String?  @db.Text
+  allergies                String?  @db.Text
+  medicalConditions        String?  @db.Text
+  specialPrecautions       String?  @db.Text
+  additionalInstructions   String?  @db.Text
+  effectiveAt              DateTime @default(now())
+  supersededAt             DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, effectiveAt])
+}
+
+model PatientAssignment {
+  id                String                  @id @default(uuid())
+  patientId         String
+  profileId         String
+  serviceType       PatientServiceType
+  status            PatientAssignmentStatus @default(PENDING)
+  startDate         DateTime
+  endDate           DateTime?
+  supervisorUserId  String?
+  instructions      String?                 @db.Text
+  endedReason       String?                 @db.Text
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  patient    Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  caregiver  EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  supervisor User?           @relation("AssignmentSupervisor", fields: [supervisorUserId], references: [id], onDelete: SetNull)
+  visits     PatientVisit[]
+
+  @@index([patientId, status])
+  @@index([profileId, status])
+  @@index([startDate, endDate])
+}
+
+model PatientVisit {
+  id                  String             @id @default(uuid())
+  patientId           String
+  assignmentId        String?
+  shiftId             String?            @unique
+  primaryProfileId    String?
+  supervisorUserId    String?
+  scheduledStart      DateTime
+  scheduledEnd        DateTime
+  status              PatientVisitStatus @default(SCHEDULED)
+  visitNotes          String?            @db.Text
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  patient           Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  assignment        PatientAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  shift             Shift?           @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  primaryCaregiver  EmployeeProfile? @relation("VisitPrimaryCaregiver", fields: [primaryProfileId], references: [id], onDelete: SetNull)
+  supervisor        User?            @relation("VisitSupervisor", fields: [supervisorUserId], references: [id], onDelete: SetNull)
+  careNotes         PatientCareNote[]
+
+  @@index([patientId, scheduledStart])
+  @@index([status, scheduledStart])
+  @@index([primaryProfileId])
+}
+
+model PatientCareNote {
+  id                  String           @id @default(uuid())
+  patientId           String
+  profileId           String
+  visitId             String?
+  visitDate           DateTime
+  visitTimeMinutes    Int?
+  category            CareNoteCategory
+  careActivities      String?          @db.Text
+  observations        String?          @db.Text
+  concerns            String?          @db.Text
+  actionsTaken        String?          @db.Text
+  additionalComments  String?          @db.Text
+  followUpRequired    Boolean          @default(false)
+  status              CareNoteStatus   @default(DRAFT)
+  submittedAt         DateTime?
+  reviewedAt          DateTime?
+  reviewerUserId      String?
+  reviewNote          String?          @db.Text
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  patient   Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  author    EmployeeProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  visit     PatientVisit?   @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  reviewer  User?           @relation("CareNoteReviewer", fields: [reviewerUserId], references: [id], onDelete: SetNull)
+  addenda   PatientCareNoteAddendum[]
+
+  @@index([patientId, visitDate])
+  @@index([profileId, status])
+  @@index([status, submittedAt])
+  @@index([category])
+}
+
+model PatientCareNoteAddendum {
+  id          String   @id @default(uuid())
+  noteId      String
+  authorUserId String
+  body        String   @db.Text
+  createdAt   DateTime @default(now())
+
+  note   PatientCareNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  author User            @relation("CareNoteAddendumAuthor", fields: [authorUserId], references: [id], onDelete: Cascade)
+
+  @@index([noteId, createdAt])
+}
+
+model PatientAlert {
+  id                 String               @id @default(uuid())
+  patientId          String
+  reporterUserId     String?
+  reporterProfileId  String?
+  type               PatientAlertType
+  priority           PatientAlertPriority @default(NORMAL)
+  status             PatientAlertStatus   @default(NEW)
+  title              String
+  description        String               @db.Text
+  assigneeUserId     String?
+  resolutionNotes    String?              @db.Text
+  acknowledgedAt     DateTime?
+  resolvedAt         DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  patient          Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  reporterUser     User?            @relation("AlertReporterUser", fields: [reporterUserId], references: [id], onDelete: SetNull)
+  reporterProfile  EmployeeProfile? @relation("AlertReporterProfile", fields: [reporterProfileId], references: [id], onDelete: SetNull)
+  assignee         User?            @relation("AlertAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
+  events           PatientAlertEvent[]
+
+  @@index([patientId, status])
+  @@index([status, priority])
+  @@index([assigneeUserId])
+}
+
+model PatientAlertEvent {
+  id          String   @id @default(uuid())
+  alertId     String
+  actorUserId String?
+  fromStatus  PatientAlertStatus?
+  toStatus    PatientAlertStatus?
+  note        String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  alert PatientAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId, createdAt])
+}
+
+model MessageThread {
+  id              String            @id @default(uuid())
+  kind            MessageThreadKind
+  subject         String
+  patientId       String?
+  urgency         MessageUrgency    @default(NORMAL)
+  officeAckAt     DateTime?
+  archivedAt      DateTime?
+  createdByUserId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  patient     Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdBy   User?    @relation("ThreadCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  participants MessageThreadParticipant[]
+  messages    Message[]
+
+  @@index([kind, archivedAt])
+  @@index([patientId])
+  @@index([urgency, officeAckAt])
+}
+
+model MessageThreadParticipant {
+  id        String    @id @default(uuid())
+  threadId  String
+  userId    String
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+
+  thread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  threadId        String
+  senderUserId    String
+  body            String   @db.Text
+  urgency         MessageUrgency @default(NORMAL)
+  createdAt       DateTime @default(now())
+
+  thread  MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender  User          @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+  readBy  MessageReadReceipt[]
+
+  @@index([threadId, createdAt])
+}
+
+model MessageReadReceipt {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model PatientAuditEvent {
+  id         String   @id @default(uuid())
+  patientId  String?
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  meta       Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  patient Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, createdAt])
+  @@index([entityType, entityId])
+  @@index([createdAt])
 }

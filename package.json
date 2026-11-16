@@ -14,6 +14,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "test:permissions": "tsx scripts/test-permissions.ts",
+    "test:patient-permissions": "tsx scripts/test-patient-permissions.ts",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:preview-smoke": "node scripts/preview-remote-smoke.mjs",

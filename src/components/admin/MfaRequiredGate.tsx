@@ -14,14 +14,15 @@ export function MfaRequiredGate({
   const pathname = usePathname();
   const router = useRouter();
   const onAccount = pathname === "/admin/account";
+  const onHelp = pathname.startsWith("/admin/help");
 
   useEffect(() => {
-    if (required && !onAccount) {
+    if (required && !onAccount && !onHelp) {
       router.replace("/admin/account?mfa=required");
     }
-  }, [required, onAccount, router]);
+  }, [required, onAccount, onHelp, router]);
 
-  if (required && !onAccount) {
+  if (required && !onAccount && !onHelp) {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-950">
         Multi-factor authentication is required for your role. Redirecting to account security…

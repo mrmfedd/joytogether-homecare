@@ -114,8 +114,15 @@ export function AdminShell({
         </div>
       </aside>
       <div className="min-w-0">
-        <header className="border-b border-line bg-white/90 px-4 py-4 backdrop-blur sm:px-8">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white/90 px-4 py-4 backdrop-blur sm:px-8">
           <p className="text-sm text-muted">Business administration — not clinical records</p>
+          <Link
+            href="/admin/help"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-[var(--royal)] hover:bg-[var(--cream)]"
+          >
+            <BookOpen className="h-4 w-4" aria-hidden />
+            Help Center
+          </Link>
         </header>
         <main className="px-4 py-6 sm:px-8">{children}</main>
       </div>

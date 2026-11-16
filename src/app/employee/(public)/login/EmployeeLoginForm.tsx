@@ -5,10 +5,11 @@ import { signIn, getSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PasswordInput } from "@/components/auth/PasswordInput";
+import { safePortalCallbackUrl } from "@/lib/auth/portal-callback";
 
 export default function EmployeeLoginForm() {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "/employee";
+  const callbackUrl = safePortalCallbackUrl(params.get("callbackUrl"), "employee");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
@@ -23,12 +24,15 @@ export default function EmployeeLoginForm() {
       email,
       password,
       mfaCode,
+      portal: "employee",
       redirect: false,
       callbackUrl,
     });
     setLoading(false);
     if (res?.error) {
-      setError("Invalid credentials or inactive employee account.");
+      setError(
+        "Sign-in failed. Use your employee account here. Administrators must sign in at Administrator Login (/admin/login).",
+      );
       return;
     }
     if (!res?.ok) {
@@ -40,8 +44,8 @@ export default function EmployeeLoginForm() {
       await new Promise((r) => setTimeout(r, 150));
       session = await getSession();
     }
-    if (session?.user?.role && session.user.role !== "EMPLOYEE") {
-      window.location.href = "/admin";
+    if (session?.user?.role !== "EMPLOYEE") {
+      setError("This portal is for employees only.");
       return;
     }
     window.location.href = callbackUrl;
@@ -93,10 +97,8 @@ export default function EmployeeLoginForm() {
         Forgot password?
       </Link>
       <p className="mt-6 text-xs text-white/70">
-        First-time setup: open the <strong className="text-white/90">full activation link</strong> from your administrator
-        (it includes <code className="rounded bg-white/10 px-1">/employee/activate</code> or{" "}
-        <code className="rounded bg-white/10 px-1">/employee/accept-invite</code>). This sign-in page is only after you
-        have created a password. Patient information is not available here.
+        First-time setup: open the activation link from your administrator (not this page) to set your password, then
+        sign in here. Patient information is not available in the employee portal.
       </p>
     </div>
   );

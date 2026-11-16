@@ -69,6 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         mfaCode: { label: "MFA code", type: "text" },
+        portal: { label: "Portal", type: "text" },
       },
       async authorize(credentials) {
         const email = String(credentials?.email || "")
@@ -76,12 +77,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .toLowerCase();
         const password = String(credentials?.password || "");
         const mfaCode = String(credentials?.mfaCode || "").trim();
+        const portal = String(credentials?.portal || "").trim().toLowerCase();
         if (!email || !password) return null;
 
         if (loginRateLimited(email)) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.active || !user.passwordHash) return null;
+
+        if (portal === "employee" && user.role !== "EMPLOYEE") return null;
+        if (portal === "admin" && user.role === "EMPLOYEE") return null;
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;

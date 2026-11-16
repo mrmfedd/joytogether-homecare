@@ -25,6 +25,20 @@ export default async function AdminHelpHomePage() {
       >
         <HelpSearchBar basePath="/admin/help" onSearch={searchAdminHelpAction} />
 
+        <section className="mt-6 rounded-2xl border border-line bg-white p-5 shadow-sm">
+          <h2 className="font-display text-lg text-[var(--midnight)]">Training manual (PDF)</h2>
+          <p className="mt-1 text-sm text-muted">
+            Administrator and operations reference—not for employee distribution.
+          </p>
+          <a
+            href="/downloads/joytogether-staff-portal-training-manual.pdf"
+            download
+            className="btn btn-purple mt-3 inline-flex text-sm"
+          >
+            Download PDF
+          </a>
+        </section>
+
         <section className="mt-8">
           <h2 className="font-display text-xl text-[var(--midnight)]">Quick-start guides</h2>
           <p className="mt-1 text-sm text-muted">Interactive tours you can skip, restart, or revisit anytime.</p>

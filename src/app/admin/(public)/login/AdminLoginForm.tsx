@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { safePortalCallbackUrl } from "@/lib/auth/portal-callback";
 
 export default function AdminLoginForm() {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "/admin";
+  const callbackUrl = safePortalCallbackUrl(params.get("callbackUrl"), "admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
@@ -21,12 +22,15 @@ export default function AdminLoginForm() {
       email,
       password,
       mfaCode,
+      portal: "admin",
       redirect: false,
       callbackUrl,
     });
     setLoading(false);
     if (res?.error) {
-      setError("Invalid credentials or account inactive.");
+      setError(
+        "Sign-in failed. Use your administrator account here. Field staff must use Employee Login (/employee/login).",
+      );
       return;
     }
     if (!res?.ok) {
@@ -39,7 +43,7 @@ export default function AdminLoginForm() {
       session = await getSession();
     }
     if (session?.user?.role === "EMPLOYEE") {
-      window.location.href = "/employee";
+      setError("This portal is for administrators only.");
       return;
     }
     window.location.href = callbackUrl;

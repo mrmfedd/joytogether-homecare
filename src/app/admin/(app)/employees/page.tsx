@@ -17,9 +17,17 @@ const classifications = [
   "SUPERVISOR",
 ] as const;
 
-export default async function AdminEmployeesPage() {
+export default async function AdminEmployeesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; sent?: string }>;
+}) {
   const user = await requireAdminSession();
   if (!user || !canManageEmployees(user.role)) redirect("/admin");
+
+  const params = await searchParams;
+  const errorMessage = params.error ? decodeURIComponent(params.error) : null;
+  const sent = params.sent === "1";
 
   const [profiles, invites] = await Promise.all([
     prisma.employeeProfile.findMany({
@@ -42,6 +50,17 @@ export default async function AdminEmployeesPage() {
         title="Employees"
         description="Invite team members and manage portal access."
       />
+
+      {sent ? (
+        <p className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900" role="status">
+          Employee invitation email sent. Previous pending invites for that address were invalidated.
+        </p>
+      ) : null}
+      {errorMessage ? (
+        <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
 
       <form action={inviteEmployeeAction} className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-white p-5">
         <label className="text-sm">

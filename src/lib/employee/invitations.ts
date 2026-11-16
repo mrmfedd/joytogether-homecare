@@ -4,14 +4,15 @@ import { writeAuditLog } from "@/lib/audit";
 import { hashInviteToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { site } from "@/content/site";
+import { publicSiteBaseUrl } from "@/lib/site-url";
 
 export type EmployeeInviteValidation =
   | { ok: true; email: string; classification: EmployeeClassification }
   | { ok: false; reason: "missing" | "invalid" | "expired" | "used" | "account_exists" };
 
 async function sendEmployeeInviteEmail(to: string, acceptUrl: string) {
-  const resendKey = process.env.RESEND_API_KEY;
-  const resendFrom = process.env.RESEND_FROM;
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  const resendFrom = process.env.RESEND_FROM?.trim();
   if (!resendKey || !resendFrom) {
     throw new Error("RESEND_API_KEY and RESEND_FROM must be configured.");
   }
@@ -83,8 +84,7 @@ export async function createAndEmailEmployeeInvitation(params: {
 }) {
   const email = params.email.trim().toLowerCase();
   if (!email.includes("@")) throw new Error("Valid email required.");
-  const base = params.baseUrl.replace(/\/$/, "");
-  if (!base) throw new Error("NEXT_PUBLIC_SITE_URL required.");
+  const base = publicSiteBaseUrl(params.baseUrl);
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) throw new Error("An account already exists for this email.");

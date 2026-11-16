@@ -68,8 +68,9 @@ export async function createEmployeeManuallyAction(formData: FormData) {
 
   const { email, name, classification, phone, department } = parsed.data;
 
+  let result: Awaited<ReturnType<typeof createEmployeeActivationWithoutEmail>>;
   try {
-    const result = await createEmployeeActivationWithoutEmail({
+    result = await createEmployeeActivationWithoutEmail({
       email,
       name,
       classification,
@@ -78,14 +79,14 @@ export async function createEmployeeManuallyAction(formData: FormData) {
       baseUrl: publicSiteBaseUrl(),
       createdByUserId: actor.id,
     });
-
-    revalidatePath("/admin/employees");
-    redirect(
-      `/admin/employees?created=1&activation=${encodeURIComponent(result.activationUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
-    );
   } catch (e) {
     redirect(`/admin/employees?error=${encodeURIComponent(employeeCreateErrorParam(e))}`);
   }
+
+  revalidatePath("/admin/employees");
+  redirect(
+    `/admin/employees?created=1&activation=${encodeURIComponent(result.activationUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
+  );
 }
 
 export async function deactivateEmployeeProfileAction(formData: FormData) {

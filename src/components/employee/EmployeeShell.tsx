@@ -6,6 +6,8 @@ import {
   Bell,
   BookOpen,
   CalendarDays,
+  Heart,
+  MessageCircle,
   LayoutDashboard,
   LogOut,
   Palmtree,
@@ -35,6 +37,8 @@ export function EmployeeShell({
 
   const nav: NavItem[] = [
     { href: "/employee", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/employee/patients", label: "My Patients", icon: Heart },
+    { href: "/employee/messages", label: "Messages", icon: MessageCircle },
     { href: "/employee/schedule", label: "Schedule", icon: CalendarDays },
     { href: "/employee/open-shifts", label: "Open Shifts", icon: Sparkles },
     { href: "/employee/availability", label: "Availability", icon: CalendarDays },

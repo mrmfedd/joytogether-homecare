@@ -3,6 +3,8 @@ import { requireAdminSession } from "@/lib/auth";
 import { canManageScheduling } from "@/lib/workforce/permissions";
 import { formatShiftRange } from "@/lib/workforce/queries";
 import { prisma } from "@/lib/prisma";
+import { canViewPatientDirectory } from "@/lib/patient/permissions";
+import { listPatients } from "@/lib/patient/queries";
 import { HelpPageHeader } from "@/components/help/HelpPageHeader";
 import { assignEmployeeToShiftAction,
   cancelShiftAction,
@@ -33,11 +35,13 @@ export default async function AdminSchedulingPage({
   const end = new Date(start);
   end.setDate(start.getDate() + 7);
 
-  const [shifts, employees] = await Promise.all([
+  const patientCapable = canViewPatientDirectory(user.role);
+  const [shifts, employees, patients] = await Promise.all([
     prisma.shift.findMany({
       where: { startsAt: { gte: start, lt: end }, status: { not: "CANCELED" } },
       include: {
         assignment: { include: { profile: { include: { user: { select: { name: true, email: true } } } } } },
+        patient: patientCapable ? { select: { id: true, firstName: true, lastName: true, publicId: true } } : false,
       },
       orderBy: { startsAt: "asc" },
     }),
@@ -46,6 +50,7 @@ export default async function AdminSchedulingPage({
       include: { user: { select: { name: true, email: true } } },
       orderBy: { user: { name: "asc" } },
     }),
+    patientCapable ? listPatients({ status: ["ACTIVE", "PENDING", "ON_HOLD"] }) : Promise.resolve([]),
   ]);
 
   const prevWeek = new Date(start);
@@ -85,6 +90,19 @@ export default async function AdminSchedulingPage({
           <input name="endsAt" type="datetime-local" required className="mt-1 w-full rounded-xl border border-line px-3 py-2" />
         </label>
         <input name="workLocationLabel" placeholder="Location label" className="sm:col-span-2 rounded-xl border border-line px-3 py-2 text-sm" />
+        {patients.length > 0 ? (
+          <label className="text-sm sm:col-span-2">
+            Patient visit (optional)
+            <select name="patientId" className="mt-1 w-full rounded-xl border border-line px-3 py-2 text-sm" defaultValue="">
+              <option value="">— No patient —</option>
+              {patients.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.lastName}, {p.firstName} ({p.publicId})
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <button type="submit" className="btn btn-purple px-4 py-2 text-sm sm:col-span-2">
           Create draft shift
         </button>
@@ -97,6 +115,11 @@ export default async function AdminSchedulingPage({
               <div>
                 <p className="font-semibold">{shift.title || shift.serviceCategory}</p>
                 <p className="text-sm text-muted">{formatShiftRange(shift.startsAt, shift.endsAt)}</p>
+                {"patient" in shift && shift.patient ? (
+                  <p className="mt-1 text-sm font-semibold text-[var(--royal)]">
+                    Patient: {shift.patient.lastName}, {shift.patient.firstName} ({shift.patient.publicId})
+                  </p>
+                ) : null}
                 <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[var(--royal)]">{shift.status}</p>
               </div>
               <div className="flex flex-wrap gap-2">

@@ -9,8 +9,10 @@ import {
   CalendarDays,
   ClipboardList,
   FileText,
+  Heart,
   HeartHandshake,
   ImageIcon,
+  MessageCircle,
   LayoutDashboard,
   LogOut,
   MessageSquareQuote,
@@ -23,6 +25,7 @@ import {
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/generated/prisma";
+import { canViewPatientDirectory } from "@/lib/patient/permissions";
 import { canManageWorkforce } from "@/lib/workforce/permissions";
 
 type NavItem = {
@@ -31,10 +34,13 @@ type NavItem = {
   icon: typeof LayoutDashboard;
   roles?: readonly UserRole[];
   workforce?: boolean;
+  patients?: boolean;
 };
 
 const nav: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/patients", label: "Patients", icon: Heart, patients: true },
+  { href: "/admin/messages", label: "Messages", icon: MessageCircle, patients: true },
   { href: "/admin/leads", label: "Leads", icon: Users },
   { href: "/admin/consultations", label: "Consultations", icon: HeartHandshake },
   { href: "/admin/private-duty", label: "Private Duty", icon: Wallet },
@@ -81,6 +87,7 @@ export function AdminShell({
           {nav
             .filter((item) => {
               if (item.workforce && !canManageWorkforce(user.role)) return false;
+              if (item.patients && !canViewPatientDirectory(user.role)) return false;
               if (item.roles && !item.roles.includes(user.role)) return false;
               return true;
             })

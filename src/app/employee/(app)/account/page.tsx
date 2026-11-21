@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireEmployeeSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { EmployeeMfaSetupPanel } from "./EmployeeMfaSetupPanel";
+import { PasskeyManagerPanel } from "@/components/auth/PasskeyManagerPanel";
 
 export default async function EmployeeAccountPage() {
   const sessionUser = await requireEmployeeSession();
@@ -12,6 +13,12 @@ export default async function EmployeeAccountPage() {
     select: { email: true, mfaEnabled: true, name: true },
   });
   if (!user?.email) redirect("/employee/login");
+
+  const passkeys = await prisma.userPasskey.findMany({
+    where: { userId: sessionUser.id },
+    select: { id: true, friendlyName: true, createdAt: true, lastUsedAt: true, backedUp: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   return (
     <div className="max-w-lg">
@@ -26,6 +33,13 @@ export default async function EmployeeAccountPage() {
           <EmployeeMfaSetupPanel email={user.email} mfaEnabled={user.mfaEnabled} />
         </div>
       </section>
+      <PasskeyManagerPanel
+        passkeys={passkeys.map((p) => ({
+          ...p,
+          createdAt: p.createdAt.toISOString(),
+          lastUsedAt: p.lastUsedAt?.toISOString() ?? null,
+        }))}
+      />
     </div>
   );
 }

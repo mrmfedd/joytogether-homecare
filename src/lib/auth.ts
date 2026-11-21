@@ -7,6 +7,8 @@ import { authConfig } from "@/lib/auth.config";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 import { verifyMfaCode } from "@/lib/mfa";
+import { consumePasskeyLoginTicket } from "@/lib/passkeys/tickets";
+import { countUserPasskeys, passkeyLoginSatisfiesTotpRequirement } from "@/lib/passkeys/mfa-policy";
 import { isJwtSessionValid } from "@/lib/auth/session-version";
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -70,14 +72,64 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
         mfaCode: { label: "MFA code", type: "text" },
         portal: { label: "Portal", type: "text" },
+        passkeyTicket: { label: "Passkey ticket", type: "text" },
       },
       async authorize(credentials) {
+        const portal = String(credentials?.portal || "").trim().toLowerCase();
+        const passkeyTicket = String(credentials?.passkeyTicket || "").trim();
+
+        if (passkeyTicket) {
+          const ticket = await consumePasskeyLoginTicket(passkeyTicket, portal);
+          if (!ticket) return null;
+          const user = await prisma.user.findUnique({ where: { id: ticket.userId } });
+          if (!user?.active) return null;
+          if (portal === "employee" && user.role !== "EMPLOYEE") return null;
+          if (portal === "admin" && user.role === "EMPLOYEE") return null;
+
+          const passkeyCount = await countUserPasskeys(user.id);
+          const satisfiesMfa = passkeyLoginSatisfiesTotpRequirement({
+            role: user.role,
+            userVerified: ticket.userVerified,
+            hasPasskeys: passkeyCount > 0,
+          });
+
+          const needsTotp =
+            (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled) &&
+            user.mfaSecret &&
+            user.role !== "EMPLOYEE";
+          const employeeTotp = user.role === "EMPLOYEE" && user.mfaEnabled && user.mfaSecret;
+
+          if ((needsTotp || employeeTotp) && !satisfiesMfa) {
+            return null;
+          }
+
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() },
+          });
+
+          await writeAuditLog({
+            userId: user.id,
+            action: "LOGIN",
+            entity: "User",
+            entityId: user.id,
+            meta: { method: "passkey", portal, userVerified: ticket.userVerified },
+          });
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            sessionVersion: user.sessionVersion,
+          };
+        }
+
         const email = String(credentials?.email || "")
           .trim()
           .toLowerCase();
         const password = String(credentials?.password || "");
         const mfaCode = String(credentials?.mfaCode || "").trim();
-        const portal = String(credentials?.portal || "").trim().toLowerCase();
         if (!email || !password) return null;
 
         if (loginRateLimited(email)) return null;

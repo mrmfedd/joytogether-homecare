@@ -14,7 +14,6 @@ function isPublicAdminPath(path: string) {
 function isPublicEmployeePath(path: string) {
   return (
     path.startsWith("/employee/login") ||
-    path.startsWith("/employee/activate") ||
     path.startsWith("/employee/accept-invite") ||
     path.startsWith("/employee/forgot-password") ||
     path.startsWith("/employee/reset-password")
@@ -43,21 +42,6 @@ export const authConfig = {
     signIn: "/admin/login",
   },
   callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: UserRole }).role;
-        token.sessionVersion = (user as { sessionVersion?: number }).sessionVersion ?? 0;
-      }
-      return token;
-    },
-    session({ session, token }) {
-      if (session.user) {
-        session.user.id = (token.id as string) ?? token.sub ?? "";
-        session.user.role = token.role as UserRole;
-      }
-      return session;
-    },
     authorized({ auth, request }) {
       const path = request.nextUrl.pathname;
       const role = auth?.user?.role as UserRole | undefined;
@@ -65,8 +49,7 @@ export const authConfig = {
       if (path.startsWith("/employee")) {
         if (isPublicEmployeePath(path)) return true;
         if (!auth) return employeeSignInRedirect(request);
-        // Only bounce non-employees when role is known (middleware must map JWT role — see session callback).
-        if (role != null && role !== "EMPLOYEE") {
+        if (role !== "EMPLOYEE") {
           const url = new URL(request.nextUrl.toString());
           url.pathname = "/admin";
           return Response.redirect(url);

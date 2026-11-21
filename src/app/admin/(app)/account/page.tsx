@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MfaSetupPanel } from "./MfaSetupPanel";
+import { PasskeyManagerPanel } from "@/components/auth/PasskeyManagerPanel";
+import { adminMustEnrollSecondFactor } from "@/lib/passkeys/mfa-policy";
 
 export default async function AdminAccountPage({
   searchParams,
@@ -19,8 +21,13 @@ export default async function AdminAccountPage({
   });
   if (!user?.email) redirect("/admin/login");
 
-  const mustEnableMfa =
-    (user.role === "SUPER_ADMIN" || user.role === "ADMIN") && !user.mfaEnabled;
+  const passkeys = await prisma.userPasskey.findMany({
+    where: { userId: sessionUser.id },
+    select: { id: true, friendlyName: true, createdAt: true, lastUsedAt: true, backedUp: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const mustEnableMfa = await adminMustEnrollSecondFactor(sessionUser.id, user.role, user.mfaEnabled);
 
   return (
     <div className="max-w-lg">
@@ -30,8 +37,7 @@ export default async function AdminAccountPage({
       </p>
       {mustEnableMfa || params.mfa === "required" ? (
         <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          Multi-factor authentication is required for {user.role.replace("_", " ")} accounts before using the
-          admin dashboard.
+          Add an authenticator app <strong>or</strong> at least one passkey before using the admin dashboard.
         </p>
       ) : null}
       <section className="mt-6 rounded-2xl border border-line bg-white p-5">
@@ -43,6 +49,13 @@ export default async function AdminAccountPage({
           <MfaSetupPanel email={user.email} mfaEnabled={user.mfaEnabled} />
         </div>
       </section>
+      <PasskeyManagerPanel
+        passkeys={passkeys.map((p) => ({
+          ...p,
+          createdAt: p.createdAt.toISOString(),
+          lastUsedAt: p.lastUsedAt?.toISOString() ?? null,
+        }))}
+      />
     </div>
   );
 }

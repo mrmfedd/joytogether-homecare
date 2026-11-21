@@ -1890,7 +1890,7 @@ export const helpSeedFaqs: HelpSeedFaq[] = [
   {
     audience: "ADMIN",
     question: "How do I enable MFA for my ADMIN account?",
-    answer: "After login, open Security (/admin/account), scan the QR code with an authenticator app, and confirm the six-digit code. The MFA gate clears once enrollment succeeds.",
+    answer: "Open Security (/admin/account). You may add a passkey (Face ID, Touch ID, Windows Hello, or device PIN) or scan the authenticator QR code. Either method clears the MFA gate for administrators.",
     keywords: ["MFA", "security"],
     sortOrder: 12,
     articleSlug: "administrator-account-and-security",
@@ -1986,9 +1986,25 @@ export const helpSeedFaqs: HelpSeedFaq[] = [
   {
     audience: "EMPLOYEE",
     question: "How do I enable MFA on my employee account?",
-    answer: "Open Account and use the MFA setup panel to scan the QR code with an authenticator app, then enter a verification code. MFA is optional for employees but recommended.",
+    answer: "Open Profile & security (/employee/account). Add a passkey for one-tap sign-in, or use the MFA panel with an authenticator app. Passkeys are optional but recommended on phones and tablets.",
     keywords: ["MFA", "security"],
     sortOrder: 12,
+    articleSlug: "updating-account-information",
+  },
+  {
+    audience: "ADMIN",
+    question: "How do I sign in with a passkey?",
+    answer: "On Admin Login, choose Sign in with Face ID, Touch ID, or Passkey, then approve with your device biometric or PIN. Password and authenticator sign-in remain available as a fallback.",
+    keywords: ["passkey", "Face ID", "login"],
+    sortOrder: 13,
+    articleSlug: "administrator-account-and-security",
+  },
+  {
+    audience: "EMPLOYEE",
+    question: "I lost my phone—can I still sign in?",
+    answer: "Use password sign-in on a trusted device, open Account security, reauthenticate, and remove the lost passkey. Add a passkey on your replacement device. Call the office if you also forgot your password.",
+    keywords: ["passkey", "lost device", "recovery"],
+    sortOrder: 13,
     articleSlug: "updating-account-information",
   }
 ];

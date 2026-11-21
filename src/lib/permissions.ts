@@ -22,7 +22,7 @@ export function hasRole(role: UserRole, allowed: UserRole[]) {
 }
 
 export function canAccessAdmin(role: UserRole) {
-  return role !== "EMPLOYEE";
+  return role !== "VIEWER" && role !== "EMPLOYEE";
 }
 
 export function canViewLeads(role: UserRole) {

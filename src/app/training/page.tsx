@@ -21,15 +21,17 @@ export default function TrainingPage() {
       <section className="section-pad">
         <div className="site-container space-y-6">
           <article className="card-soft border-2 border-[var(--royal)]/25 p-8">
-            <h2 className="font-display m-0 text-2xl">Staff portal training</h2>
+            <h2 className="font-display m-0 text-2xl">Staff portal training manual (PDF)</h2>
             <p className="body-muted mt-3">
-              Portal training manuals and checklists are available after sign-in: administrators use Help in the Admin
-              Portal; employees use Help in the Employee Portal. Public class listings stay here—no administrator
-              procedures are published on this page.
+              Printable guide for Administrator and Employee portal training—security, daily workflows, and checklists.
             </p>
-            <ButtonLink href="/staff-login" variant="outlinePurple" className="mt-4">
-              Staff login →
-            </ButtonLink>
+            <a
+              href="/downloads/joytogether-staff-portal-training-manual.pdf"
+              download
+              className="btn btn-purple mt-4 inline-flex"
+            >
+              Download PDF manual
+            </a>
           </article>
           {trainingContent.courses.map((course) => (
             <article key={course.title} className="card-soft p-8">

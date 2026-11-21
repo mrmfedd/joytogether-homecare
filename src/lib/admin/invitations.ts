@@ -4,9 +4,6 @@ import { writeAuditLog } from "@/lib/audit";
 import { hashInviteToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { site } from "@/content/site";
-import { publicSiteBaseUrl } from "@/lib/site-url";
-
-const ADMIN_MANUAL_ACTIVATION_HOURS = 48 * 7;
 
 export type InviteValidation =
   | { ok: true; email: string; role: UserRole }
@@ -91,64 +88,6 @@ export async function validateAdminInviteToken(token: string | undefined | null)
   return { ok: true, email: invite.email, role: invite.role };
 }
 
-export async function createAdminActivationWithoutEmail(params: {
-  email: string;
-  role: UserRole;
-  baseUrl: string;
-  createdByUserId: string;
-}) {
-  const email = params.email.trim().toLowerCase();
-  if (!email.includes("@")) {
-    throw new Error("A valid email address is required.");
-  }
-
-  const base = publicSiteBaseUrl(params.baseUrl);
-
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) {
-    throw new Error("An account already exists for this email.");
-  }
-
-  const burned = await burnOutstandingInvites(email);
-  const token = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * ADMIN_MANUAL_ACTIVATION_HOURS);
-
-  const invitation = await prisma.adminInvitation.create({
-    data: {
-      email,
-      role: params.role,
-      tokenHash: hashInviteToken(token),
-      expiresAt,
-      createdById: params.createdByUserId,
-    },
-  });
-
-  const acceptUrl = `${base}/admin/accept-invite?token=${token}`;
-
-  await writeAuditLog({
-    userId: params.createdByUserId,
-    action: "CREATE",
-    entity: "AdminInvitation",
-    entityId: invitation.id,
-    meta: {
-      via: "manual_admin_activation",
-      email,
-      role: params.role,
-      priorInvitesBurned: burned,
-      resendAccepted: false,
-    },
-  });
-
-  return {
-    invitationId: invitation.id,
-    email,
-    role: params.role,
-    acceptUrl,
-    expiresAt,
-    priorInvitesBurned: burned,
-  };
-}
-
 export async function createAndEmailAdminInvitation(params: {
   email: string;
   role: UserRole;
@@ -160,7 +99,8 @@ export async function createAndEmailAdminInvitation(params: {
     throw new Error("A valid email address is required.");
   }
 
-  const base = publicSiteBaseUrl(params.baseUrl);
+  const base = params.baseUrl.replace(/\/$/, "");
+  if (!base) throw new Error("NEXT_PUBLIC_SITE_URL is required.");
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {

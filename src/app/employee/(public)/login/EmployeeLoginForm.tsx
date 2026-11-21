@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { safePortalCallbackUrl } from "@/lib/auth/portal-callback";
+import { PasskeySignInButton } from "@/components/auth/PasskeySignInButton";
 
 export default function EmployeeLoginForm() {
   const params = useSearchParams();
@@ -58,7 +59,11 @@ export default function EmployeeLoginForm() {
       {params.get("accepted") === "1" ? (
         <p className="mt-4 rounded-xl border border-[var(--gold)]/40 bg-white/10 p-3 text-sm">Account activated — sign in below.</p>
       ) : null}
-      <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-2xl bg-white/10 p-6 backdrop-blur">
+      <div className="mt-8 rounded-2xl bg-white/10 p-6 backdrop-blur">
+        <PasskeySignInButton portal="employee" email={email} callbackUrl={callbackUrl} />
+        <p className="my-4 text-center text-xs font-semibold uppercase tracking-wide text-white/80">Or sign in with password</p>
+      </div>
+      <form onSubmit={onSubmit} className="space-y-4 rounded-2xl bg-white/10 p-6 backdrop-blur">
         <label className="block text-sm font-semibold">
           Email
           <input
@@ -78,7 +83,7 @@ export default function EmployeeLoginForm() {
           autoComplete="current-password"
         />
         <label className="block text-sm font-semibold">
-          Authenticator code (if MFA enabled)
+          Authenticator code (password sign-in only, if MFA enabled)
           <input
             type="text"
             inputMode="numeric"

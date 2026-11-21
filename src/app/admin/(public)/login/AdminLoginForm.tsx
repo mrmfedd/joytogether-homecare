@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { safePortalCallbackUrl } from "@/lib/auth/portal-callback";
+import { PasskeySignInButton } from "@/components/auth/PasskeySignInButton";
 
 export default function AdminLoginForm() {
   const params = useSearchParams();
@@ -53,7 +54,11 @@ export default function AdminLoginForm() {
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
       <h1 className="font-display text-3xl">JoyTogether Admin</h1>
       <p className="mt-2 text-sm text-white/80">Secure sign-in for authorized staff only.</p>
-      <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-2xl bg-white/10 p-6 backdrop-blur">
+      <div className="mt-8 rounded-2xl bg-white/10 p-6 backdrop-blur">
+        <PasskeySignInButton portal="admin" email={email} callbackUrl={callbackUrl} />
+        <p className="my-4 text-center text-xs font-semibold uppercase tracking-wide text-white/80">Or sign in with password</p>
+      </div>
+      <form onSubmit={onSubmit} className="space-y-4 rounded-2xl bg-white/10 p-6 backdrop-blur">
         <label className="block text-sm font-semibold">
           Email
           <input
@@ -77,7 +82,7 @@ export default function AdminLoginForm() {
           />
         </label>
         <label className="block text-sm font-semibold">
-          Authenticator code (if MFA enabled)
+          Authenticator code (password sign-in only, if MFA enabled)
           <input
             type="text"
             inputMode="numeric"

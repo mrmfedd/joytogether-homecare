@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { AuthenticationResponseJSON } from "@simplewebauthn/server";
+import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
 import { z } from "zod";
 import { verifyPasskeyAuthentication } from "@/lib/passkeys/service";
 

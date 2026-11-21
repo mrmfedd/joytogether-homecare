@@ -48,7 +48,7 @@ export async function createPatientThread(input: {
   profileId?: string;
 }) {
   if (input.actorRole === "EMPLOYEE") {
-    if (!input.profileId) throw new PatientAccessDeniedError();
+    if (!input.profileId) throw new PatientAccessDeniedError("Employee profile required");
     await assertPatientAccess(
       { kind: "employee", userId: input.createdByUserId, profileId: input.profileId, role: "EMPLOYEE" },
       input.patientId,

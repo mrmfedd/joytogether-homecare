@@ -38,7 +38,7 @@ export function PasskeySignInButton({
         return;
       }
 
-      const assertion = await startAuthentication({ optionsJSON: optionsJson.options });
+      const assertion = await startAuthentication(optionsJson.options);
       const verifyRes = await fetch("/api/auth/passkey/login/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

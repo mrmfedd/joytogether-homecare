@@ -67,7 +67,7 @@ export async function verifyPasskeyReauthentication(input: {
 
   const needsTotp =
     (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled) && Boolean(user.mfaSecret);
-  const hasPasskeys = await hasPasskeySecondFactor(user.id);
+  const hasPasskeys = await hasPasskeySecondFactor(input.userId);
 
   if (needsTotp && user.mfaSecret) {
     const code = input.mfaCode?.trim();
@@ -76,6 +76,6 @@ export async function verifyPasskeyReauthentication(input: {
     }
   }
 
-  await setPasskeyReauthCookie(user.id);
+  await setPasskeyReauthCookie(input.userId);
   return true;
 }

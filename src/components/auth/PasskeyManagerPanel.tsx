@@ -44,7 +44,7 @@ export function PasskeyManagerPanel({ passkeys }: { passkeys: PasskeyRow[] }) {
       return;
     }
     try {
-      const attestation = await startRegistration({ optionsJSON: optionsJson.options });
+      const attestation = await startRegistration(optionsJson.options);
       const verifyRes = await fetch("/api/auth/passkey/register/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -130,9 +130,8 @@ export default async function PatientAssignmentsPage({
                   className="min-w-[12rem] flex-1 rounded-xl border border-line px-3 py-2 text-sm"
                 />
                 <ConfirmSubmitButton
-                  type="submit"
                   className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-900"
-                  confirmMessage="End this assignment? The caregiver will lose access to this patient chart."
+                  message="End this assignment? The caregiver will lose access to this patient chart."
                 >
                   End assignment
                 </ConfirmSubmitButton>

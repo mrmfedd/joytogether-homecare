@@ -13,16 +13,22 @@
 | Recovery | `AdminAccountRecoveryToken` + operator `ADMIN_RECOVERY_SECRET` |
 | No WebAuthn | No prior passkey models |
 
+## Dependency alignment
+
+JoyTogether uses **custom** passkey routes (not the NextAuth passkey provider). `@simplewebauthn/browser` and `@simplewebauthn/server` are pinned to **9.0.x** to match `next-auth@5.0.0-beta.32` optional peer ranges so `npm ci` succeeds on Vercel without `legacy-peer-deps`.
+
 ## Environment variables (Preview)
 
 | Variable | Purpose |
 |----------|---------|
 | `AUTH_SECRET` | Existing — also signs passkey reauth cookies |
-| `WEBAUTHN_RP_ID` | Hostname without port (e.g. `preview-*.vercel.app` or custom domain) |
-| `WEBAUTHN_ORIGIN` | Full HTTPS origin (must match browser URL) |
+| `WEBAUTHN_RP_ID` | Hostname only — **must equal the Preview deployment host** (e.g. `joytogether-homecare-git-feature-passkey-auth-xxx.vercel.app`) |
+| `WEBAUTHN_ORIGIN` | Full HTTPS origin with no trailing slash — same host as the browser URL |
 | `WEBAUTHN_RP_NAME` | Display name (default JoyTogether Home Care) |
 
-Preview must use **HTTPS**. Local dev: `localhost` as RP ID with `http://localhost:3000` origin.
+**Do not copy Production `WEBAUTHN_*` into Preview.** Passkeys are bound to RP ID; wrong values cause silent authentication failures.
+
+Preview must use **HTTPS**. Local dev: `WEBAUTHN_RP_ID=localhost` and `WEBAUTHN_ORIGIN=http://localhost:3000`.
 
 ## Migration (Preview only until approved)
 

@@ -4,11 +4,13 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
+import { isoBase64URL } from "@simplewebauthn/server/helpers";
 import type {
   AuthenticationResponseJSON,
   AuthenticatorTransportFuture,
+  PublicKeyCredentialDescriptorFuture,
   RegistrationResponseJSON,
-} from "@simplewebauthn/server";
+} from "@simplewebauthn/types";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 import { getWebAuthnConfig } from "@/lib/passkeys/config";
@@ -27,11 +29,14 @@ async function storeChallenge(kind: "AUTHENTICATION" | "REGISTRATION", challenge
   });
 }
 
+/** Consume challenge once (replay protection). */
 async function takeChallenge(challenge: string) {
-  const row = await prisma.passkeyChallenge.findUnique({ where: { challenge } });
-  if (!row || row.expiresAt < new Date()) return null;
-  await prisma.passkeyChallenge.delete({ where: { id: row.id } });
-  return row;
+  return prisma.$transaction(async (tx) => {
+    const row = await tx.passkeyChallenge.findUnique({ where: { challenge } });
+    if (!row || row.expiresAt < new Date()) return null;
+    await tx.passkeyChallenge.delete({ where: { id: row.id } });
+    return row;
+  });
 }
 
 function portalAllowsUser(portal: string, role: string) {
@@ -41,8 +46,8 @@ function portalAllowsUser(portal: string, role: string) {
 }
 
 export async function createPasskeyAuthenticationOptions(input: { email?: string; portal: string }) {
-  const { origin, rpID, rpName } = getWebAuthnConfig();
-  let allowCredentials: { id: string; transports?: AuthenticatorTransportFuture[] }[] | undefined;
+  const { rpID, rpName } = getWebAuthnConfig();
+  let allowCredentials: PublicKeyCredentialDescriptorFuture[] | undefined;
 
   let userId: string | undefined;
   if (input.email?.trim()) {
@@ -61,11 +66,10 @@ export async function createPasskeyAuthenticationOptions(input: { email?: string
     });
     if (passkeys.length === 0) throw new Error("No passkeys registered");
     allowCredentials = passkeys.map((p) => ({
-      id: p.credentialId,
+      id: isoBase64URL.toBuffer(p.credentialId),
+      type: "public-key" as const,
       transports: p.transports as AuthenticatorTransportFuture[],
     }));
-  } else {
-    allowCredentials = undefined;
   }
 
   const options = await generateAuthenticationOptions({
@@ -76,7 +80,7 @@ export async function createPasskeyAuthenticationOptions(input: { email?: string
   });
 
   await storeChallenge("AUTHENTICATION", options.challenge, userId);
-  return { options, rpName, origin };
+  return { options, rpName, origin: getWebAuthnConfig().origin };
 }
 
 export async function verifyPasskeyAuthentication(input: {
@@ -103,9 +107,9 @@ export async function verifyPasskeyAuthentication(input: {
     expectedChallenge: challengeRow.challenge,
     expectedOrigin: origin,
     expectedRPID: rpID,
-    credential: {
-      id: passkey.credentialId,
-      publicKey: new Uint8Array(passkey.publicKey),
+    authenticator: {
+      credentialID: isoBase64URL.toBuffer(passkey.credentialId),
+      credentialPublicKey: new Uint8Array(passkey.publicKey),
       counter: Number(passkey.counter),
       transports: passkey.transports as AuthenticatorTransportFuture[],
     },
@@ -140,7 +144,7 @@ export async function verifyPasskeyAuthentication(input: {
 }
 
 export async function createPasskeyRegistrationOptions(userId: string, email: string) {
-  const { origin, rpID, rpName } = getWebAuthnConfig();
+  const { rpID, rpName } = getWebAuthnConfig();
   const existing = await prisma.userPasskey.findMany({
     where: { userId },
     select: { credentialId: true, transports: true },
@@ -150,11 +154,15 @@ export async function createPasskeyRegistrationOptions(userId: string, email: st
     rpName,
     rpID,
     userName: email,
-    userID: Buffer.from(userId, "utf8"),
+    userID: userId,
     userDisplayName: email,
     timeout: 120_000,
     attestationType: "none",
-    excludeCredentials: existing.map((p) => ({ id: p.credentialId, transports: p.transports as AuthenticatorTransportFuture[] })),
+    excludeCredentials: existing.map((p) => ({
+      id: isoBase64URL.toBuffer(p.credentialId),
+      type: "public-key" as const,
+      transports: p.transports as AuthenticatorTransportFuture[],
+    })),
     authenticatorSelection: {
       residentKey: "preferred",
       userVerification: "required",
@@ -162,7 +170,7 @@ export async function createPasskeyRegistrationOptions(userId: string, email: st
   });
 
   await storeChallenge("REGISTRATION", options.challenge, userId);
-  return { options, origin };
+  return { options, origin: getWebAuthnConfig().origin };
 }
 
 export async function verifyPasskeyRegistration(input: {
@@ -185,17 +193,18 @@ export async function verifyPasskeyRegistration(input: {
 
   if (!verification.verified || !verification.registrationInfo) throw new Error("Registration failed");
 
-  const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
+  const info = verification.registrationInfo;
+  const credentialId = isoBase64URL.fromBuffer(info.credentialID);
 
   await prisma.userPasskey.create({
     data: {
       userId: input.userId,
-      credentialId: credential.id,
-      publicKey: Buffer.from(credential.publicKey),
-      counter: BigInt(credential.counter),
-      transports: credential.transports ?? [],
-      deviceType: credentialDeviceType,
-      backedUp: credentialBackedUp,
+      credentialId,
+      publicKey: Buffer.from(info.credentialPublicKey),
+      counter: BigInt(info.counter),
+      transports: input.response.response.transports ?? [],
+      deviceType: info.credentialDeviceType,
+      backedUp: info.credentialBackedUp,
       friendlyName: input.friendlyName?.trim() || "Passkey",
     },
   });
@@ -204,7 +213,7 @@ export async function verifyPasskeyRegistration(input: {
     userId: input.userId,
     action: "CREATE",
     entity: "UserPasskey",
-    meta: { backedUp: credentialBackedUp },
+    meta: { backedUp: info.credentialBackedUp },
   });
 }
 

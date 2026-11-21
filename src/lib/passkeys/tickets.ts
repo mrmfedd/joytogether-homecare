@@ -26,16 +26,22 @@ export async function createPasskeyLoginTicket(input: {
   return { token, expiresAt };
 }
 
+/** Atomically redeem a one-time login ticket (safe under concurrent signIn attempts). */
 export async function consumePasskeyLoginTicket(token: string, portal: string) {
   const tokenHash = hashToken(token);
-  const ticket = await prisma.passkeyLoginTicket.findUnique({ where: { tokenHash } });
-  if (!ticket || ticket.usedAt || ticket.expiresAt < new Date()) return null;
-  if (ticket.portal !== portal) return null;
+  const now = new Date();
 
-  await prisma.passkeyLoginTicket.update({
-    where: { id: ticket.id },
-    data: { usedAt: new Date() },
+  const claimed = await prisma.passkeyLoginTicket.updateMany({
+    where: {
+      tokenHash,
+      portal,
+      usedAt: null,
+      expiresAt: { gt: now },
+    },
+    data: { usedAt: now },
   });
 
-  return ticket;
+  if (claimed.count !== 1) return null;
+
+  return prisma.passkeyLoginTicket.findUnique({ where: { tokenHash } });
 }

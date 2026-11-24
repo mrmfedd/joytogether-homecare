@@ -1,7 +1,7 @@
 import type { HelpAudience, UserRole } from "@/generated/prisma";
 import { buildManualMarkdown, type ManualSection } from "@/lib/help/article-template";
 
-export const HELP_LAST_UPDATED = "2026-10-31";
+export const HELP_LAST_UPDATED = "2026-11-23";
 
 export type HelpSeedArticle = {
   slug: string;

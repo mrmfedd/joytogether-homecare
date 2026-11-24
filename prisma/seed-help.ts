@@ -1,7 +1,21 @@
 import type { PrismaClient } from "../src/generated/prisma";
 import { helpSeedCategories, helpSeedFaqs } from "../src/content/help/seed-data";
 
+const HELP_REVIEWED_AT = new Date("2026-11-23T12:00:00Z");
+
+/** Questions replaced when authenticator MFA was removed. Matched by exact text, so upsert cannot update them. */
+const RETIRED_FAQ_QUESTIONS = [
+  "How do I enable MFA for my ADMIN account?",
+  "How do I enable MFA on my employee account?",
+];
+
 export async function seedHelpCenter(prisma: PrismaClient) {
+  if (RETIRED_FAQ_QUESTIONS.length > 0) {
+    await prisma.helpFaq.deleteMany({
+      where: { question: { in: [...RETIRED_FAQ_QUESTIONS] } },
+    });
+  }
+
   for (const cat of helpSeedCategories) {
     const category = await prisma.helpCategory.upsert({
       where: {
@@ -37,7 +51,7 @@ export async function seedHelpCenter(prisma: PrismaClient) {
           allowedRoles: article.allowedRoles ?? [],
           sortOrder: article.sortOrder,
           published: true,
-          lastReviewedAt: new Date("2026-10-31T12:00:00Z"),
+          lastReviewedAt: HELP_REVIEWED_AT,
         },
         update: {
           title: article.title,
@@ -48,7 +62,7 @@ export async function seedHelpCenter(prisma: PrismaClient) {
           allowedRoles: article.allowedRoles ?? [],
           sortOrder: article.sortOrder,
           published: true,
-          lastReviewedAt: new Date("2026-10-31T12:00:00Z"),
+          lastReviewedAt: HELP_REVIEWED_AT,
         },
       });
     }

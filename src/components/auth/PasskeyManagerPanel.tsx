@@ -15,7 +15,6 @@ type PasskeyRow = {
 export function PasskeyManagerPanel({ passkeys }: { passkeys: PasskeyRow[] }) {
   const router = useRouter();
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
   const [reauthed, setReauthed] = useState(false);
   const [message, setMessage] = useState("");
   const [friendlyName, setFriendlyName] = useState("My device");
@@ -25,10 +24,10 @@ export function PasskeyManagerPanel({ passkeys }: { passkeys: PasskeyRow[] }) {
     const res = await fetch("/api/auth/passkey/reauth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, mfaCode: mfaCode || undefined }),
+      body: JSON.stringify({ password }),
     });
     if (!res.ok) {
-      setMessage("Reauthentication failed. Enter your current password (and authenticator code if enabled).");
+      setMessage("Reauthentication failed. Enter your current password.");
       return;
     }
     setReauthed(true);
@@ -110,16 +109,6 @@ export function PasskeyManagerPanel({ passkeys }: { passkeys: PasskeyRow[] }) {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 w-full rounded-xl border border-line px-3 py-2"
               autoComplete="current-password"
-            />
-          </label>
-          <label className="text-sm font-semibold sm:col-span-2">
-            Authenticator code (if you use one)
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mfaCode}
-              onChange={(e) => setMfaCode(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-line px-3 py-2"
             />
           </label>
           <button type="button" onClick={() => void reauth()} className="btn btn-purple w-fit px-4 py-2 text-sm sm:col-span-2">

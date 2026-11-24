@@ -22,8 +22,7 @@ export default async function AdminAccountRecoveryPage({
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
       <h1 className="font-display text-3xl">Administrator account recovery</h1>
       <p className="mt-2 text-sm text-white/80">
-        Set a new password. Your previous MFA enrollment will be cleared; you must enroll a new authenticator after
-        sign-in.
+        Set a new password, then sign in with that password.
       </p>
 
       {error ? (

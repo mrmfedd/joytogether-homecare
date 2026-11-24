@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import type { UserRole } from "@/generated/prisma";
 import { verifyPasskeyReauthentication } from "@/lib/passkeys/reauth";
 
 const bodySchema = z.object({
   password: z.string().min(1),
-  mfaCode: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -22,9 +20,7 @@ export async function POST(req: Request) {
 
   const ok = await verifyPasskeyReauthentication({
     userId: session.user.id,
-    role: session.user.role as UserRole,
     password: parsed.data.password,
-    mfaCode: parsed.data.mfaCode,
   });
 
   if (!ok) {

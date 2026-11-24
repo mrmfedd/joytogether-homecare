@@ -205,7 +205,7 @@ export async function createAndEmailAdminInvitation(params: {
   };
 }
 
-/** Fresh setup for an existing administrator (password/MFA reset + reprovision invite). */
+/** Fresh setup for an existing administrator (password reset + reprovision invite). */
 export async function createAndEmailAdminReprovisionInvitation(params: {
   email: string;
   role: UserRole;

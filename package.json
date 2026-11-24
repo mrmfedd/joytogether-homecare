@@ -15,7 +15,7 @@
     "db:seed": "prisma db seed",
     "test:permissions": "tsx scripts/test-permissions.ts",
     "test:patient-permissions": "tsx scripts/test-patient-permissions.ts",
-    "test:passkeys": "vitest run tests/unit/passkey-mfa-policy.test.ts tests/unit/passkey-tickets-atomic.test.ts tests/unit/passkey-webauthn-config.test.ts",
+    "test:passkeys": "vitest run tests/unit/passkey-tickets-atomic.test.ts tests/unit/passkey-webauthn-config.test.ts",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:preview-smoke": "node scripts/preview-remote-smoke.mjs",

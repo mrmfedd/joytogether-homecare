@@ -27,7 +27,7 @@ export const ADMIN_WALKTHROUGHS: WalkthroughDefinition[] = [
       {
         id: "security",
         title: "Secure your account",
-        body: "Open Security under the sidebar to enable MFA. SUPER_ADMIN and ADMIN accounts require MFA before full access.",
+        body: "Open Security under the sidebar to review your account and add an optional passkey.",
         selector: "[data-help-tour='admin-security']",
       },
     ],

@@ -13,7 +13,6 @@ export default function EmployeeLoginForm() {
   const callbackUrl = safePortalCallbackUrl(params.get("callbackUrl"), "employee");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +23,6 @@ export default function EmployeeLoginForm() {
     const res = await signIn("credentials", {
       email,
       password,
-      mfaCode,
       portal: "employee",
       redirect: false,
       callbackUrl,
@@ -82,17 +80,6 @@ export default function EmployeeLoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
         />
-        <label className="block text-sm font-semibold">
-          Authenticator code (password sign-in only, if MFA enabled)
-          <input
-            type="text"
-            inputMode="numeric"
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-[var(--midnight)]"
-            autoComplete="one-time-code"
-          />
-        </label>
         {error ? <p className="text-sm font-semibold text-red-200">{error}</p> : null}
         <button type="submit" disabled={loading} className="btn btn-gold w-full uppercase tracking-wide disabled:opacity-60">
           {loading ? "Signing in…" : "Sign in"}

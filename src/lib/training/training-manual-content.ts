@@ -39,7 +39,6 @@ export const trainingManualChapters: ManualChapter[] = [
         bullets: [
           "Accounts are invite-only. There are no shared or default passwords.",
           "Use passwords of at least 12 characters. Do not share credentials.",
-          "Enable multi-factor authentication (MFA) when required for your role.",
           "Sign out on shared computers when finished.",
           "Patient-identifying information must not be sent in email or staff notices.",
         ],
@@ -104,7 +103,7 @@ export const trainingManualChapters: ManualChapter[] = [
           "Reports — business metrics; export CSV, Excel, or PDF.",
           "Help Center — searchable training articles.",
           "Settings — business contact details.",
-          "Security — your password and MFA.",
+          "Security — your password and optional passkeys.",
         ],
       },
     ],
@@ -115,7 +114,7 @@ export const trainingManualChapters: ManualChapter[] = [
       {
         heading: "Start of shift",
         numbered: [
-          "Sign in and complete MFA if prompted.",
+          "Sign in with your email and password.",
           "Open Dashboard and note new leads and consultations.",
           "Review Open Shifts and pending Time Off requests.",
           "Check Notices for items requiring acknowledgment follow-up.",
@@ -236,7 +235,7 @@ export const trainingManualChapters: ManualChapter[] = [
           "Notices — read and acknowledge workplace messages.",
           "Time Clock — clock in/out when enabled by your organization.",
           "Help — employee training articles and FAQs.",
-          "Profile — password and MFA.",
+          "Profile — password and optional passkeys.",
         ],
       },
       {
@@ -258,7 +257,7 @@ export const trainingManualChapters: ManualChapter[] = [
         heading: "Before first shift",
         numbered: [
           "Accept invitation within 48 hours and set password.",
-          "Sign in at Employee login; enable MFA if offered.",
+          "Sign in at Employee login.",
           "Open Schedule and Notices; confirm you see assigned shifts.",
           "Read Help articles on schedule confirmation and time off.",
           "Save agency phone number from the public site or Help.",

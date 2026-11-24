@@ -69,7 +69,7 @@ const adminCategories: HelpSeedCategory[] = [
     audience: "ADMIN",
     slug: "getting-started",
     title: "Getting started and security",
-    summary: "Portal orientation, account security, MFA, and administrator troubleshooting.",
+    summary: "Portal orientation, account security, and administrator troubleshooting.",
     sortOrder: 1,
     articles: [
     mkArticle(
@@ -87,17 +87,16 @@ const adminCategories: HelpSeedCategory[] = [
         "Any user who can access the admin sign-in page: SUPER_ADMIN, ADMIN, CARE_COORDINATOR, CONTENT_EDITOR, RECRUITER, or VIEWER (read-only where permissions allow). Employees use a separate Employee Portal.",
         [
           "Browse to your organization's admin sign-in URL (typically `/admin/login`) and enter the email and password from your invitation.",
-          "After authentication, confirm MFA if your role requires it (SUPER_ADMIN and ADMIN accounts must enable MFA before full dashboard access).",
           "Review the left sidebar: Dashboard, Leads, Consultations, Content, and workforce items (Employees, Scheduling, Open Shifts) appear based on your role.",
           "Open **Help Center** from the sidebar to search articles scoped to your permissions; employees cannot see admin-only topics.",
-          "Use **Security** under the sidebar (Account) to verify your profile email and MFA status before handling sensitive lead contact details.",
+          "Use **Security** under the sidebar (Account) to verify your profile email before handling sensitive lead contact details.",
           "Sign out with the sidebar **Sign out** control when finished on a shared workstation."
         ],
         "You can reach every feature your role allows from the sidebar, understand which portal you are in, and know where to find contextual Help on each screen.",
         {
           beforeYouBegin: ["Sign in to the correct JoyTogether portal with an active account for your role.", "Confirm the left sidebar (or mobile bottom navigation) lists the feature described in this article.", "Keep this Help article open while you complete the steps so you can verify each expected result."],
           notes: ["VIEWER can open the dashboard and many read-only lists but cannot change records.", "Workforce menu items (Employees through Workforce Reports) appear only for SUPER_ADMIN, ADMIN, and CARE_COORDINATOR."],
-          troubleshooting: [{ question: "I sign in but immediately return to the login page.", answer: "Confirm the account is active, the password is correct, and MFA is completed when prompted. Inactive or deactivated users cannot retain a session." }],
+          troubleshooting: [{ question: "I sign in but immediately return to the login page.", answer: "Confirm the account is active and the password is correct. Inactive or deactivated users cannot retain a session." }],
           relatedSlugs: ["administrator-account-and-security", "admin-dashboard"],
         },
       ),
@@ -106,28 +105,26 @@ const adminCategories: HelpSeedCategory[] = [
       {
         slug: "administrator-account-and-security",
         title: "Administrator Account and Security",
-        summary: "Accept invites, set passwords, enable MFA with an authenticator app, and manage account recovery through the Security page.",
+        summary: "Accept invites, set passwords, and manage account recovery through the Security page.",
         sortOrder: 2,
-        keywords: ["MFA", "password", "invite", "security", "account"],
+        keywords: ["password", "invite", "security", "account", "passkey"],
         contextRoutes: ["/admin/account"],
       },
       mkSection(
         "Administrator Account and Security",
-        "Protect administrator access with strong passwords and multi-factor authentication (MFA). JoyTogether stores credentials securely and records security-related changes in the audit log.",
+        "Protect administrator access with a strong password. JoyTogether stores credentials securely and records security-related changes in the audit log. Passkeys are optional.",
         "All administrative users manage their own account on **Security** (`/admin/account`). SUPER_ADMIN additionally invites other administrators from **Admins**.",
         [
           "If you received an email invitation, open the link, choose a strong password, and complete signup before the invite expires.",
-          "Sign in at `/admin/login`. SUPER_ADMIN and ADMIN users see an MFA setup gate until authenticator MFA is enabled.",
-          "Open **Security** in the sidebar and scan the displayed QR code with an authenticator app (Google Authenticator, 1Password, etc.).",
-          "Enter the six-digit code to confirm MFA, then store backup recovery codes offline if the app provides them.",
-          "Use **Change password** on the same page to rotate credentials; you must know your current password.",
-          "If you forget your password, use **Forgot password** on the login page to receive a reset link by email."
+          "Sign in at `/admin/login` with your email and password.",
+          "Open **Security** in the sidebar to review your account. You can add an optional passkey for this device.",
+          "Use **Forgot password** on the login page to receive a reset link by email if you forget your password."
         ],
-        "Your account shows MFA enabled, you can sign in with password plus authenticator code, and password changes succeed without locking you out.",
+        "You can sign in with your password, and optional passkeys can be added from Security.",
         {
           beforeYouBegin: ["Sign in to the correct JoyTogether portal with an active account for your role.", "Confirm the left sidebar (or mobile bottom navigation) lists the feature described in this article.", "Keep this Help article open while you complete the steps so you can verify each expected result."],
-          notes: ["MFA enforcement applies to SUPER_ADMIN and ADMIN via the dashboard gate component.", "Never share authenticator codes or invitation links in chat or email threads."],
-          troubleshooting: [{ question: "Authenticator codes are rejected.", answer: "Ensure the device clock is accurate. If you replaced your phone, disable and re-enroll MFA from Security while signed in." }],
+          notes: ["Never share passwords or invitation links in chat or email threads."],
+          troubleshooting: [{ question: "Sign-in is rejected.", answer: "Confirm the email and password, and that the account is still active. Use Forgot password if you need a reset link." }],
           relatedSlugs: ["user-management", "administrator-troubleshooting"],
         },
       ),
@@ -136,9 +133,9 @@ const adminCategories: HelpSeedCategory[] = [
       {
         slug: "administrator-troubleshooting",
         title: "Administrator Troubleshooting",
-        summary: "Resolve common sign-in, MFA, invitation, permission, scheduling, notification, and publishing issues using supported in-app actions.",
+        summary: "Resolve common sign-in, invitation, permission, scheduling, notification, and publishing issues using supported in-app actions.",
         sortOrder: 3,
-        keywords: ["troubleshooting", "login", "MFA", "permissions", "notifications"],
+        keywords: ["troubleshooting", "login", "permissions", "notifications"],
         contextRoutes: [],
       },
       mkSection(
@@ -147,7 +144,7 @@ const adminCategories: HelpSeedCategory[] = [
         "Any administrative user may follow employee-safe steps; SUPER_ADMIN resolves user invites and role access issues.",
         [
           "Confirm you are on the correct environment URL (preview vs production) and that your account role matches the feature (check sidebar visibility).",
-          "For login failures, reset the password via **Forgot password**, then complete MFA if enabled.",
+          "For login failures, reset the password via **Forgot password**.",
           "If a page redirects to Dashboard, your role lacks permission—CONTENT_EDITOR cannot manage users, and VIEWER cannot save forms.",
           "For scheduling errors, verify the shift is not CANCELED, the employee employment status is ACTIVE, and open-shift credential requirements match stored employee credentials.",
           "When email notifications fail, open **Settings** and review failed notification counts linked from the dashboard KPI card.",
@@ -295,7 +292,7 @@ const adminCategories: HelpSeedCategory[] = [
           "Click **Invite administrator** and enter the person's work email.",
           "Select the appropriate role: ADMIN for general operations, CARE_COORDINATOR for intake and workforce, CONTENT_EDITOR for website copy, RECRUITER for careers, or VIEWER for read-only access.",
           "Send the invitation; the recipient completes signup via the emailed link before expiration.",
-          "After they accept, confirm they can sign in and complete MFA if assigned ADMIN or SUPER_ADMIN.",
+          "After they accept, confirm they can sign in.",
           "To remove access, deactivate the user record—deactivated admins cannot authenticate.",
           "Use separate **Employees** invitations for caregivers; do not create duplicate admin accounts for field staff."
         ],
@@ -913,7 +910,7 @@ const adminCategories: HelpSeedCategory[] = [
         "SUPER_ADMIN and ADMIN responsible for security governance.",
         [
           "Rely on role-based navigation: if a sidebar item is missing, your role cannot access that module.",
-          "Enforce MFA for SUPER_ADMIN and ADMIN accounts through the Security page.",
+          "Require each administrator to use their own password. Do not share credentials.",
           "Train staff to avoid exporting lead contact data to personal devices.",
           "Use authenticated media URLs rather than sharing blob keys publicly.",
           "When investigating incidents, ask a developer to query `AuditLog` entries by user and entity type.",
@@ -959,7 +956,7 @@ const employeeCategories: HelpSeedCategory[] = [
           "Explore the sidebar or mobile bottom navigation: Dashboard, Schedule, Open Shifts, Availability, Time Off, Notices, Account.",
           "Open **Help Center** for step-by-step manuals scoped to employees only.",
           "Review dashboard cards summarizing pending confirmations, open shifts, notices, and time-off decisions.",
-          "Enable MFA optionally under Account for stronger security.",
+          "Open **Account** if you want to add an optional passkey.",
           "Sign out on shared devices using the sidebar sign-out control.",
           "Contact your coordinator if employment status prevents login."
         ],
@@ -991,7 +988,7 @@ const employeeCategories: HelpSeedCategory[] = [
           "Choose a strong password meeting the form requirements.",
           "Submit the signup form and wait for confirmation that your account is active.",
           "Navigate to `/employee/login` and sign in with the new password.",
-          "Complete optional MFA enrollment under Account if your organization recommends it.",
+          "Open **Account** after sign-in if you want to add an optional passkey.",
           "If the link expired, ask an administrator to resend the invite from Employees."
         ],
         "You can authenticate to the Employee Portal and appear as ACTIVE for scheduling.",
@@ -1021,7 +1018,7 @@ const employeeCategories: HelpSeedCategory[] = [
           "Avoid sharing passwords with coworkers; each employee must use their own login for auditability.",
           "After first login, open **Account** to verify your display name and email.",
           "Use **Change password** when your organization requires periodic rotation.",
-          "Enable MFA if available to protect schedule and notice data if your phone is lost.",
+          "Add an optional passkey on Account if you want a device sign-in in addition to your password.",
           "Never save passwords in unsecured notes on shared clinic computers.",
           "Contact an administrator if you suspect unauthorized access—they can deactivate and reinvite if needed."
         ],
@@ -1038,7 +1035,7 @@ const employeeCategories: HelpSeedCategory[] = [
       {
         slug: "logging-in-and-logging-out",
         title: "Logging In and Logging Out",
-        summary: "Use the employee login form, optional MFA, and sign out safely on shared devices.",
+        summary: "Use the employee login form and sign out safely on shared devices.",
         sortOrder: 4,
         keywords: ["login", "logout", "session"],
         contextRoutes: [],
@@ -1049,7 +1046,6 @@ const employeeCategories: HelpSeedCategory[] = [
         "All employees.",
         [
           "Browse to `/employee/login` and enter your work email and password.",
-          "If MFA is enabled, enter the six-digit authenticator code when prompted.",
           "On failure, read the error message—inactive accounts cannot sign in.",
           "Use **Forgot password** to email yourself a reset link if needed.",
           "After login, confirm you land on the Dashboard with your name displayed.",
@@ -1508,25 +1504,24 @@ const employeeCategories: HelpSeedCategory[] = [
       {
         slug: "updating-account-information",
         title: "Updating Account Information",
-        summary: "Review profile details, optional MFA, and contact administrators for email changes.",
+        summary: "Review profile details and contact administrators for email changes.",
         sortOrder: 4,
-        keywords: ["account", "profile", "MFA"],
+        keywords: ["account", "profile", "passkey"],
         contextRoutes: ["/employee/account"],
       },
       mkSection(
         "Updating Account Information",
-        "The Account page shows your sign-in email and optional MFA enrollment. Some fields may require administrator updates.",
+        "The Account page shows your sign-in email and optional passkeys. Some fields may require administrator updates.",
         "All employees.",
         [
           "Open **Account** from the sidebar.",
           "Verify your name and email match HR records.",
-          "Use the MFA panel to enroll an authenticator app if you want extra security.",
-          "Scan the QR code, enter the verification code, and confirm success messaging.",
-          "Use **Change password** to rotate credentials periodically.",
+          "Use the passkey section if you want to add a device sign-in.",
+          "Ask an administrator to reset your password if you cannot sign in.",
           "Request administrator help if your email address changed jobs—login uses the invited email.",
           "Sign out and back in after major account changes to refresh your session."
         ],
-        "Profile and security settings reflect your choices and MFA shows enabled when configured.",
+        "Profile and security settings reflect your account email and any passkeys you added.",
         {
           beforeYouBegin: ["Sign in to the correct JoyTogether portal with an active account for your role.", "Confirm the left sidebar (or mobile bottom navigation) lists the feature described in this article.", "Keep this Help article open while you complete the steps so you can verify each expected result."],
           
@@ -1654,7 +1649,7 @@ const employeeCategories: HelpSeedCategory[] = [
           "Sign out of the portal on shared devices after viewing schedules.",
           "Do not screenshot notices or shifts and post them on social media.",
           "Avoid discussing client identities or health details in portal note fields.",
-          "Use MFA on your account when handling notices with policy or compliance content.",
+          "Sign out when you finish reading notices that contain policy or compliance content.",
           "Report lost phones with portal access to administrators immediately.",
           "Follow your agency HIPAA training even when this portal does not store clinical charts.",
           "Use official coordinator channels rather than personal texts for coverage changes when policy requires."
@@ -1780,7 +1775,7 @@ const employeeCategories: HelpSeedCategory[] = [
           "For account lockouts, ask administrators to verify your employment status and resend invites if needed.",
           "For credential mismatches, request internal credential updates—employees cannot edit credentials in-app.",
           "Use Help Center search to see if a self-service article resolves the issue first.",
-          "Avoid sharing passwords or MFA codes with anyone claiming to be support.",
+          "Avoid sharing passwords with anyone claiming to be support.",
           "Document incident times when reporting portal bugs to SUPER_ADMIN via your agency process."
         ],
         "You escalate with clear context while using official communication paths.",
@@ -1889,9 +1884,9 @@ export const helpSeedFaqs: HelpSeedFaq[] = [
   },
   {
     audience: "ADMIN",
-    question: "How do I enable MFA for my ADMIN account?",
-    answer: "Open Security (/admin/account). You may add a passkey (Face ID, Touch ID, Windows Hello, or device PIN) or scan the authenticator QR code. Either method clears the MFA gate for administrators.",
-    keywords: ["MFA", "security"],
+    question: "How do I add a passkey to my ADMIN account?",
+    answer: "Open Security (/admin/account), confirm your password, and add a passkey for this device. Password sign-in remains available.",
+    keywords: ["passkey", "security"],
     sortOrder: 12,
     articleSlug: "administrator-account-and-security",
   },
@@ -1985,16 +1980,16 @@ export const helpSeedFaqs: HelpSeedFaq[] = [
   },
   {
     audience: "EMPLOYEE",
-    question: "How do I enable MFA on my employee account?",
-    answer: "Open Profile & security (/employee/account). Add a passkey for one-tap sign-in, or use the MFA panel with an authenticator app. Passkeys are optional but recommended on phones and tablets.",
-    keywords: ["MFA", "security"],
+    question: "How do I add a passkey on my employee account?",
+    answer: "Open Profile & security (/employee/account). Confirm your password, then add a passkey. Passkeys are optional. Password sign-in remains available.",
+    keywords: ["passkey", "security"],
     sortOrder: 12,
     articleSlug: "updating-account-information",
   },
   {
     audience: "ADMIN",
     question: "How do I sign in with a passkey?",
-    answer: "On Admin Login, choose Sign in with Face ID, Touch ID, or Passkey, then approve with your device biometric or PIN. Password and authenticator sign-in remain available as a fallback.",
+    answer: "On Admin Login, choose Sign in with Face ID, Touch ID, or Passkey, then approve with your device biometric or PIN. Password sign-in remains available.",
     keywords: ["passkey", "Face ID", "login"],
     sortOrder: 13,
     articleSlug: "administrator-account-and-security",

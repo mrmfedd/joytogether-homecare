@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { UserRole } from "@/generated/prisma";
 import {
   createAdminManuallyAction,
@@ -200,13 +199,6 @@ export function AdminUsersPageClient({
         </ul>
       </section>
 
-      <p className="mt-8 text-sm text-muted">
-        After setup, new administrators should enable MFA under{" "}
-        <Link href="/admin/account" className="font-semibold text-[var(--royal)]">
-          Security
-        </Link>
-        .
-      </p>
     </div>
   );
 }

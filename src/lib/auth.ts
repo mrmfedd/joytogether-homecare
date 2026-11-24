@@ -6,9 +6,7 @@ import type { UserRole } from "@/generated/prisma";
 import { authConfig } from "@/lib/auth.config";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
-import { verifyMfaCode } from "@/lib/mfa";
 import { consumePasskeyLoginTicket } from "@/lib/passkeys/tickets";
-import { countUserPasskeys, passkeyLoginSatisfiesTotpRequirement } from "@/lib/passkeys/mfa-policy";
 import { isJwtSessionValid } from "@/lib/auth/session-version";
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -70,7 +68,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-        mfaCode: { label: "MFA code", type: "text" },
         portal: { label: "Portal", type: "text" },
         passkeyTicket: { label: "Passkey ticket", type: "text" },
       },
@@ -85,23 +82,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!user?.active) return null;
           if (portal === "employee" && user.role !== "EMPLOYEE") return null;
           if (portal === "admin" && user.role === "EMPLOYEE") return null;
-
-          const passkeyCount = await countUserPasskeys(user.id);
-          const satisfiesMfa = passkeyLoginSatisfiesTotpRequirement({
-            role: user.role,
-            userVerified: ticket.userVerified,
-            hasPasskeys: passkeyCount > 0,
-          });
-
-          const needsTotp =
-            (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled) &&
-            user.mfaSecret &&
-            user.role !== "EMPLOYEE";
-          const employeeTotp = user.role === "EMPLOYEE" && user.mfaEnabled && user.mfaSecret;
-
-          if ((needsTotp || employeeTotp) && !satisfiesMfa) {
-            return null;
-          }
 
           await prisma.user.update({
             where: { id: user.id },
@@ -129,7 +109,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .trim()
           .toLowerCase();
         const password = String(credentials?.password || "");
-        const mfaCode = String(credentials?.mfaCode || "").trim();
         if (!email || !password) return null;
 
         if (loginRateLimited(email)) return null;
@@ -142,21 +121,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
-
-        const privileged =
-          (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled) &&
-          user.role !== "EMPLOYEE";
-        if (privileged && user.mfaSecret) {
-          if (!mfaCode || !verifyMfaCode(user.mfaSecret, mfaCode)) {
-            return null;
-          }
-        }
-
-        if (user.role === "EMPLOYEE" && user.mfaEnabled && user.mfaSecret) {
-          if (!mfaCode || !verifyMfaCode(user.mfaSecret, mfaCode)) {
-            return null;
-          }
-        }
 
         await prisma.user.update({
           where: { id: user.id },

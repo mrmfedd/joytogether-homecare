@@ -327,10 +327,8 @@ export async function sendAdminAccountRecoveryEmail(to: string, recoveryUrl: str
       text: [
         `A secure account recovery was authorized for ${site.name} Admin access.`,
         "",
-        "Use this one-time link within 30 minutes to set a new password and reset MFA enrollment:",
+        "Use this one-time link within 30 minutes to set a new password:",
         recoveryUrl,
-        "",
-        "After signing in, you must enroll a new authenticator on Account → Security.",
         "",
         "If you did not request this recovery, contact JoyTogether leadership immediately.",
         "",

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireEmployeeSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { EmployeeMfaSetupPanel } from "./EmployeeMfaSetupPanel";
 import { PasskeyManagerPanel } from "@/components/auth/PasskeyManagerPanel";
 
 export default async function EmployeeAccountPage() {
@@ -10,7 +9,7 @@ export default async function EmployeeAccountPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: sessionUser.id },
-    select: { email: true, mfaEnabled: true, name: true },
+    select: { email: true, name: true },
   });
   if (!user?.email) redirect("/employee/login");
 
@@ -26,13 +25,6 @@ export default async function EmployeeAccountPage() {
       <p className="mt-1 text-sm text-muted">
         {user.name || "Employee"} • {user.email}
       </p>
-      <section className="mt-6 rounded-2xl border border-line bg-white p-5">
-        <h2 className="font-semibold">Multi-factor authentication</h2>
-        <p className="mt-1 text-sm text-muted">Optional extra protection for your employee account.</p>
-        <div className="mt-4">
-          <EmployeeMfaSetupPanel email={user.email} mfaEnabled={user.mfaEnabled} />
-        </div>
-      </section>
       <PasskeyManagerPanel
         passkeys={passkeys.map((p) => ({
           ...p,

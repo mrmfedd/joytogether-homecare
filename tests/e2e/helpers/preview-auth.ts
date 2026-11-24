@@ -1,5 +1,4 @@
 import { expect, type Page } from "@playwright/test";
-import { generateSync } from "otplib";
 import { existsSync, readFileSync } from "fs";
 
 export const QA_DIR = "/tmp/jt-preview-env";
@@ -29,11 +28,9 @@ export async function mfaAdminLogin(page: Page, creds: MfaCreds) {
   await page.context().clearCookies();
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const code = generateSync({ secret: creds.mfaSecret });
     await page.goto("/admin/login");
     await page.getByLabel(/^Email$/i).fill(creds.email);
     await page.getByLabel(/^Password$/i).fill(creds.password);
-    await page.getByLabel(/Authenticator code/i).fill(code);
     await page.getByRole("button", { name: /Sign in/i }).click();
     try {
       await expect(page).toHaveURL(/\/admin(?:\/(?!login)|$)/, { timeout: 12_000 });

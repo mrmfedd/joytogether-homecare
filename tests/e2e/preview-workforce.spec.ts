@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { generateSync } from "otplib";
 import { existsSync, readFileSync } from "fs";
 import { employeeLogin } from "./helpers/preview-auth";
 
@@ -49,11 +48,9 @@ test.describe("preview workforce workflows", () => {
     const { startLocal, endLocal, startDate, weekQuery } = shiftWindow();
     const uniqueTitle = `PW Shift ${Date.now()}`;
 
-    const code = generateSync({ secret: admin.mfaSecret });
     await page.goto("/admin/login");
     await page.getByLabel(/^Email$/i).fill(admin.email);
     await page.getByLabel(/^Password$/i).fill(admin.password);
-    await page.getByLabel(/Authenticator code/i).fill(code);
     await page.getByRole("button", { name: /Sign in/i }).click();
     await expect(page).toHaveURL(/\/admin(?:\/(?!login)|$)/, { timeout: 20000 });
 

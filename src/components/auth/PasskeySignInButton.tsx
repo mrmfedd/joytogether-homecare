@@ -21,7 +21,7 @@ export function PasskeySignInButton({
     setError("");
     try {
       if (!window.PublicKeyCredential) {
-        setError("This browser does not support passkeys. Use your password and authenticator code.");
+        setError("This browser does not support passkeys. Use your password.");
         setLoading(false);
         return;
       }

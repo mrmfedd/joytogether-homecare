@@ -1,10 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { verifyMfaCode } from "@/lib/mfa";
 import { prisma } from "@/lib/prisma";
-import type { UserRole } from "@/generated/prisma";
-import { hasPasskeySecondFactor } from "@/lib/passkeys/mfa-policy";
 
 export const PASSKEY_REAUTH_COOKIE = "jt_passkey_reauth";
 const REAUTH_TTL_SEC = 5 * 60;
@@ -52,29 +49,16 @@ export async function hasValidPasskeyReauth(userId: string) {
 
 export async function verifyPasskeyReauthentication(input: {
   userId: string;
-  role: UserRole;
   password: string;
-  mfaCode?: string;
 }) {
   const user = await prisma.user.findUnique({
     where: { id: input.userId },
-    select: { passwordHash: true, mfaEnabled: true, mfaSecret: true, role: true, active: true },
+    select: { passwordHash: true, active: true },
   });
   if (!user?.active || !user.passwordHash) return false;
 
   const ok = await bcrypt.compare(input.password, user.passwordHash);
   if (!ok) return false;
-
-  const needsTotp =
-    (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.mfaEnabled) && Boolean(user.mfaSecret);
-  const hasPasskeys = await hasPasskeySecondFactor(input.userId);
-
-  if (needsTotp && user.mfaSecret) {
-    const code = input.mfaCode?.trim();
-    if (!code || !verifyMfaCode(user.mfaSecret, code)) {
-      if (!hasPasskeys) return false;
-    }
-  }
 
   await setPasskeyReauthCookie(input.userId);
   return true;

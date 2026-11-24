@@ -11,7 +11,6 @@ export default function AdminLoginForm() {
   const callbackUrl = safePortalCallbackUrl(params.get("callbackUrl"), "admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +21,6 @@ export default function AdminLoginForm() {
     const res = await signIn("credentials", {
       email,
       password,
-      mfaCode,
       portal: "admin",
       redirect: false,
       callbackUrl,
@@ -79,17 +77,6 @@ export default function AdminLoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             className="mt-1 w-full rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-[var(--midnight)]"
             autoComplete="current-password"
-          />
-        </label>
-        <label className="block text-sm font-semibold">
-          Authenticator code (password sign-in only, if MFA enabled)
-          <input
-            type="text"
-            inputMode="numeric"
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-[var(--midnight)]"
-            autoComplete="one-time-code"
           />
         </label>
         {error ? <p className="text-sm font-semibold text-red-200">{error}</p> : null}

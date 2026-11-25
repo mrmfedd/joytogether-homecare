@@ -269,3 +269,106 @@ export async function createAndEmailEmployeeInvitation(params: {
 
   return { invitationId: invitation.id, email, classification: params.classification, priorInvitesBurned: burned };
 }
+
+
+/** Send a new password-setup link to an existing, still-unactivated employee.
+ * This action is ONLY called by authorized administrator server actions.
+ * It does not email active employees, reset passwords, or expose raw tokens in logs.
+ */
+export async function emailPendingEmployeeActivation(params: {
+  profileId: string;
+  baseUrl: string;
+  createdByUserId: string;
+}) {
+  const profile = await prisma.employeeProfile.findUnique({
+    where: { id: params.profileId },
+    include: { user: true },
+  });
+  if (
+    !profile ||
+    !isPendingEmployeeActivation({
+      passwordHash: profile.user.passwordHash,
+      active: profile.user.active,
+      employeeProfile: { employmentStatus: profile.employmentStatus },
+    }) ||
+    profile.user.role !== "EMPLOYEE"
+  ) {
+    throw new Error("Caregiver is no longer awaiting activation.");
+  }
+
+  // Durable cooldown across serverless instances, using existing audit records.
+  const recent = await prisma.auditLog.findMany({
+    where: {
+      entity: "EmployeeProfile",
+      entityId: profile.id,
+      action: "UPDATE",
+      createdAt: { gt: new Date(Date.now() - 5 * 60 * 1000) },
+    },
+    select: { meta: true },
+    take: 20,
+    orderBy: { createdAt: "desc" },
+  });
+  if (recent.some((entry) =>
+    entry.meta && typeof entry.meta === "object" &&
+    !Array.isArray(entry.meta) &&
+    "via" in entry.meta && entry.meta.via === "email_activation"
+  )) {
+    throw new Error("Activation email was requested recently. Try again in five minutes.");
+  }
+
+  // Keep the previous activation link usable if Resend rejects the email.
+  const token = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+  const invitation = await prisma.employeeInvitation.create({
+    data: {
+      email: profile.user.email,
+      classification: profile.classification,
+      tokenHash: hashInviteToken(token),
+      expiresAt,
+      createdById: params.createdByUserId,
+    },
+  });
+
+  try {
+    await sendEmployeeInviteEmail(
+      profile.user.email,
+      buildEmployeeActivationUrl(publicSiteBaseUrl(params.baseUrl), token),
+    );
+  } catch {
+    await prisma.employeeInvitation.delete({ where: { id: invitation.id } }).catch(() => undefined);
+    throw new Error("Email provider did not accept the activation email. No previous link was invalidated.");
+  }
+
+  // After Resend accepts the message, invalidate older unused links.
+  const prior = await prisma.employeeInvitation.findMany({
+    where: { email: profile.user.email, acceptedAt: null, id: { not: invitation.id } },
+    select: { id: true },
+  });
+  for (const row of prior) {
+    await prisma.employeeInvitation.update({
+      where: { id: row.id },
+      data: {
+        expiresAt: new Date(Date.now() - 60_000),
+        tokenHash: createHash("sha256")
+          .update(`burned-${row.id}-${randomBytes(16).toString("hex")}`)
+          .digest("hex"),
+      },
+    });
+  }
+
+  await writeAuditLog({
+    userId: params.createdByUserId,
+    action: "UPDATE",
+    entity: "EmployeeProfile",
+    entityId: profile.id,
+    meta: {
+      via: "email_activation",
+      invitationId: invitation.id,
+      recipient: profile.user.email,
+      providerAccepted: true,
+      previousLinksInvalidated: prior.length,
+    },
+  });
+
+  return { profileId: profile.id, email: profile.user.email, expiresAt };
+}

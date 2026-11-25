@@ -9,6 +9,7 @@ import { writeAuditLog } from "@/lib/audit";
 import {
   createEmployeeActivationWithoutEmail,
   regenerateEmployeeActivationLink,
+  emailPendingEmployeeActivation,
 } from "@/lib/employee/invitations";
 import { canManageEmployees } from "@/lib/workforce/permissions";
 import { prisma } from "@/lib/prisma";
@@ -119,6 +120,102 @@ export async function regenerateEmployeeActivationLinkAction(formData: FormData)
   redirect(
     `/admin/employees?created=1&activation=${encodeURIComponent(result.activationUrl)}&expires=${encodeURIComponent(result.expiresAt.toISOString())}`,
   );
+}
+
+
+/** Sends one activation email after an explicit administrator click. */
+export async function sendEmployeeActivationEmailAction(formData: FormData) {
+  const actor = await requireAdminSession();
+  if (!actor || !canManageEmployees(actor.role)) redirect("/admin/employees?error=unauthorized");
+
+  const profileId = String(formData.get("profileId") ?? "");
+  if (!profileId) redirect("/admin/employees?error=missing_profile");
+
+  try {
+    await emailPendingEmployeeActivation({
+      profileId,
+      baseUrl: publicSiteBaseUrl(),
+      createdByUserId: actor.id,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to send activation email.";
+    redirect(`/admin/employees?error=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath("/admin/employees");
+  redirect("/admin/employees?emailsAccepted=1");
+}
+
+/** Only executes after a confirm click; no scheduled/background sends.
+ * Cap batches to avoid serverless timeouts and mail-provider rate limits.
+ */
+export async function sendAllPendingActivationEmailsAction() {
+  const actor = await requireAdminSession();
+  if (!actor || !canManageEmployees(actor.role)) redirect("/admin/employees?error=unauthorized");
+
+  const pending = await prisma.employeeProfile.findMany({
+    where: {
+      employmentStatus: "INVITED",
+      user: { active: false, role: "EMPLOYEE", passwordHash: null },
+    },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
+  // Exclude recent successful sends, so subsequent batches progress through a large roster.
+  const recentSends = await prisma.auditLog.findMany({
+    where: {
+      entity: "EmployeeProfile",
+      action: "UPDATE",
+      createdAt: { gt: new Date(Date.now() - 5 * 60 * 1000) },
+    },
+    select: { entityId: true, meta: true },
+  });
+  const recentlyContacted = new Set(
+    recentSends
+      .filter((row) =>
+        row.entityId &&
+        row.meta &&
+        typeof row.meta === "object" &&
+        !Array.isArray(row.meta) &&
+        "via" in row.meta &&
+        row.meta.via === "email_activation"
+      )
+      .map((row) => row.entityId as string),
+  );
+  const eligible = pending.filter((profile) => !recentlyContacted.has(profile.id));
+  // Cap each administrator-triggered batch; show how many remain.
+  const MAX_BATCH = 40;
+  let accepted = 0;
+  let failed = 0;
+  for (const profile of eligible.slice(0, MAX_BATCH)) {
+    try {
+      await emailPendingEmployeeActivation({
+        profileId: profile.id,
+        baseUrl: publicSiteBaseUrl(),
+        createdByUserId: actor.id,
+      });
+      accepted += 1;
+    } catch {
+      failed += 1;
+    }
+    // Resend's default API send rate is limited; avoid a burst.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  }
+
+  await writeAuditLog({
+    userId: actor.id,
+    action: "UPDATE",
+    entity: "EmployeeActivationEmailBatch",
+    meta: {
+      attempted: Math.min(eligible.length, MAX_BATCH),
+      skippedRecent: pending.length - eligible.length,
+      providerAccepted: accepted,
+      failedOrSkipped: failed,
+      remainingUnattempted: Math.max(0, eligible.length - MAX_BATCH),
+    },
+  });
+  revalidatePath("/admin/employees");
+  redirect(`/admin/employees?emailsAccepted=${accepted}&emailsFailed=${failed}&emailsRemaining=${Math.max(0, eligible.length - MAX_BATCH)}`);
 }
 
 export async function deleteEmployeeProfileAction(formData: FormData) {

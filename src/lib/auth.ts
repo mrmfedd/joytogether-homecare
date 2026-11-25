@@ -152,11 +152,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         }
 
-        if (user.role === "EMPLOYEE" && user.mfaEnabled && user.mfaSecret) {
-          if (!mfaCode || !verifyMfaCode(user.mfaSecret, mfaCode)) {
-            return null;
-          }
-        }
+        // Employees use their registered email and password only.
+        // Keep privileged administrator MFA/passkey protections unchanged.
 
         await prisma.user.update({
           where: { id: user.id },

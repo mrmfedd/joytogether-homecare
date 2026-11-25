@@ -6,14 +6,12 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { safePortalCallbackUrl } from "@/lib/auth/portal-callback";
-import { PasskeySignInButton } from "@/components/auth/PasskeySignInButton";
 
 export default function EmployeeLoginForm() {
   const params = useSearchParams();
   const callbackUrl = safePortalCallbackUrl(params.get("callbackUrl"), "employee");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +22,6 @@ export default function EmployeeLoginForm() {
     const res = await signIn("credentials", {
       email,
       password,
-      mfaCode,
       portal: "employee",
       redirect: false,
       callbackUrl,
@@ -59,13 +56,9 @@ export default function EmployeeLoginForm() {
       {params.get("accepted") === "1" ? (
         <p className="mt-4 rounded-xl border border-[var(--gold)]/40 bg-white/10 p-3 text-sm">Account activated — sign in below.</p>
       ) : null}
-      <div className="mt-8 rounded-2xl bg-white/10 p-6 backdrop-blur">
-        <PasskeySignInButton portal="employee" email={email} callbackUrl={callbackUrl} />
-        <p className="my-4 text-center text-xs font-semibold uppercase tracking-wide text-white/80">Or sign in with password</p>
-      </div>
-      <form onSubmit={onSubmit} className="space-y-4 rounded-2xl bg-white/10 p-6 backdrop-blur">
+      <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-2xl bg-white/10 p-6 backdrop-blur">
         <label className="block text-sm font-semibold">
-          Email
+          Username (email address)
           <input
             type="email"
             required
@@ -82,17 +75,6 @@ export default function EmployeeLoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
         />
-        <label className="block text-sm font-semibold">
-          Authenticator code (password sign-in only, if MFA enabled)
-          <input
-            type="text"
-            inputMode="numeric"
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-[var(--midnight)]"
-            autoComplete="one-time-code"
-          />
-        </label>
         {error ? <p className="text-sm font-semibold text-red-200">{error}</p> : null}
         <button type="submit" disabled={loading} className="btn btn-gold w-full uppercase tracking-wide disabled:opacity-60">
           {loading ? "Signing in…" : "Sign in"}

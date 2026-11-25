@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { requireEmployeeSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { EmployeeMfaSetupPanel } from "./EmployeeMfaSetupPanel";
-import { PasskeyManagerPanel } from "@/components/auth/PasskeyManagerPanel";
 
 export default async function EmployeeAccountPage() {
   const sessionUser = await requireEmployeeSession();
@@ -10,36 +9,26 @@ export default async function EmployeeAccountPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: sessionUser.id },
-    select: { email: true, mfaEnabled: true, name: true },
+    select: { email: true, name: true },
   });
   if (!user?.email) redirect("/employee/login");
 
-  const passkeys = await prisma.userPasskey.findMany({
-    where: { userId: sessionUser.id },
-    select: { id: true, friendlyName: true, createdAt: true, lastUsedAt: true, backedUp: true },
-    orderBy: { createdAt: "asc" },
-  });
-
   return (
     <div className="max-w-lg">
-      <h1 className="font-display text-3xl text-[var(--midnight)]">Profile & security</h1>
+      <h1 className="font-display text-3xl text-[var(--midnight)]">My account</h1>
       <p className="mt-1 text-sm text-muted">
         {user.name || "Employee"} • {user.email}
       </p>
       <section className="mt-6 rounded-2xl border border-line bg-white p-5">
-        <h2 className="font-semibold">Multi-factor authentication</h2>
-        <p className="mt-1 text-sm text-muted">Optional extra protection for your employee account.</p>
-        <div className="mt-4">
-          <EmployeeMfaSetupPanel email={user.email} mfaEnabled={user.mfaEnabled} />
-        </div>
+        <h2 className="font-semibold">Signing in</h2>
+        <p className="mt-2 text-sm text-muted">
+          Use your registered email address as your username and your password to sign in.
+          No authenticator code or passkey is required for employee login.
+        </p>
+        <Link href="/employee/forgot-password" className="mt-3 inline-block text-sm font-medium text-[var(--royal)] underline">
+          Forgot your password?
+        </Link>
       </section>
-      <PasskeyManagerPanel
-        passkeys={passkeys.map((p) => ({
-          ...p,
-          createdAt: p.createdAt.toISOString(),
-          lastUsedAt: p.lastUsedAt?.toISOString() ?? null,
-        }))}
-      />
     </div>
   );
 }

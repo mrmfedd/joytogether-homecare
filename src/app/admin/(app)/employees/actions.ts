@@ -161,11 +161,33 @@ export async function sendAllPendingActivationEmailsAction() {
     select: { id: true },
     orderBy: { createdAt: "asc" },
   });
+  // Exclude recent successful sends, so subsequent batches progress through a large roster.
+  const recentSends = await prisma.auditLog.findMany({
+    where: {
+      entity: "EmployeeProfile",
+      action: "UPDATE",
+      createdAt: { gt: new Date(Date.now() - 5 * 60 * 1000) },
+    },
+    select: { entityId: true, meta: true },
+  });
+  const recentlyContacted = new Set(
+    recentSends
+      .filter((row) =>
+        row.entityId &&
+        row.meta &&
+        typeof row.meta === "object" &&
+        !Array.isArray(row.meta) &&
+        "via" in row.meta &&
+        row.meta.via === "email_activation"
+      )
+      .map((row) => row.entityId as string),
+  );
+  const eligible = pending.filter((profile) => !recentlyContacted.has(profile.id));
   // Cap each administrator-triggered batch; show how many remain.
   const MAX_BATCH = 40;
   let accepted = 0;
   let failed = 0;
-  for (const profile of pending.slice(0, MAX_BATCH)) {
+  for (const profile of eligible.slice(0, MAX_BATCH)) {
     try {
       await emailPendingEmployeeActivation({
         profileId: profile.id,
@@ -185,14 +207,15 @@ export async function sendAllPendingActivationEmailsAction() {
     action: "UPDATE",
     entity: "EmployeeActivationEmailBatch",
     meta: {
-      attempted: Math.min(pending.length, MAX_BATCH),
+      attempted: Math.min(eligible.length, MAX_BATCH),
+      skippedRecent: pending.length - eligible.length,
       providerAccepted: accepted,
       failedOrSkipped: failed,
-      remainingUnattempted: Math.max(0, pending.length - MAX_BATCH),
+      remainingUnattempted: Math.max(0, eligible.length - MAX_BATCH),
     },
   });
   revalidatePath("/admin/employees");
-  redirect(`/admin/employees?emailsAccepted=${accepted}&emailsFailed=${failed}&emailsRemaining=${Math.max(0, pending.length - MAX_BATCH)}`);
+  redirect(`/admin/employees?emailsAccepted=${accepted}&emailsFailed=${failed}&emailsRemaining=${Math.max(0, eligible.length - MAX_BATCH)}`);
 }
 
 export async function deleteEmployeeProfileAction(formData: FormData) {

@@ -221,6 +221,7 @@ export default async function AdminEmployeesPage({
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-3">
                       {!p.user.active && p.employmentStatus === "INVITED" ? (
+                        <> 
                         <form action={regenerateEmployeeActivationLinkAction}>
                           <input type="hidden" name="profileId" value={p.id} />
                           <button type="submit" className="text-xs font-semibold text-[var(--royal)]">
@@ -236,6 +237,7 @@ export default async function AdminEmployeesPage({
                             Send Activation Email
                           </ConfirmSubmitButton>
                         </form>
+                        </>
                       ) : null}
                       {p.employmentStatus === "ACTIVE" && p.user.active ? (
                         <form action={deactivateEmployeeProfileAction}>

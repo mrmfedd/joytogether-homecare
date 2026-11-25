@@ -10,6 +10,7 @@ import {
 } from "./actions";
 import { ConfirmSubmitButton } from "@/components/admin/ConfirmSubmitButton";
 import { HelpPageHeader } from "@/components/help/HelpPageHeader";
+import { CopyEmployeeActivationLink } from "./CopyEmployeeActivationLink";
 
 const classifications = [
   "CAREGIVER",
@@ -66,7 +67,7 @@ export default async function AdminEmployeesPage({
       />
 
       {created ? (
-        <p className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900" role="status">
+        <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900" role="status">
           <span className="font-semibold">Employee profile created (pending activation).</span>
           {activationUrl ? (
             <>
@@ -77,20 +78,12 @@ export default async function AdminEmployeesPage({
                   Expires: {new Date(activationExpires).toLocaleString()}
                 </span>
               ) : null}
-              <label className="mt-2 block text-xs font-semibold uppercase tracking-wide text-green-900">
-                Activation link
-                <textarea
-                  readOnly
-                  rows={2}
-                  className="mt-1 w-full rounded-lg border border-green-300 bg-white px-2 py-2 font-mono text-xs text-[var(--midnight)]"
-                  defaultValue={activationUrl}
-                />
-              </label>
+              <CopyEmployeeActivationLink activationUrl={activationUrl} />
             </>
           ) : (
             " If you did not copy the activation link, resolve duplicate email issues and add the employee again."
           )}
-        </p>
+        </div>
       ) : null}
       {params.deleted === "1" ? (
         <p className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900" role="status">
